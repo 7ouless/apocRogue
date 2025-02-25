@@ -13,12 +13,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.apocRogue.stageBuilder;
 
-public class MainScreen extends ScreenAdapter {
+public class ShopScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private stageBuilder game;
 
-    public MainScreen(stageBuilder game) {
+    public ShopScreen(stageBuilder game) {
         this.game = game;
     }
 
@@ -27,27 +27,19 @@ public class MainScreen extends ScreenAdapter {
         stage = new Stage(new FitViewport(1080, 720));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        Window window = new Window("APOC ROGUE", skin, "border");
+        Window window = new Window("Shop Screen", skin, "border");
         window.defaults().pad(4f);
-        window.add("MAIN MENU").row();
-        TextButton buttonOpen = new TextButton("DEPLOY!", skin);
-        buttonOpen.pad(8f);
-        buttonOpen.addListener(new ChangeListener() {
+        window.add("Shop Screen").row();
+        TextButton goBack = new TextButton("Go Back!", skin);
+        goBack.pad(8f);
+        goBack.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Switch to the next screen using the Game instance
-                game.setScreen(new GameScreen(game));
+                // Return to the main menu screen
+                game.setScreen(new MainScreen(game));
             }
         });
-        window.add(buttonOpen).row();
-        TextButton shopBtn = new TextButton("Shop", skin);
-        shopBtn.pad(8f);
-        shopBtn.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new ShopScreen(game));
-            }
-        });
-        window.add(shopBtn);
+        window.add(goBack);
         window.pack();
         window.setPosition(MathUtils.roundPositive(stage.getWidth() / 2f - window.getWidth() / 2f),
             MathUtils.roundPositive(stage.getHeight() / 2f - window.getHeight() / 2f));
