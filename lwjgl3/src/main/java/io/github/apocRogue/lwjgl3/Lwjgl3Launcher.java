@@ -17,8 +17,9 @@ public class Lwjgl3Launcher {
         configuration.setTitle("apocRogue");
         configuration.useVsync(true);
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
-        configuration.setWindowedMode(1080, 720);
+        configuration.setWindowedMode(1920, 1080);
         configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
+        configuration.setForegroundFPS(60);
         return configuration;
     }
 }
