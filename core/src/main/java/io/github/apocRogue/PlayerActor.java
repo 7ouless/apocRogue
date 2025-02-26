@@ -32,7 +32,8 @@ public class PlayerActor extends Actor {
     private float dashDuration = 0.15f;       // How long the dash lasts (seconds)
     private float dashTimer = 0f;            // Counts down once we start a dash
     private boolean isDashing = false;
-
+    private float extraJumpFinal = 2;
+    private float extraJump = 0;
     // We'll keep track of time in the actor; you could also track in the Screen.
     private float timeCounter = 0f;
 
@@ -77,6 +78,11 @@ public class PlayerActor extends Actor {
             if (dashTimer <= 0f) {
                 endDash();
             }
+        }
+        float topLimit = getStage().getHeight() - getHeight();
+        if (getY() > topLimit) {
+            setY(topLimit);
+            velocityY = 0; // Stop upward movement
         }
 
         // ----------------------------
@@ -142,6 +148,7 @@ public class PlayerActor extends Actor {
                     setY(actor.getY() + actor.getHeight());
                     velocityY = 0;
                     isOnGround = true;
+                    extraJump = extraJumpFinal;
                 }
             }
         }
@@ -165,11 +172,14 @@ public class PlayerActor extends Actor {
     }
 
     /**
-     * Jump only if on ground.
+     * Jump only if on ground or extra jump.
      */
     public void jump() {
-        if (isOnGround) {
+        if (isOnGround || extraJump > 0) {
             velocityY = jumpPower;
+            if (!isOnGround) {
+                extraJump -= 1;
+            }
             isOnGround = false;
         }
     }
