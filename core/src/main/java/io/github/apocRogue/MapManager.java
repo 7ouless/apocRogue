@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Decides whether to use a procedural or predefined layout, then builds it on the Stage.
+ * Builds either a procedural or predefined set of tiles (including the floor).
  */
 public class MapManager {
     private boolean useProcedural = true;
@@ -18,7 +18,7 @@ public class MapManager {
     public MapManager(GenerationSettings settings) {
         this.settings = settings;
         this.proceduralGen = new ProceduralGenerator();
-        // Initialize or load predefined layouts
+        // Load or define your layouts
         predefinedLayouts = new ArrayList<>();
         predefinedLayouts.add(createLayout1());
         predefinedLayouts.add(createLayout2());
@@ -33,10 +33,6 @@ public class MapManager {
         this.useProcedural = false;
     }
 
-    /**
-     * Generate the map according to the current mode (procedural or predefined)
-     * and add all tile actors to the given stage.
-     */
     public void generateMap(Stage stage) {
         if (useProcedural) {
             List<TileInfo> tiles = proceduralGen.generateMap(settings);
@@ -44,7 +40,7 @@ public class MapManager {
                 Actor tileActor = createTileActor(info);
                 stage.addActor(tileActor);
             }
-            // Also add a base ground
+            // Also add a base floor
             stage.addActor(new FloorTile(0, 0, settings.levelWidth, 50));
         } else {
             // Use a predefined layout
@@ -67,24 +63,19 @@ public class MapManager {
         }
     }
 
-    // Example predefined layouts
+    // Example layouts
     private List<TileInfo> createLayout1() {
         List<TileInfo> layout = new ArrayList<>();
-        // Base ground
         layout.add(new TileInfo(0, 0, settings.levelWidth, 50, TileType.GROUND));
-        // Some platforms
         layout.add(new TileInfo(200, 120, 100, 20, TileType.PLATFORM));
         layout.add(new TileInfo(400, 200, 120, 20, TileType.PLATFORM));
-        // A hazard
         layout.add(new TileInfo(600, 50, 30, 30, TileType.HAZARD));
         return layout;
     }
 
     private List<TileInfo> createLayout2() {
         List<TileInfo> layout = new ArrayList<>();
-        // Another ground
         layout.add(new TileInfo(0, 0, settings.levelWidth, 50, TileType.GROUND));
-        // Platforms, hazards, etc.
         layout.add(new TileInfo(300, 150, 150, 20, TileType.PLATFORM));
         layout.add(new TileInfo(700, 250, 120, 20, TileType.PLATFORM));
         layout.add(new TileInfo(500, 50, 40, 40, TileType.HAZARD));
