@@ -30,16 +30,17 @@ public class MainScreen extends ScreenAdapter {
         Window window = new Window("APOC ROGUE", skin, "border");
         window.defaults().pad(4f);
         window.add("MAIN MENU").row();
+
         TextButton buttonOpen = new TextButton("DEPLOY!", skin);
         buttonOpen.pad(8f);
         buttonOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Switch to the next screen using the Game instance
                 game.setScreen(new GameScreen(game));
             }
         });
         window.add(buttonOpen).row();
+
         TextButton shopBtn = new TextButton("Shop", skin);
         shopBtn.pad(8f);
         shopBtn.addListener(new ChangeListener() {
@@ -47,7 +48,8 @@ public class MainScreen extends ScreenAdapter {
                 game.setScreen(new ShopScreen(game));
             }
         });
-        window.add(shopBtn);
+        window.add(shopBtn).row();
+
         window.pack();
         window.setPosition(MathUtils.roundPositive(stage.getWidth() / 2f - window.getWidth() / 2f),
             MathUtils.roundPositive(stage.getHeight() / 2f - window.getHeight() / 2f));

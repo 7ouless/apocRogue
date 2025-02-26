@@ -9,47 +9,46 @@ import java.util.List;
  * Builds either a procedural or predefined set of tiles (including the floor).
  */
 public class MapManager {
-    private boolean useProcedural = true;
-    private ProceduralGenerator proceduralGen;
-    private List<List<TileInfo>> predefinedLayouts;
-    private GenerationSettings settings;
-    private int currentLayoutIndex = 0;
 
-    public MapManager(GenerationSettings settings) {
-        this.settings = settings;
-        this.proceduralGen = new ProceduralGenerator();
-        // Load or define your layouts
-        predefinedLayouts = new ArrayList<>();
-        predefinedLayouts.add(createLayout1());
-        predefinedLayouts.add(createLayout2());
-    }
+    private int tileWidth = 25;
+    GenerationSettings gs;
 
-    public void setUseProcedural(boolean useProcedural) {
-        this.useProcedural = useProcedural;
-    }
-
-    public void setCurrentLayoutIndex(int index) {
-        this.currentLayoutIndex = Math.min(index, predefinedLayouts.size() - 1);
-        this.useProcedural = false;
-    }
+    int octaves = 2000;  //#of octaves
+    float persistence = 0.5f; //Amplitude "decay" for each octave
+    float frequency = 0.05f; //Frequency for the first octave
 
     public void generateMap(Stage stage) {
-        if (useProcedural) {
-            List<TileInfo> tiles = proceduralGen.generateMap(settings);
-            for (TileInfo info : tiles) {
-                Actor tileActor = createTileActor(info);
-                stage.addActor(tileActor);
+        ProcGen pg = new ProcGen();
+        List<TileInfo> platformTiles = new ArrayList<>();
+        GenerationSettings gs = new GenerationSettings();
+
+        pg.generatePermutationTable(275937494);
+
+        for (int i = 0; i < gs.levelWidth/tileWidth; i++) {
+            float noiseValue = 0;
+            float amplitude = 1.0f;
+            float freq = frequency;
+
+            for (int octave = 0; octave < octaves; octave++) {
+                noiseValue += pg.noise(i * freq) * amplitude;
+                amplitude *= persistence;  // Reduce amplitude for each octave
+                freq *= 2.0f;  // Double the frequency for each octave
             }
-            // Also add a base floor
-            stage.addActor(new FloorTile(0, 0, settings.levelWidth, 50));
-        } else {
-            // Use a predefined layout
-            List<TileInfo> layout = predefinedLayouts.get(currentLayoutIndex);
-            for (TileInfo info : layout) {
-                Actor tileActor = createTileActor(info);
-                stage.addActor(tileActor);
-            }
+
+            noiseValue = pg.noise(i * 0.2f); //Scale input to smoothen noise
+            int yPosition = (int) ((noiseValue + 1) / 2 * (gs.maxPlatHeight - gs.minPlatHeight) + gs.minPlatHeight);
+
+            platformTiles.add(new TileInfo(i * tileWidth, yPosition, tileWidth, tileWidth, TileType.PLATFORM));
         }
+
+        for (TileInfo info : platformTiles) {
+            Actor tileActor = createTileActor(info);
+            System.out.println(info.y);
+            stage.addActor(tileActor);
+        }
+
+        // Also add a base floor
+        stage.addActor(new FloorTile(0, 0, 1080, 50));
     }
 
     private Actor createTileActor(TileInfo info) {
@@ -66,19 +65,10 @@ public class MapManager {
     // Example layouts
     private List<TileInfo> createLayout1() {
         List<TileInfo> layout = new ArrayList<>();
-        layout.add(new TileInfo(0, 0, settings.levelWidth, 50, TileType.GROUND));
+        layout.add(new TileInfo(0, 0, gs.levelWidth, 50, TileType.GROUND));
         layout.add(new TileInfo(200, 120, 100, 20, TileType.PLATFORM));
         layout.add(new TileInfo(400, 200, 120, 20, TileType.PLATFORM));
         layout.add(new TileInfo(600, 50, 30, 30, TileType.HAZARD));
-        return layout;
-    }
-
-    private List<TileInfo> createLayout2() {
-        List<TileInfo> layout = new ArrayList<>();
-        layout.add(new TileInfo(0, 0, settings.levelWidth, 50, TileType.GROUND));
-        layout.add(new TileInfo(300, 150, 150, 20, TileType.PLATFORM));
-        layout.add(new TileInfo(700, 250, 120, 20, TileType.PLATFORM));
-        layout.add(new TileInfo(500, 50, 40, 40, TileType.HAZARD));
         return layout;
     }
 }
