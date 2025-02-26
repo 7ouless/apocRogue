@@ -23,7 +23,6 @@ public class GameScreen extends ScreenAdapter {
 
     private Texture playerTexture;
     private PlayerActor player;
-    private boolean useProcedural = true;
 
     public GameScreen(stageBuilder game) {
         this.game = game;
@@ -53,8 +52,7 @@ public class GameScreen extends ScreenAdapter {
         // tweak minGap, maxGap, etc. if you like
 
         // Create a MapManager and build the map
-        MapManager mapManager = new MapManager(settings);
-        mapManager.setUseProcedural(useProcedural);
+        MapManager mapManager = new MapManager();
         mapManager.generateMap(stage);
 
         // Set stage as input processor

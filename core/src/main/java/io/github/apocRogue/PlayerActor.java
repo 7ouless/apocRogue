@@ -80,7 +80,7 @@ public class PlayerActor extends Actor {
         wrapHorizontal();
 
         // Check collisions with FloorTile / PlatformTile / HazardTile
-        handleTileCollisions();
+        handleTileCollisions(delta);
     }
 
     @Override
@@ -156,33 +156,45 @@ public class PlayerActor extends Actor {
 
     // -------------- Collision with Tiles --------------
 
-    private void handleTileCollisions() {
+    private void handleTileCollisions(float delta) {
         if (getStage() == null) return;
 
         isOnGround = false; // reset each frame
+
+        // Approximate the player's old Y position
+        float oldY = getY() - velocityY * delta;
 
         for (Actor actor : getStage().getActors()) {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
                 if (overlaps(tile)) {
-                    // If it's floor or platform, land if coming from above
                     if (tile instanceof FloorTile || tile instanceof PlatformTile) {
                         float tileTop = tile.getY() + tile.getHeight();
-                        // Check if player is moving downward and is above tile
-                        if (velocityY <= 0f && getY() >= tileTop) {
-                            setY(tileTop);
-                            velocityY = 0;
-                            isOnGround = true;
-                            extraJump = extraJumpFinal;
+
+                        // We only care if we're moving downward
+                        if (velocityY <= 0f) {
+                            // Where was our bottom last frame?
+                            float oldBottom = oldY;
+                            // Where is our bottom now?
+                            float newBottom = getY();
+
+                            // If we were above tileTop and now below it,
+                            // that means we crossed from above in one step.
+                            if (oldBottom >= tileTop && newBottom < tileTop) {
+                                setY(tileTop);
+                                velocityY = 0;
+                                isOnGround = true;
+                                extraJump = extraJumpFinal;
+                            }
                         }
                     }
                     else if (tile instanceof HazardTile) {
-                        // Hazard logic
                         System.out.println("Hit a hazard! (Respawn or lose health)");
                     }
                 }
             }
-        }
+    }
+
     }
 
     private boolean overlaps(TileActor tile) {
@@ -205,10 +217,7 @@ public class PlayerActor extends Actor {
     private void wrapHorizontal() {
         if (getStage() == null) return;
         float stageW = getStage().getWidth();
-        if (getX() > stageW) {
-            setX(-getWidth());
-        }
-        else if (getX() + getWidth() < 0) {
+        if (getX() + getWidth() < 0) {
             setX(stageW);
         }
     }

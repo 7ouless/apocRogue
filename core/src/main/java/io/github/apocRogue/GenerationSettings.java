@@ -8,7 +8,9 @@ public class GenerationSettings {
     public float minGap = 100;        // min horizontal gap between platforms
     public float maxGap = 250;        // max horizontal gap
     public float heightVariance = 100;// vertical difference between subsequent platforms
-    public float groundHeight = 50;   // thickness of the floor
+    public float groundHeight = 50; // thickness of the floor
+    public float minPlatHeight = 50;
+    public float maxPlatHeight = 300;
     public float basePlatformHeight = 100; // starting height for the first platform
     public float platformWidth = 100; // base width for platforms
     public float platformWidthVariance = 30; // how much platform width can vary
