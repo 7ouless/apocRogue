@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 
+/**
+ * A player character that can move, jump, dash, and collide with tiles.
+ */
 public class PlayerActor extends Actor {
     private Texture texture;
 
@@ -15,28 +18,35 @@ public class PlayerActor extends Actor {
     private float velocityY = 0f;
 
     // Physics
-    private float gravity = -600f;   // Gravity in pixels/second^2
+    private float gravity = -600f; // Gravity (pixels/sec^2)
     private float jumpPower = 600f;
     private boolean isOnGround = false;
 
     // Movement parameters
     private float acceleration = 2000f;
     private float friction = 0.90f;
-    private float maxSpeed = 600f; // optional clamp if you want a top speed
+    private float maxSpeed = 600f; // optional clamp on horizontal speed
 
-    // Double‐tap dash settings
-    private float doubleTapThreshold = 0.2f;  // Max time between taps
-    private float lastLeftTapTime = 0f;       // When user last tapped left
-    private float lastRightTapTime = 0f;      // When user last tapped right
-    private float dashSpeed = 800f;           // Velocity to set when dashing
-    private float dashDuration = 0.15f;       // How long the dash lasts (seconds)
-    private float dashTimer = 0f;            // Counts down once we start a dash
+    // Double‐tap dash
+    private float doubleTapThreshold = 0.2f;
+    private float lastLeftTapTime = 0f;
+    private float lastRightTapTime = 0f;
+    private float dashSpeed = 800f;
+    private float dashDuration = 0.15f;
+    private float dashTimer = 0f;
     private boolean isDashing = false;
+
+    // Extra jumps (like a double-jump)
     private float extraJumpFinal = 2;
     private float extraJump = 0;
-    // We'll keep track of time in the actor; you could also track in the Screen.
+
+    // A simple time counter for measuring double taps
     private float timeCounter = 0f;
 
+    /**
+     * Pass in a valid texture for the player sprite.
+     * This sets the actor size to the texture's dimensions.
+     */
     public PlayerActor(Texture texture) {
         this.texture = texture;
         setSize(texture.getWidth(), texture.getHeight());
@@ -46,125 +56,57 @@ public class PlayerActor extends Actor {
     public void act(float delta) {
         super.act(delta);
 
-        // Keep a running time so we can measure intervals between taps
-        timeCounter += delta;
+        timeCounter += delta; // used for double-tap detection
 
-        // ----------------------------
-        // 1. Detect Double‐Tap
-        // ----------------------------
-        // If the user JUST pressed left:
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-            // Check how long since last left tap
-            if (timeCounter - lastLeftTapTime < doubleTapThreshold) {
-                // Double tap detected, start a dash to the left
-                startDash(-dashSpeed);
-            }
-            lastLeftTapTime = timeCounter;
-        }
-        // If the user JUST pressed right:
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-            if (timeCounter - lastRightTapTime < doubleTapThreshold) {
-                // Double tap detected, dash right
-                startDash(dashSpeed);
-            }
-            lastRightTapTime = timeCounter;
-        }
+        handleDoubleTapDash();
+        handleDashTimer(delta);
+        clampTopOfScreen();
 
-        // ----------------------------
-        // 2. Handle Dash Timer
-        // ----------------------------
-        if (isDashing) {
-            dashTimer -= delta;
-            if (dashTimer <= 0f) {
-                endDash();
-            }
-        }
-        float topLimit = getStage().getHeight() - getHeight();
-        if (getY() > topLimit) {
-            setY(topLimit);
-            velocityY = 0; // Stop upward movement
-        }
-
-        // ----------------------------
-        // 3. Apply Gravity
-        // ----------------------------
+        // Apply gravity
         velocityY += gravity * delta;
 
-        // ----------------------------
-        // 4. Horizontal Movement
-        // ----------------------------
         if (!isDashing) {
-            // Normal movement if not dashing
-            if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-                velocityX -= acceleration * delta;
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                velocityX += acceleration * delta;
-            }
-            // Apply friction
-            velocityX *= friction;
-
-            // Optional: Clamp horizontal speed
-            if (velocityX > maxSpeed)  velocityX = maxSpeed;
-            if (velocityX < -maxSpeed) velocityX = -maxSpeed;
+            // Normal horizontal movement
+            handleHorizontalMovement(delta);
         }
-        else {
-            // If we are dashing, you can skip friction or normal movement
-            // because velocityX was set in startDash().
-        }
+        // If we are dashing, velocityX was set in startDash(), so skip normal movement.
 
-        // ----------------------------
-        // 5. Jumping
-        // ----------------------------
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+        // Jump input
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
+            || Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             jump();
         }
 
-        // ----------------------------
-        // 6. Update Position
-        // ----------------------------
+        // Update position
         setX(getX() + velocityX * delta);
         setY(getY() + velocityY * delta);
 
         // Optional: Wrap horizontally
-        if (getX() > getStage().getWidth()) {
-            setX(-getWidth());
-        }
-        if (getX() + getWidth() < 0) {
-            setX(getStage().getWidth());
-        }
+        wrapHorizontal();
 
-        // If we go too high, you do something with velocityY
-        if (getY() > getStage().getHeight()) {
-            velocityY *= 2;
-        }
-
-        // ----------------------------
-        // 7. Collision Check
-        // ----------------------------
-        for (Actor actor : getStage().getActors()) {
-            if (actor instanceof FloorActor) {
-                if (isCollidingWith((FloorActor) actor)) {
-                    setY(actor.getY() + actor.getHeight());
-                    velocityY = 0;
-                    isOnGround = true;
-                    extraJump = extraJumpFinal;
-                }
-            }
-        }
+        // Collisions with tiles
+        handleTileCollisions();
     }
 
     /**
-     * Start a dash by setting isDashing = true and giving a big horizontal velocity.
+     * Draw the player sprite.
+     */
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
+    }
+
+    /**
+     * Start a dash by setting horizontal velocity and marking isDashing = true.
      */
     private void startDash(float dashVel) {
         isDashing = true;
         dashTimer = dashDuration;
-        velocityX = dashVel;  // instantly set horizontal speed
+        velocityX = dashVel;
     }
 
     /**
-     * End the dash, returning to normal movement.
+     * End the dash, returning to normal movement logic.
      */
     private void endDash() {
         isDashing = false;
@@ -172,31 +114,142 @@ public class PlayerActor extends Actor {
     }
 
     /**
-     * Jump only if on ground or extra jump.
+     * Attempt to jump. If on the ground or have extra jumps, set velocityY to jumpPower.
      */
     public void jump() {
         if (isOnGround || extraJump > 0) {
             velocityY = jumpPower;
             if (!isOnGround) {
+                // Using an extra jump in mid-air
                 extraJump -= 1;
             }
             isOnGround = false;
         }
     }
 
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
+    /**
+     * Checks bounding-box collision with any FloorTile, PlatformTile, or HazardTile.
+     *
+     * - If colliding with FloorTile or PlatformTile from above, land on it.
+     * - If colliding with HazardTile, handle damage or respawn.
+     */
+    private void handleTileCollisions() {
+        if (getStage() == null) return; // just in case
+
+        isOnGround = false; // We'll reset to true if we land on something
+
+        for (Actor actor : getStage().getActors()) {
+            if (actor instanceof TileActor) {
+                TileActor tile = (TileActor) actor;
+
+                if (overlaps(tile)) {
+                    // If it's ground or platform, land on it
+                    if (tile instanceof FloorTile || tile instanceof PlatformTile) {
+                        // Simple approach: place player on top if we come from above
+                        float tileTop = tile.getY() + tile.getHeight();
+                        // Check if the player is moving downward
+                        if (velocityY <= 0f && getY() >= tileTop) {
+                            setY(tileTop);
+                            velocityY = 0;
+                            isOnGround = true;
+                            extraJump = extraJumpFinal;
+                        }
+                    }
+                    else if (tile instanceof HazardTile) {
+                        // Hazard collision logic here
+                        // For example, reset player position, reduce health, etc.
+                        System.out.println("Hit a hazard! Respawn or lose health...");
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Simple bounding rectangle collision with a FloorActor.
+     * Returns true if this player overlaps the bounding rectangle of the given tile.
      */
-    private boolean isCollidingWith(FloorActor ground) {
+    private boolean overlaps(TileActor tile) {
         Rectangle playerRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        Rectangle groundRect = new Rectangle(
-            ground.getX(), ground.getY(), ground.getWidth(), ground.getHeight()
-        );
-        return playerRect.overlaps(groundRect);
+        Rectangle tileRect = new Rectangle(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
+        return playerRect.overlaps(tileRect);
+    }
+
+    /**
+     * Horizontal movement with acceleration and friction.
+     */
+    private void handleHorizontalMovement(float delta) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+            velocityX -= acceleration * delta;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+            velocityX += acceleration * delta;
+        }
+
+        // Apply friction
+        velocityX *= friction;
+
+        // Clamp horizontal speed
+        if (velocityX > maxSpeed)  velocityX = maxSpeed;
+        if (velocityX < -maxSpeed) velocityX = -maxSpeed;
+    }
+
+    /**
+     * Detect double-taps for dashing.
+     */
+    private void handleDoubleTapDash() {
+        // Check for left double-tap
+        if (Gdx.input.isKeyJustPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
+            if (timeCounter - lastLeftTapTime < doubleTapThreshold) {
+                // double tap left
+                startDash(-dashSpeed);
+            }
+            lastLeftTapTime = timeCounter;
+        }
+        // Check for right double-tap
+        if (Gdx.input.isKeyJustPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+            if (timeCounter - lastRightTapTime < doubleTapThreshold) {
+                // double tap right
+                startDash(dashSpeed);
+            }
+            lastRightTapTime = timeCounter;
+        }
+    }
+
+    /**
+     * Counts down dash timer and ends dash if time is up.
+     */
+    private void handleDashTimer(float delta) {
+        if (isDashing) {
+            dashTimer -= delta;
+            if (dashTimer <= 0f) {
+                endDash();
+            }
+        }
+    }
+
+    /**
+     * Clamp the player's Y so they can't go above the top of the stage.
+     */
+    private void clampTopOfScreen() {
+        if (getStage() == null) return;
+        float topLimit = getStage().getHeight() - getHeight();
+        if (getY() > topLimit) {
+            setY(topLimit);
+            velocityY = 0;
+        }
+    }
+
+    /**
+     * If the player goes off the right edge, wrap to the left, and vice versa.
+     */
+    private void wrapHorizontal() {
+        if (getStage() == null) return;
+        float stageW = getStage().getWidth();
+        if (getX() > stageW) {
+            setX(-getWidth());
+        }
+        else if (getX() + getWidth() < 0) {
+            setX(stageW);
+        }
     }
 }
