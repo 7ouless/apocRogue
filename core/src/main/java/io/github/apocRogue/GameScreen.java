@@ -53,8 +53,7 @@ public class GameScreen extends ScreenAdapter {
         // tweak minGap, maxGap, etc. if you like
 
         // Create a MapManager and build the map
-        MapManager mapManager = new MapManager(settings);
-        mapManager.setUseProcedural(useProcedural);
+        MapManager mapManager = new MapManager();
         mapManager.generateMap(stage);
 
         // Set stage as input processor
