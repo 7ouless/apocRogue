@@ -37,7 +37,7 @@ public class PlayerActor extends Actor {
     private boolean isDashing = false;
 
     // Extra jumps (double-jump, etc.)
-    private float extraJumpFinal = 2;
+    private float extraJumpFinal = 10000;
     private float extraJump = 0;
 
     // Time counter for double-tap detection
@@ -217,10 +217,7 @@ public class PlayerActor extends Actor {
     private void wrapHorizontal() {
         if (getStage() == null) return;
         float stageW = getStage().getWidth();
-        if (getX() > stageW) {
-            setX(-getWidth());
-        }
-        else if (getX() + getWidth() < 0) {
+        if (getX() + getWidth() < 0) {
             setX(stageW);
         }
     }
