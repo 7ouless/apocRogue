@@ -47,9 +47,7 @@ public class GameScreen extends ScreenAdapter {
         stage.addActor(player);
 
         // Create generation settings
-        GenerationSettings settings = new GenerationSettings();
-        settings.levelWidth = 3000;
-        settings.platformDensity = 5;
+        GenerationSettings settings = GenerationType.PLAINS.settings;
         // tweak minGap, maxGap, etc. if you like
 
         // Create a MapManager and build the map

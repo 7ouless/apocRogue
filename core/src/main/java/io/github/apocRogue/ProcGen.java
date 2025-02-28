@@ -57,4 +57,16 @@ public class ProcGen {
 
         return lerp(u, grad0, grad1);  //Interpolate between gradients
     }
+
+    //tH is tileHeight
+    public static float fitGrid(int yPos, int tH) {
+        // Smaller multiple
+        int a = (yPos / tH) * tH;
+
+        // Larger multiple
+        int b = a + tH;
+
+        // Return of closest of two
+        return (yPos - a >= b - yPos)? b : a;
+    }
 }

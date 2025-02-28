@@ -4,46 +4,71 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Builds either a procedural or predefined set of tiles (including the floor).
  */
 public class MapManager {
-
     private int tileWidth = 25;
-    GenerationSettings gs;
+    private GenerationSettings settings;
 
-    int octaves = 2000;  //#of octaves
+    private float lastTileY; //when created should be assigned to the entrance's floor height
+
+    int octaves;  //#of octaves
     float persistence = 0.5f; //Amplitude "decay" for each octave
     float frequency = 0.05f; //Frequency for the first octave
 
     public void generateMap(Stage stage) {
         ProcGen pg = new ProcGen();
         List<TileInfo> platformTiles = new ArrayList<>();
-        GenerationSettings gs = new GenerationSettings();
+        GenerationSettings settings = GenerationType.PLAINS.settings;
 
-        pg.generatePermutationTable(275937494);
+        Random random = new Random();
+        int seed = random.nextInt();
+        pg.generatePermutationTable(seed);
 
-        for (int i = 0; i < gs.levelWidth/tileWidth; i++) {
-            float noiseValue = 0;
-            float amplitude = 1.0f;
-            float freq = frequency;
-
+        int levelWidth = 2000;
+        float noiseValue = 0;
+        float amplitude = 1.0f;
+        float freq = frequency;
+        octaves = settings.octaves;
+        for (int i = 0; i < levelWidth /tileWidth; i++) {
             for (int octave = 0; octave < octaves; octave++) {
                 noiseValue += pg.noise(i * freq) * amplitude;
                 amplitude *= persistence;  // Reduce amplitude for each octave
                 freq *= 2.0f;  // Double the frequency for each octave
             }
 
-            noiseValue = pg.noise(i * 0.2f); //Scale input to smoothen noise
-            int yPosition = (int) ((noiseValue + 1) / 2 * (gs.maxPlatHeight - gs.minPlatHeight) + gs.minPlatHeight);
+            noiseValue = pg.noise(i * settings.smoothingFactor); //Scale input to smoothen noise
+            int yPosition = (int) ((noiseValue + 1) / 2 * (settings.groundMax - settings.groundMin) + settings.groundMin);
 
-            platformTiles.add(new TileInfo(i * tileWidth, yPosition, tileWidth, tileWidth, TileType.PLATFORM));
+            float yPos = ProcGen.fitGrid(yPosition, tileWidth);
+            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
+                int x = 1;
+                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
+                    platformTiles.add(new TileInfo(i * tileWidth, lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.PLATFORM));
+                    x++;
+                }
+            }
+            else if (lastTileY - tileWidth > yPos) { //if the last tile is more than one tile spaces lower than the last tile
+                int x = 1;
+                while (lastTileY - (tileWidth * x) >= yPos - tileWidth) {
+                    platformTiles.add(new TileInfo(i * tileWidth, lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.PLATFORM));
+                    x++;
+                }
+            }
+            //this logic is only useful for generating the difference between a surface block and a below surface block, otherwise just use the fill function
+            int j = 0;
+            while (yPos - (tileWidth * j) >= settings.groundMin) { //filling in the below tiles
+                platformTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.PLATFORM));
+                j++;
+            }
+            lastTileY = yPos;
         }
 
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
-            System.out.println(info.y);
             stage.addActor(tileActor);
         }
 
@@ -60,15 +85,5 @@ public class MapManager {
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
-    }
-
-    // Example layouts
-    private List<TileInfo> createLayout1() {
-        List<TileInfo> layout = new ArrayList<>();
-        layout.add(new TileInfo(0, 0, gs.levelWidth, 50, TileType.GROUND));
-        layout.add(new TileInfo(200, 120, 100, 20, TileType.PLATFORM));
-        layout.add(new TileInfo(400, 200, 120, 20, TileType.PLATFORM));
-        layout.add(new TileInfo(600, 50, 30, 30, TileType.HAZARD));
-        return layout;
     }
 }
