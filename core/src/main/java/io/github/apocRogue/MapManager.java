@@ -10,10 +10,10 @@ import java.util.Random;
  * Builds either a procedural or predefined set of tiles (including the floor).
  */
 public class MapManager {
-    private int tileWidth = 25;
-    private GenerationSettings settings;
 
-    private float lastTileY; //when created should be assigned to the entrance's floor height
+    public GenerationSettings settings = GenerationType.PLAINS.settings;
+
+    private float lastTileY; //!!!when created should be assigned to the entrance's floor height!!!//
 
     int octaves;  //#of octaves
     float persistence = 0.5f; //Amplitude "decay" for each octave
@@ -22,7 +22,7 @@ public class MapManager {
     public void generateMap(Stage stage) {
         ProcGen pg = new ProcGen();
         List<TileInfo> platformTiles = new ArrayList<>();
-        GenerationSettings settings = GenerationType.PLAINS.settings;
+        List<TileInfo> dirtTiles = new ArrayList<>();
 
         Random random = new Random();
         int seed = random.nextInt();
@@ -33,7 +33,8 @@ public class MapManager {
         float amplitude = 1.0f;
         float freq = frequency;
         octaves = settings.octaves;
-        for (int i = 0; i < levelWidth /tileWidth; i++) {
+        int tileWidth = 50;
+        for (int i = 0; i < levelWidth / tileWidth; i++) {
             for (int octave = 0; octave < octaves; octave++) {
                 noiseValue += pg.noise(i * freq) * amplitude;
                 amplitude *= persistence;  // Reduce amplitude for each octave
@@ -47,33 +48,37 @@ public class MapManager {
             if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
                 int x = 1;
                 while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
-                    platformTiles.add(new TileInfo(i * tileWidth, lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.PLATFORM));
+                    dirtTiles.add(new TileInfo(i * tileWidth, lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
                     x++;
                 }
             }
-            else if (lastTileY - tileWidth > yPos) { //if the last tile is more than one tile spaces lower than the last tile
+            else if (lastTileY - tileWidth > yPos) { //if the tile is more than one tile spaces lower than the last tile
                 int x = 1;
-                while (lastTileY - (tileWidth * x) >= yPos - tileWidth) {
-                    platformTiles.add(new TileInfo(i * tileWidth, lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.PLATFORM));
+                while (lastTileY - (tileWidth * x) > yPos) {
+                    dirtTiles.add(new TileInfo(i * tileWidth - tileWidth, lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
                     x++;
                 }
             }
             //this logic is only useful for generating the difference between a surface block and a below surface block, otherwise just use the fill function
-            int j = 0;
+            int j = 1;
             while (yPos - (tileWidth * j) >= settings.groundMin) { //filling in the below tiles
-                platformTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.PLATFORM));
+                dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.DIRT));
                 j++;
             }
             lastTileY = yPos;
+
+            platformTiles.add(new TileInfo(i * tileWidth, yPos, tileWidth, tileWidth, TileType.PLATFORM));
+        }
+
+        for (TileInfo info : dirtTiles) {
+            Actor tileActor = createTileActor(info);
+            stage.addActor(tileActor);
         }
 
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
-
-        // Also add a base floor
-        stage.addActor(new FloorTile(0, 0, 1080, 50));
     }
 
     private Actor createTileActor(TileInfo info) {
@@ -82,6 +87,8 @@ public class MapManager {
                 return new FloorTile(info.x, info.y, info.width, info.height);
             case HAZARD:
                 return new HazardTile(info.x, info.y, info.width, info.height);
+            case DIRT:
+                return new DirtTile(info.x, info.y, info.width, info.height);
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }

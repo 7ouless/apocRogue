@@ -40,19 +40,15 @@ public class GameScreen extends ScreenAdapter {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         batch = new SpriteBatch();
 
-        // Load player texture (IMPORTANT: do this before creating PlayerActor)
-        playerTexture = new Texture(Gdx.files.internal("ui/sprite.png"));
-        player = new PlayerActor(playerTexture);
-        player.setPosition(50, 100); // place the player somewhere near the bottom
-        stage.addActor(player);
-
-        // Create generation settings
-        GenerationSettings settings = GenerationType.PLAINS.settings;
-        // tweak minGap, maxGap, etc. if you like
-
         // Create a MapManager and build the map
         MapManager mapManager = new MapManager();
         mapManager.generateMap(stage);
+
+        // Load player texture (IMPORTANT: do this before creating PlayerActor)
+        playerTexture = new Texture(Gdx.files.internal("ui/sprite.png"));
+        player = new PlayerActor(playerTexture);
+        player.setPosition(50, mapManager.settings.groundMax); // place the player somewhere near the bottom
+        stage.addActor(player);
 
         // Set stage as input processor
         Gdx.input.setInputProcessor(stage);
