@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 public class Inventory {
     private Table hotbarTable;
@@ -31,9 +30,19 @@ public class Inventory {
         hotbarSlots = new Array<InventorySlot>();
         inventorySlots = new Array<InventorySlot>();
         dragAndDrop = new DragAndDrop();
+        // Set a nonzero tap square size to improve drag detection.
+        dragAndDrop.setTapSquareSize(0);
         createHotbar();
         createInventory();
         setupDragAndDrop();
+        // Example: load a sword and a bow and place them into hotbar slots.
+        Texture swordTexture = new Texture(Gdx.files.internal("ui/sword.png"));
+        Texture bowTexture = new Texture(Gdx.files.internal("ui/bow.png"));
+        Item sword = new Item(Item.ItemType.SWORD, swordTexture);
+        Item bow = new Item(Item.ItemType.BOW, bowTexture);
+        // Place sword in slot 0 and bow in slot 1.
+        hotbarSlots.get(0).setItem(sword);
+        hotbarSlots.get(1).setItem(bow);
     }
 
     // Create a hotbar with 5 slots positioned at the bottom left.
@@ -44,6 +53,13 @@ public class Inventory {
         // Anchor the table to the bottom left with a padding.
         hotbarTable.bottom().left().pad(10);
 
+        // Add an input listener (or use a global scroll listener) if desired.
+        hotbarTable.addListener(new ActorGestureListener() {
+            public void scrolled(InputEvent event, float x, float y, float amount) {
+                scrollHotbar((int) amount);
+            }
+        });
+
         for (int i = 0; i < HOTBAR_SIZE; i++) {
             InventorySlot slot = new InventorySlot(skin);
             if (i == selectedHotbarIndex) {
@@ -52,7 +68,6 @@ public class Inventory {
             hotbarSlots.add(slot);
             hotbarTable.add(slot).size(50, 50).pad(5);
         }
-        // Ensure the table layout is recalculated.
         hotbarTable.pack();
     }
 
@@ -68,11 +83,15 @@ public class Inventory {
             if ((i + 1) % columns == 0)
                 inventoryTable.row();
         }
+        // Pack the table so it sizes itself to the children.
+        inventoryTable.pack();
         // Center the inventory table on the screen.
         inventoryTable.setPosition(
-            Gdx.graphics.getWidth() / 2 - inventoryTable.getWidth() / 2,
-            Gdx.graphics.getHeight() / 2 - inventoryTable.getHeight() / 2
+            (Gdx.graphics.getWidth() - inventoryTable.getWidth()) / 2,
+            (Gdx.graphics.getHeight() - inventoryTable.getHeight()) / 2
         );
+        // Let only the children handle touch events.
+        inventoryTable.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.childrenOnly);
     }
 
     // Setup DragAndDrop for all slots.
@@ -82,21 +101,24 @@ public class Inventory {
         allSlots.addAll(inventorySlots);
 
         for (final InventorySlot slot : allSlots) {
-            // Create a drag source for each slot.
+            // Drag source: when dragging starts, store the item in the payload.
             dragAndDrop.addSource(new Source(slot) {
                 @Override
                 public Payload dragStart(InputEvent event, float x, float y, int pointer) {
                     if (slot.isEmpty()) return null;
+                    Gdx.app.log("Drag", "dragStart triggered for slot: " + slot);
                     Payload payload = new Payload();
-                    // Create a copy of the current item image.
+                    payload.setObject(slot.getItem());
                     Image dragImage = new Image(slot.getItemDrawable());
+                    // Set the size of the drag image to be the same as the slot.
+                    dragImage.setSize(slot.getWidth(), slot.getHeight());
                     payload.setDragActor(dragImage);
-                    // Clear the slot temporarily while dragging.
                     slot.clearItem();
                     return payload;
                 }
             });
-            // Create a drop target for each slot.
+
+            // Drop target: on drop, if the slot already has an item, swap; otherwise, set the new item.
             dragAndDrop.addTarget(new Target(slot) {
                 @Override
                 public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
@@ -104,9 +126,16 @@ public class Inventory {
                 }
                 @Override
                 public void drop(Source source, Payload payload, float x, float y, int pointer) {
-                    // For demonstration, drop a dummy item.
-                    // In a full implementation you would swap or transfer actual item data.
-                    slot.setItem(new Texture(Gdx.files.internal("ui/dummy.png")));
+                    Item draggedItem = (Item) payload.getObject();
+                    if (!slot.isEmpty()) {
+                        // Swap items between target and source.
+                        Item temp = slot.getItem();
+                        slot.setItem(draggedItem);
+                        InventorySlot sourceSlot = (InventorySlot) source.getActor();
+                        sourceSlot.setItem(temp);
+                    } else {
+                        slot.setItem(draggedItem);
+                    }
                 }
             });
         }
@@ -136,4 +165,5 @@ public class Inventory {
         int newIndex = (selectedHotbarIndex + direction + HOTBAR_SIZE) % HOTBAR_SIZE;
         setSelectedHotbarIndex(newIndex);
     }
+
 }

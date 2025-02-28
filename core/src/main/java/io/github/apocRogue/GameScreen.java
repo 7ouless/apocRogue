@@ -58,7 +58,7 @@ public class GameScreen extends ScreenAdapter {
         inventory = new Inventory(skin);
         inventory.draw(uiStage);
 
-        // Use an InputMultiplexer so both game stage and UI stage get input.
+        // Use an InputMultiplexer so both UI stage and game stage get input.
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(new InputAdapter() {
             @Override
@@ -67,6 +67,7 @@ public class GameScreen extends ScreenAdapter {
                 return true;
             }
         });
+        // Add uiStage first so that UI elements receive input events before game actors.
         multiplexer.addProcessor(uiStage);
         multiplexer.addProcessor(stage);
         Gdx.input.setInputProcessor(multiplexer);
@@ -104,11 +105,6 @@ public class GameScreen extends ScreenAdapter {
                 return false;
             }
 
-            public boolean scrolled(InputEvent event, float x, float y, int amount) {
-                // Scroll to change the selected hotbar slot.
-                inventory.scrollHotbar(amount);
-                return true;
-            }
         });
     }
 
@@ -130,6 +126,7 @@ public class GameScreen extends ScreenAdapter {
         // Draw the game and UI.
         stage.draw();
         uiStage.draw();
+
     }
 
     @Override

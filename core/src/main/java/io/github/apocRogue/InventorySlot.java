@@ -1,8 +1,12 @@
 package io.github.apocRogue;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -13,42 +17,64 @@ public class InventorySlot extends Table {
     private Skin skin;
     private boolean highlighted = false;
     private Image itemImage;
-    private boolean empty = true;
+    private Item item; // the item stored in this slot (null if empty)
 
     public InventorySlot(Skin skin) {
         super(skin);
         this.skin = skin;
-        // Use the "white" drawable tinted to dark gray as the default background.
+        setTouchable(Touchable.enabled);
         Drawable bg = skin.newDrawable(skin.getDrawable("white"), Color.DARK_GRAY);
         setBackground(bg);
         itemImage = new Image();
+        itemImage.setTouchable(Touchable.disabled);
         add(itemImage).expand().fill();
+
+        // Debug listener to log touch events.
+        addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                Gdx.app.log("Debug", "touchDown in InventorySlot: " + InventorySlot.this + " | Item: " + getItem());
+                return false;
+            }
+
+            @Override
+            public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                Gdx.app.log("Debug", "touchDragged in InventorySlot: " + InventorySlot.this);
+            }
+        });
     }
 
-    // Set an item in the slot using its texture.
-    public void setItem(Texture texture) {
-        if (texture != null) {
-            itemImage.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
-            empty = false;
+    public boolean isEmpty() {
+        return item == null;
+    }
+
+    // Set an item into the slot.
+    public void setItem(Item item) {
+        this.item = item;
+        if (item != null) {
+            itemImage.setDrawable(new TextureRegionDrawable(new TextureRegion(item.getTexture())));
+            Gdx.app.log("Debug", "Item set in slot: " + this + " | Item: " + item.getType());
+        } else {
+            itemImage.setDrawable(null);
         }
     }
 
-    // Get the current item's drawable (for drag-and-drop).
+    public Item getItem() {
+        return item;
+    }
+
+    // Get the drawable for drag-and-drop.
     public Drawable getItemDrawable() {
         return itemImage.getDrawable();
     }
 
-    public boolean isEmpty() {
-        return empty;
-    }
-
-    // Remove the item from this slot.
+    // Remove the item from the slot.
     public void clearItem() {
+        item = null;
         itemImage.setDrawable(null);
-        empty = true;
     }
 
-    // Highlight the slot (change its background) to indicate selection.
+    // Highlight this slot.
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
         if (highlighted)
