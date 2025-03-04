@@ -155,7 +155,6 @@ public class PlayerActor extends Actor {
     }
 
     // -------------- Collision with Tiles --------------
-
     private void handleTileCollisions(float delta) {
         if (getStage() == null) return;
 
@@ -169,10 +168,9 @@ public class PlayerActor extends Actor {
                 TileActor tile = (TileActor) actor;
                 if (overlaps(tile)) {
                     if (tile instanceof FloorTile || tile instanceof PlatformTile) {
-                        float tileTop = tile.getY() + tile.getHeight();
-
-                        // We only care if we're moving downward
+                        // If player is moving downwards
                         if (velocityY <= 0f) {
+                            float tileTop = tile.getY() + tile.getHeight();
                             // Where was our bottom last frame?
                             float oldBottom = oldY;
                             // Where is our bottom now?
@@ -180,11 +178,26 @@ public class PlayerActor extends Actor {
 
                             // If we were above tileTop and now below it,
                             // that means we crossed from above in one step.
-                            if (oldBottom >= tileTop && newBottom < tileTop) {
-                                setY(tileTop);
+                            if (oldBottom + 0.1 >= tileTop && newBottom < tileTop) {
+                                setY(tileTop + 0.001f);
                                 velocityY = 0;
                                 isOnGround = true;
                                 extraJump = extraJumpFinal;
+                            }
+                        }
+                        if (velocityX < 0) { // Moving left
+                            float oldX = getX() - (velocityX * delta);
+                            float tileRightSide = tile.getX() + tile.getWidth();
+
+                            if (oldX >= tileRightSide && this.getX() < tileRightSide && tile.getY() + tile.getWidth() >= this.getY()) {
+                                setX(tileRightSide);
+                            }
+                        } else if (velocityX > 0) { // Moving right
+                            float oldX = getX() - (velocityX * delta);
+                            float tileLeftSide = tile.getX();
+
+                            if (oldX + this.getWidth() <= tileLeftSide && getX() + this.getWidth() > tileLeftSide) {
+                                setX(tileLeftSide - this.getWidth());
                             }
                         }
                     }

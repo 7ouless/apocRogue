@@ -23,17 +23,18 @@ public class MapManager {
         ProcGen pg = new ProcGen();
         List<TileInfo> platformTiles = new ArrayList<>();
         List<TileInfo> dirtTiles = new ArrayList<>();
+        List<TileInfo> mapBorders;
 
         Random random = new Random();
         int seed = random.nextInt();
         pg.generatePermutationTable(seed);
 
-        int levelWidth = 2000;
+        int levelWidth = settings.roomWidth;
         float noiseValue = 0;
         float amplitude = 1.0f;
         float freq = frequency;
         octaves = settings.octaves;
-        int tileWidth = 50;
+        int tileWidth = settings.tileWidth;
         for (int i = 0; i < levelWidth / tileWidth; i++) {
             for (int octave = 0; octave < octaves; octave++) {
                 noiseValue += pg.noise(i * freq) * amplitude;
@@ -59,15 +60,23 @@ public class MapManager {
                     x++;
                 }
             }
-            //this logic is only useful for generating the difference between a surface block and a below surface block, otherwise just use the fill function
+            //fills in the dirt blocks
             int j = 1;
-            while (yPos - (tileWidth * j) >= settings.groundMin) { //filling in the below tiles
+            while (yPos - (tileWidth * j) >= settings.groundMin - settings.tileWidth
+            ) { //filling in the below tiles
                 dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.DIRT));
                 j++;
             }
             lastTileY = yPos;
 
             platformTiles.add(new TileInfo(i * tileWidth, yPos, tileWidth, tileWidth, TileType.PLATFORM));
+        }
+
+        mapBorders = createBorders(settings.roomWidth, settings.roomHeight);
+
+        for (TileInfo info : mapBorders) {
+            Actor tileActor = createTileActor(info);
+            stage.addActor(tileActor);
         }
 
         for (TileInfo info : dirtTiles) {
@@ -79,6 +88,23 @@ public class MapManager {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
+    }
+
+    private List<TileInfo> createBorders(int w, int h) {
+        ArrayList<TileInfo> tiles = new ArrayList<>();
+        int i = 0;
+        while (i < w/settings.tileWidth) { //horizontal tiles
+            tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            tiles.add(new TileInfo(i*settings.tileWidth, 0, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            i++;
+        }
+        i = 0;
+        while (i <= h/ settings.tileWidth) { //vertical tiles
+            tiles.add(new TileInfo(-settings.tileWidth, i*settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            i++;
+        }
+        return tiles;
     }
 
     private Actor createTileActor(TileInfo info) {
