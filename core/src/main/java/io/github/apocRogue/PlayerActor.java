@@ -39,6 +39,7 @@ public class PlayerActor extends Actor {
     // Extra jumps (double-jump, etc.)
     private float extraJumpFinal = 10000;
     private float extraJump = 0;
+    private boolean facingRight = true; // default facing right
 
     // Time counter for double-tap detection
     private float timeCounter = 0f;
@@ -91,14 +92,19 @@ public class PlayerActor extends Actor {
     // -------------- Movement & Dash --------------
 
     private void handleHorizontalMovement(float delta) {
-        if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            velocityX -= acceleration * delta;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            velocityX += acceleration * delta;
-        }
-        velocityX *= friction;
+        boolean movingLeft  = Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT);
+        boolean movingRight = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
 
+        if (movingLeft) {
+            velocityX -= acceleration * delta;
+            facingRight = false; // We are facing left
+        }
+        if (movingRight) {
+            velocityX += acceleration * delta;
+            facingRight = true; // We are facing right
+        }
+
+        velocityX *= friction;
         // clamp horizontal speed
         if (velocityX > maxSpeed)  velocityX = maxSpeed;
         if (velocityX < -maxSpeed) velocityX = -maxSpeed;
@@ -220,5 +226,8 @@ public class PlayerActor extends Actor {
         if (getX() + getWidth() < 0) {
             setX(stageW);
         }
+    }
+    public boolean isFacingRight(){
+        return facingRight;
     }
 }

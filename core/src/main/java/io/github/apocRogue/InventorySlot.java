@@ -1,7 +1,6 @@
 package io.github.apocRogue;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -13,7 +12,7 @@ public class InventorySlot extends Table {
     private Skin skin;
     private boolean highlighted = false;
     private Image itemImage;
-    private boolean empty = true;
+    private Weapon weapon; // Store the weapon in this slot
 
     public InventorySlot(Skin skin) {
         super(skin);
@@ -25,12 +24,19 @@ public class InventorySlot extends Table {
         add(itemImage).expand().fill();
     }
 
-    // Set an item in the slot using its texture.
-    public void setItem(Texture texture) {
-        if (texture != null) {
-            itemImage.setDrawable(new TextureRegionDrawable(new TextureRegion(texture)));
-            empty = false;
+    // Set a weapon in the slot.
+    public void setItem(Weapon weapon) {
+        this.weapon = weapon;
+        if (weapon != null) {
+            itemImage.setDrawable(new TextureRegionDrawable(new TextureRegion(weapon.getTexture())));
+        } else {
+            itemImage.setDrawable(null);
         }
+    }
+
+    // Retrieve the weapon in this slot.
+    public Weapon getWeapon() {
+        return weapon;
     }
 
     // Get the current item's drawable (for drag-and-drop).
@@ -39,13 +45,13 @@ public class InventorySlot extends Table {
     }
 
     public boolean isEmpty() {
-        return empty;
+        return weapon == null;
     }
 
-    // Remove the item from this slot.
+    // Clear the weapon from this slot.
     public void clearItem() {
+        weapon = null;
         itemImage.setDrawable(null);
-        empty = true;
     }
 
     // Highlight the slot (change its background) to indicate selection.

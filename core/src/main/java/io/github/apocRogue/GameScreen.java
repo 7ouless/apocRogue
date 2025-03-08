@@ -31,12 +31,11 @@ public class GameScreen extends ScreenAdapter {
     public void show() {
         // Set up game camera and stage.
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 800, 480);
-        stage = new Stage(new FitViewport(1080, 720, camera));
+        camera.setToOrtho(false, 1920, 1080);
+        stage = new Stage(new FitViewport(1920, 1080, camera));
 
         // Set up UI stage with a ScreenViewport so it stays fixed on the screen.
-        uiStage = new Stage(new ScreenViewport());
-
+        uiStage = new Stage(new FitViewport(1920, 1080));
         // Load skin and create batch.
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         batch = new SpriteBatch();
@@ -57,7 +56,9 @@ public class GameScreen extends ScreenAdapter {
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);
         inventory.draw(uiStage);
-
+        Gdx.app.log("StageSize", "UI stage world width="
+            + uiStage.getViewport().getWorldWidth()
+            + ", height=" + uiStage.getViewport().getWorldHeight());
         // Use an InputMultiplexer so both game stage and UI stage get input.
         InputMultiplexer multiplexer = new InputMultiplexer();
         multiplexer.addProcessor(new InputAdapter() {
@@ -67,10 +68,23 @@ public class GameScreen extends ScreenAdapter {
                 return true;
             }
         });
-        multiplexer.addProcessor(uiStage);
-        multiplexer.addProcessor(stage);
+        uiStage.addListener(new InputListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if (button == Input.Buttons.LEFT) {
+                    Weapon w = inventory.getSelectedWeapon();
+                    if (w != null) {
+                        w.use(player, stage);
+                    }
+                    // Return true if you want to consume the event
+                    return true;
+                }
+                return false;
+            }
+        });
+        multiplexer.addProcessor(uiStage);   // UI first
+        multiplexer.addProcessor(stage);     // Game second
         Gdx.input.setInputProcessor(multiplexer);
-
         // Listen for key events on the UI stage.
         uiStage.addListener(new InputListener() {
             @Override
@@ -110,6 +124,7 @@ public class GameScreen extends ScreenAdapter {
                 return true;
             }
         });
+        uiStage.setDebugAll(true);
     }
 
     @Override
@@ -126,7 +141,13 @@ public class GameScreen extends ScreenAdapter {
         camera.update();
         stage.getViewport().apply();
         batch.setProjectionMatrix(camera.combined);
+        if(Gdx.input.isKeyJustPressed(Input.Buttons.LEFT)) {
+            Weapon w = inventory.getSelectedWeapon();
+            if (w != null) {
+                w.use(player, stage);
 
+            }
+        }
         // Draw the game and UI.
         stage.draw();
         uiStage.draw();
