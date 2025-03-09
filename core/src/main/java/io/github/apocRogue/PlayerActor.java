@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * A player character that can move, jump, dash, and collide with tiles.
@@ -48,7 +49,14 @@ public class PlayerActor extends Actor {
         this.texture = texture;
         setSize(texture.getWidth(), texture.getHeight());
     }
+    private Inventory inventory;
 
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
+    public Inventory getInventory() {
+        return inventory;
+    }
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -56,6 +64,7 @@ public class PlayerActor extends Actor {
         timeCounter += delta; // for double-tap detection
         handleDoubleTapDash();
         handleDashTimer(delta);
+        handleItemPickups();
 
         // Keep from going above top
         clampTopOfScreen();
@@ -230,4 +239,40 @@ public class PlayerActor extends Actor {
     public boolean isFacingRight(){
         return facingRight;
     }
+    private void handleItemPickups() {
+        if (getStage() == null) return;
+
+        Rectangle playerRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        Array<Actor> toRemove = new Array<>();
+
+        for (Actor actor : getStage().getActors()) {
+            if (actor instanceof ItemActor) {
+                ItemActor item = (ItemActor) actor;
+                if (playerRect.overlaps(item.getBounds())) {
+                    boolean success = getInventory().addItem(item.getWeapon());
+                    if (success) {
+                        // Inventory accepted the item
+                        toRemove.add(item);
+                    } else {
+                        // Inventory is full; drop it from the player
+                        // Place it near the player's center
+                        float dropX = getX() + getWidth() / 2f - item.getWidth() / 2f;
+                        float dropY = getY() + getHeight() / 2f;
+                        item.setPosition(dropX, dropY);
+
+                        // Give it a little upward + sideways velocity
+                        float horizontalPush = isFacingRight() ? 100f : -100f;
+                        item.setVelocity(horizontalPush, 200f);
+                    }
+                }
+            }
+        }
+
+        // Remove picked-up items
+        for (Actor a : toRemove) {
+            a.remove();
+        }
+    }
+
+
 }

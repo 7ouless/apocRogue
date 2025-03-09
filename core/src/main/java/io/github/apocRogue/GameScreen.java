@@ -55,6 +55,8 @@ public class GameScreen extends ScreenAdapter {
 
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);
+        player.setInventory(inventory);
+
         inventory.draw(uiStage);
         Gdx.app.log("StageSize", "UI stage world width="
             + uiStage.getViewport().getWorldWidth()
@@ -82,6 +84,15 @@ public class GameScreen extends ScreenAdapter {
                 return false;
             }
         });
+        Texture dummyTexture = new Texture("ui/dummy.png");
+        DummyActor dummy = new DummyActor(dummyTexture, 400, 150);
+        Weapon floorSword = new Weapon("Sword", 10, new Texture(Gdx.files.internal("ui/sword.png")), false);
+        ItemActor swordItem = new ItemActor(floorSword, 300, 120); // x=300,y=120
+        stage.addActor(swordItem);
+        Weapon floorBow = new Weapon("Bow", 10, new Texture(Gdx.files.internal("ui/bow.png")), true);
+        ItemActor bowItem = new ItemActor(floorBow, 600, 120);
+        stage.addActor(bowItem);
+        stage.addActor(dummy);
         multiplexer.addProcessor(uiStage);   // UI first
         multiplexer.addProcessor(stage);     // Game second
         Gdx.input.setInputProcessor(multiplexer);

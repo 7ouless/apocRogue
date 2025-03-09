@@ -38,22 +38,6 @@ public class Inventory {
         createInventory();
         setupDragAndDrop();
 
-        // For demonstration, add a weapon to the first hotbar slot.
-        if (hotbarSlots.size > 0) {
-            Weapon sword = new Weapon("Sword", 10, new Texture(Gdx.files.internal("ui/sword.png")), false);
-            hotbarSlots.get(0).setItem(sword);
-            Weapon bow = new  Weapon("Bow", 10, new Texture (Gdx.files.internal("ui/bow.png")), true);
-            hotbarSlots.get(1).setItem(bow);
-            Gdx.app.log("TEST", "Sword slot isEmpty at end of constructor? " + hotbarSlots.get(0).isEmpty());
-
-            hotbarSlots.get(0).addListener(new InputListener() {
-                @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                    Gdx.app.log("TEST", "Clicked the first hotbar slot. isEmpty=" + hotbarSlots.get(0).isEmpty());
-                    return true;
-                }
-            });
-        }
     }
 
     // Create a hotbar with 5 slots positioned at the bottom left.
@@ -216,5 +200,24 @@ public class Inventory {
     }
     public Weapon getSelectedWeapon(){
         return hotbarSlots.get(selectedHotbarIndex).getWeapon();
+    }
+
+    public boolean addItem(Weapon weapon) {
+        // First try hotbar
+        for (InventorySlot slot : hotbarSlots) {
+            if (slot.isEmpty()) {
+                slot.setItem(weapon);
+                return true;
+            }
+        }
+        // If hotbar is full, try main inventory
+        for (InventorySlot slot : inventorySlots) {
+            if (slot.isEmpty()) {
+                slot.setItem(weapon);
+                return true;
+            }
+        }
+        // If everything is full, return false
+        return false;
     }
 }

@@ -36,13 +36,17 @@ public class Weapon {
         if (projectileType) {
             Texture arrowTexture = new Texture("ui/arrow.png"); // or 1x1 white pixel
             float direction = player.isFacingRight() ? 1f : -1f;
-            ArrowActor arrow = new ArrowActor(arrowTexture, player.getX(), player.getY() + 20, direction);
+            ArrowActor arrow = new ArrowActor(arrowTexture, player.getX(), player.getY() + 20, direction, gameStage);
             Gdx.app.log("Position ", arrow.getX() + " " + arrow.getY());
             Gdx.app.log("Player Position ", player.getX() + " " + player.getY());
             gameStage.addActor(arrow);
         } else {
            Texture slashTexture = new Texture(Gdx.files.internal("ui/slash.png"));
-           SlashActor slash = new SlashActor(slashTexture, player.getX(), player.getY() + 10);
+           float direction = player.isFacingRight() ? 1f : -1f;
+           SlashActor slash = new SlashActor(slashTexture, player.getX() + 60, player.getY() + 10, direction, gameStage);
+           if (!player.isFacingRight()) {
+               slash.setPosition(player.getX() - 60, player.getY() + 10);
+           }
            Gdx.app.log("Position ", slash.getX() + " " + slash.getY());
            Gdx.app.log("Player Position ", player.getX() + " " + player.getY());
            gameStage.addActor(slash);
