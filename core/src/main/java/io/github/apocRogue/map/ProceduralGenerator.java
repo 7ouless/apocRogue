@@ -1,5 +1,5 @@
 package io.github.apocRogue.map;
-
+/**
 import com.badlogic.gdx.math.MathUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,8 @@ public class ProceduralGenerator {
     /**
      * Generate a list of TileInfo objects for platforms/hazards based on settings.
      */
-    public List<TileInfo> generateMap(GenerationSettings cfg) {
+
+/** public List<TileInfo> generateMap(GenerationSettings cfg) {
         List<TileInfo> tiles = new ArrayList<>();
 
         float x = cfg.startX;                 // Starting X position
@@ -68,4 +69,4 @@ public class ProceduralGenerator {
         return tiles;
     }
 }
-
+    */

@@ -1,21 +1,52 @@
 package io.github.apocRogue.map;
 
 public class GenerationSettings {
-    public int levelWidth  = 1080;    // total width of the level in pixels
-    public int levelHeight = 720;     // total height of the level in pixels
+    public int roomWidth;
+    public int roomHeight;
+    public int dummy1;
+    public int dummy2;
+    public int tileWidth;
+    public float smoothingFactor;
+    public int octaves;
+    public int groundMax;
+    public int groundMin;
 
-    public float platformDensity = 5; // ~number of platforms per 1000px (approx)
-    public float minGap = 100;        // min horizontal gap between platforms
-    public float maxGap = 250;        // max horizontal gap
-    public float heightVariance = 100;// vertical difference between subsequent platforms
-    public float groundHeight = 50; // thickness of the floor
-    public float minPlatHeight = 50;
-    public float maxPlatHeight = 300;
-    public float basePlatformHeight = 100; // starting height for the first platform
-    public float platformWidth = 100; // base width for platforms
-    public float platformWidthVariance = 30; // how much platform width can vary
-    public float platformHeight = 20; // thickness of each platform
-    public float minPlatformHeight = 20; // how high above ground the platform must be
-    public boolean allowHazards = true;  // whether to randomly place hazards
-    public float startX = 0f;           // optional offset for the first platform
+    // If you need platformDensity, add it:
+    public float platformDensity;
+
+    // 1) A default constructor (no arguments)
+    public GenerationSettings() {
+        // Provide sensible defaults:
+        this.roomWidth = 3000;
+        this.roomHeight = 720;
+        this.tileWidth = 25;
+        this.smoothingFactor = 0.02f;
+        this.octaves = 2000;
+        this.groundMax = 750;
+        this.groundMin = 50;
+        this.platformDensity = 5;  // If you plan to use it
+    }
+
+    // 2) The existing 9-arg constructor
+    public GenerationSettings(
+        int roomWidth,
+        int roomHeight,
+        int dummy1,
+        int dummy2,
+        int tileWidth,
+        float smoothingFactor,
+        int octaves,
+        int groundMax,
+        int groundMin
+    ) {
+        this.roomWidth = roomWidth;
+        this.roomHeight = roomHeight;
+        this.dummy1 = dummy1;
+        this.dummy2 = dummy2;
+        this.tileWidth = tileWidth;
+        this.smoothingFactor = smoothingFactor;
+        this.octaves = octaves;
+        this.groundMax = groundMax;
+        this.groundMin = groundMin;
+    }
 }

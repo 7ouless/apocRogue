@@ -37,6 +37,7 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
+
         // Set up game camera and stage.
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1920, 1080);
@@ -56,10 +57,16 @@ public class GameScreen extends ScreenAdapter {
 
         // Create generation settings and generate the map.
         GenerationSettings settings = new GenerationSettings();
-        settings.levelWidth = 3000;
+        settings.roomWidth = 3000;
         settings.platformDensity = 5;
         MapManager mapManager = new MapManager();
         mapManager.generateMap(stage);
+
+// Update player's starting position based on generated ground.
+        player.setPosition(50, mapManager.settings.groundMax);
+        float spawnYOffset = 10; // Adjust this offset as needed
+        float spawnY = mapManager.settings.groundMax + spawnYOffset;
+
 
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);
@@ -93,7 +100,7 @@ public class GameScreen extends ScreenAdapter {
             }
         });
         Texture dummyTexture = new Texture("ui/dummy.png");
-        DummyActor dummy = new DummyActor(dummyTexture, 400, 150);
+        DummyActor dummy = new DummyActor(dummyTexture, 400, spawnY);
         Texture chestTexture = new Texture("ui/chest.png");
 
         // Create a list of possible items for the chest to drop
@@ -104,7 +111,7 @@ public class GameScreen extends ScreenAdapter {
         Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
 
         // If you want to create a chest with random items from that list:
-        ChestActor chest = new ChestActor(chestTexture, 500, 150, allWeapons, skin);
+        ChestActor chest = new ChestActor(chestTexture, 500, spawnY, allWeapons, skin);
         stage.addActor(chest);
         stage.addActor(chest);
         stage.addActor(dummy);

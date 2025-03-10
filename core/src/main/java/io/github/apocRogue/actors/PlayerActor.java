@@ -183,7 +183,8 @@ public class PlayerActor extends Actor {
 
         isOnGround = false; // reset each frame
 
-        // Approximate the player's old Y position
+        // Compute "old" positions based on current velocities
+        float oldX = getX() - velocityX * delta;
         float oldY = getY() - velocityY * delta;
 
         for (Actor actor : getStage().getActors()) {
@@ -193,15 +194,10 @@ public class PlayerActor extends Actor {
                     if (tile instanceof FloorTile || tile instanceof PlatformTile) {
                         float tileTop = tile.getY() + tile.getHeight();
 
-                        // We only care if we're moving downward
+                        // Vertical collision: if moving downward and crossing the tile's top
                         if (velocityY <= 0f) {
-                            // Where was our bottom last frame?
                             float oldBottom = oldY;
-                            // Where is our bottom now?
                             float newBottom = getY();
-
-                            // If we were above tileTop and now below it,
-                            // that means we crossed from above in one step.
                             if (oldBottom >= tileTop && newBottom < tileTop) {
                                 setY(tileTop);
                                 velocityY = 0;
@@ -209,15 +205,35 @@ public class PlayerActor extends Actor {
                                 extraJump = extraJumpFinal;
                             }
                         }
-                    }
-                    else if (tile instanceof HazardTile) {
+
+                        // Horizontal collision:
+                        float tileLeft = tile.getX();
+                        float tileRight = tile.getX() + tile.getWidth();
+                        float playerLeft = getX();
+                        float playerRight = getX() + getWidth();
+
+                        // If moving left and player's left edge crosses tile's right edge
+                        if (velocityX < 0) {
+                            if (oldX >= tileRight && playerLeft < tileRight) {
+                                setX(tileRight);
+                                velocityX = 0;
+                            }
+                        }
+                        // If moving right and player's right edge crosses tile's left edge
+                        else if (velocityX > 0) {
+                            if (oldX + getWidth() <= tileLeft && playerRight > tileLeft) {
+                                setX(tileLeft - getWidth());
+                                velocityX = 0;
+                            }
+                        }
+                    } else if (tile instanceof HazardTile) {
                         System.out.println("Hit a hazard! (Respawn or lose health)");
                     }
                 }
             }
+        }
     }
 
-    }
 
     private boolean overlaps(TileActor tile) {
         Rectangle playerRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
