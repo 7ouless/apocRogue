@@ -96,7 +96,7 @@ public class MapManager {
     }
 
     private float joinGround(int xStart, int yStart, int width, ProcGen pg) { //used to join the long platforms using procedurally generated terrain
-        int seed = random.nextInt();
+        int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
 
 
