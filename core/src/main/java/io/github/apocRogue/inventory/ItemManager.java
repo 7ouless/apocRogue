@@ -1,10 +1,11 @@
-package io.github.apocRogue;
+package io.github.apocRogue.inventory;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Array;
-import io.github.apocRogue.Weapon;
+import io.github.apocRogue.weapons.Weapon;
+import io.github.apocRogue.weapons.WeaponData;
 
 public class ItemManager {
     private Array<Weapon> loadedWeapons;

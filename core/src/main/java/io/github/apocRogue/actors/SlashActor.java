@@ -1,10 +1,11 @@
-package io.github.apocRogue;
+package io.github.apocRogue.actors;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.weapons.DamageNumber;
 
 public class SlashActor extends Image {
     private float timeAlive = 0f;

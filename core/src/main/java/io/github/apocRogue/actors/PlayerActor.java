@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.actors;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -7,6 +7,11 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import io.github.apocRogue.inventory.Inventory;
+import io.github.apocRogue.map.FloorTile;
+import io.github.apocRogue.map.HazardTile;
+import io.github.apocRogue.map.PlatformTile;
+import io.github.apocRogue.map.TileActor;
 
 /**
  * A player character that can move, jump, dash, and collide with tiles.

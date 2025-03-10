@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.actors;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import io.github.apocRogue.weapons.Weapon;
 
 public class ChestActor extends Image {
     private boolean opened = false;
@@ -66,7 +67,7 @@ public class ChestActor extends Image {
             spawnRandomItem();
         }
         // Optionally remove the chest or switch to an "open chest" texture
-        // remove();
+        // remove()
     }
 
     private void spawnRandomItem() {

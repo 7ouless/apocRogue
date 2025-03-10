@@ -1,4 +1,6 @@
-package io.github.apocRogue;
+package io.github.apocRogue.inventory;
+
+import io.github.apocRogue.weapons.Weapon;
 
 public class DragData {
     public InventorySlot sourceSlot;

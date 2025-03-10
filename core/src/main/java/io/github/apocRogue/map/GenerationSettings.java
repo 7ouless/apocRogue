@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 public class GenerationSettings {
     public int levelWidth  = 1080;    // total width of the level in pixels

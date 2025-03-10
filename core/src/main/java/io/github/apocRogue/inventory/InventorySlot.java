@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.inventory;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import io.github.apocRogue.weapons.Weapon;
 
 public class InventorySlot extends Table {
     private Skin skin;

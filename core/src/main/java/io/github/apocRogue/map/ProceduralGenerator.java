@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 import com.badlogic.gdx.math.MathUtils;
 import java.util.ArrayList;

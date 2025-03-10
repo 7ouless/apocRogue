@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

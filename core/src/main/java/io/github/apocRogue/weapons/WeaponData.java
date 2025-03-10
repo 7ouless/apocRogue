@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.weapons;
 
 public class WeaponData {
     public String name;

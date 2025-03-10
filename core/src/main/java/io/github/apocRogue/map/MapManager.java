@@ -1,7 +1,8 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+
 import java.util.ArrayList;
 import java.util.List;
 

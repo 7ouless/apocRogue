@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 public class TileInfo {
     public float x, y, width, height;

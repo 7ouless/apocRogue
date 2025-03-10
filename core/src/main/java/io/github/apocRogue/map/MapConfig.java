@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.map;
 
 public class MapConfig {
     public int levelWidth = 3000;   // Total width of the level/world

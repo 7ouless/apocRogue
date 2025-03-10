@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
@@ -7,11 +7,18 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import io.github.apocRogue.actors.ChestActor;
+import io.github.apocRogue.actors.DummyActor;
+import io.github.apocRogue.actors.PlayerActor;
+import io.github.apocRogue.inventory.Inventory;
+import io.github.apocRogue.inventory.ItemManager;
+import io.github.apocRogue.map.GenerationSettings;
+import io.github.apocRogue.map.MapManager;
+import io.github.apocRogue.weapons.Weapon;
 
 public class GameScreen extends ScreenAdapter {
     private Stage stage;

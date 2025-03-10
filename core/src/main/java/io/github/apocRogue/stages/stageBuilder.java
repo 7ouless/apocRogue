@@ -1,4 +1,4 @@
-package io.github.apocRogue;
+package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Game;
 

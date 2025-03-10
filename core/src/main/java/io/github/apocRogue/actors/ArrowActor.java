@@ -1,10 +1,11 @@
-package io.github.apocRogue;
+package io.github.apocRogue.actors;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.graphics.Texture;
+import io.github.apocRogue.weapons.DamageNumber;
 
 public class ArrowActor extends Image {
     private float speed = 300f; // pixels per second

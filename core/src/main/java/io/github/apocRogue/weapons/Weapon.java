@@ -1,8 +1,11 @@
-package io.github.apocRogue;
+package io.github.apocRogue.weapons;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.actors.PlayerActor;
+import io.github.apocRogue.actors.SlashActor;
+import io.github.apocRogue.actors.ArrowActor;
 
 public class Weapon {
     private String name;
