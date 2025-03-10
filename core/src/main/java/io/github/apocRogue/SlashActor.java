@@ -64,4 +64,17 @@ public class SlashActor extends Image {
             }
         }
     }
+    private void checkCollisionWithChests() {
+        Rectangle slashRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof ChestActor) {
+                ChestActor chest = (ChestActor) actor;
+                if (!chest.isOpened() && slashRect.overlaps(chest.getBounds())) {
+                    chest.takeDamage(damage);
+                    // Optionally spawn some slash effect or damage number
+                }
+            }
+        }
+    }
+
 }

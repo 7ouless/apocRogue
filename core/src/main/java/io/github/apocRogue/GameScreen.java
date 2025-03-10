@@ -4,6 +4,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -86,12 +87,19 @@ public class GameScreen extends ScreenAdapter {
         });
         Texture dummyTexture = new Texture("ui/dummy.png");
         DummyActor dummy = new DummyActor(dummyTexture, 400, 150);
-        Weapon floorSword = new Weapon("Sword", 10, new Texture(Gdx.files.internal("ui/sword.png")), false);
-        ItemActor swordItem = new ItemActor(floorSword, 300, 120); // x=300,y=120
-        stage.addActor(swordItem);
-        Weapon floorBow = new Weapon("Bow", 10, new Texture(Gdx.files.internal("ui/bow.png")), true);
-        ItemActor bowItem = new ItemActor(floorBow, 600, 120);
-        stage.addActor(bowItem);
+        Texture chestTexture = new Texture("ui/chest.png");
+
+        // Create a list of possible items for the chest to drop
+        ItemManager itemManager = new ItemManager();
+        itemManager.loadFromFile("items.json"); // your JSON file
+
+        // Now you have an Array<Weapon> with all items
+        Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
+
+        // If you want to create a chest with random items from that list:
+        ChestActor chest = new ChestActor(chestTexture, 500, 150, allWeapons, skin);
+        stage.addActor(chest);
+        stage.addActor(chest);
         stage.addActor(dummy);
         multiplexer.addProcessor(uiStage);   // UI first
         multiplexer.addProcessor(stage);     // Game second

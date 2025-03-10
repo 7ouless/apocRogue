@@ -64,6 +64,8 @@ public class PlayerActor extends Actor {
         timeCounter += delta; // for double-tap detection
         handleDoubleTapDash();
         handleDashTimer(delta);
+        handleChestInteraction();
+
         handleItemPickups();
 
         // Keep from going above top
@@ -273,6 +275,25 @@ public class PlayerActor extends Actor {
             a.remove();
         }
     }
-
+    private void handleChestInteraction() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            // Check if near any chest
+            float interactRange = 200f;
+            for (Actor actor : getStage().getActors()) {
+                if (actor instanceof ChestActor) {
+                    ChestActor chest = (ChestActor) actor;
+                    if (!chest.isOpened()) {
+                        float dx = (getX() + getWidth()/2f) - (chest.getX() + chest.getWidth()/2f);
+                        float dy = (getY() + getHeight()/2f) - (chest.getY() + chest.getHeight()/2f);
+                        float dist2 = dx*dx + dy*dy;
+                        if (dist2 < interactRange*interactRange) {
+                            chest.openByInteraction();
+                            System.out.println("Chest opened!");
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }

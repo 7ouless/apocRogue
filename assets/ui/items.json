@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Sword",
+    "damage": 10,
+    "texturePath": "ui/sword.png",
+    "projectileType": false
+  },
+  {
+    "name": "Bow",
+    "damage": 5,
+    "texturePath": "ui/bow.png",
+    "projectileType": true
+  }
+]
