@@ -2,12 +2,14 @@ package io.github.apocRogue.actors;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import io.github.apocRogue.weapons.Weapon;
@@ -19,6 +21,7 @@ public class ChestActor extends Image {
     private Label pressELabel;     // The floating text
     private Skin uiSkin;           // We need a Skin to create the label
     private float interactRange = 80f; // distance within which we show "Press E to open"
+    private Texture chestTexture;
 
     public ChestActor(Texture texture, float x, float y, Array<Weapon> possibleDrops, Skin uiSkin) {
         super(texture);
@@ -68,6 +71,9 @@ public class ChestActor extends Image {
         }
         // Optionally remove the chest or switch to an "open chest" texture
         // remove()
+        Texture openChest = new Texture("ui/openChest.jpg");
+        // Update this Image actor to use the new texture
+        setDrawable(new TextureRegionDrawable(new TextureRegion(openChest)));
     }
 
     private void spawnRandomItem() {
