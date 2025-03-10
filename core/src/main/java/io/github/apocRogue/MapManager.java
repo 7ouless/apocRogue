@@ -13,70 +13,46 @@ public class MapManager {
 
     public GenerationSettings settings = GenerationType.PLAINS.settings;
 
-    private float lastTileY; //!!!when created should be assigned to the entrance's floor height!!!//
+    private int tileWidth = settings.tileWidth;
 
-    int octaves;  //#of octaves
-    float persistence = 0.5f; //Amplitude "decay" for each octave
-    float frequency = 0.05f; //Frequency for the first octave
+    private float lastTileY = 0; //!!!when created should be assigned to the entrance's floor height!!!//
+
+    private int xProgress = 0;
+    private float yPos;
+
+    private boolean platform = false;
+
+    private int octaves = settings.octaves;  //#of octaves
+
+    private List<TileInfo> platformTiles = new ArrayList<>();
+    private List<TileInfo> dirtTiles = new ArrayList<>();
+    private List<TileInfo> mapBorders;
+
+    private ProcGen pg = new ProcGen();
+    private Random random = new Random();
 
     public void generateMap(Stage stage) {
-        ProcGen pg = new ProcGen();
-        List<TileInfo> platformTiles = new ArrayList<>();
-        List<TileInfo> dirtTiles = new ArrayList<>();
-        List<TileInfo> mapBorders;
-
-        Random random = new Random();
-        int seed = random.nextInt();
-        pg.generatePermutationTable(seed);
-
-        int levelWidth = settings.roomWidth;
-        float noiseValue = 0;
-        float amplitude = 1.0f;
-        float freq = frequency;
-        octaves = settings.octaves;
-        int tileWidth = settings.tileWidth;
-        for (int i = 0; i < levelWidth / tileWidth; i++) {
-            for (int octave = 0; octave < octaves; octave++) {
-                noiseValue += pg.noise(i * freq) * amplitude;
-                amplitude *= persistence;  // Reduce amplitude for each octave
-                freq *= 2.0f;  // Double the frequency for each octave
-            }
-
-            noiseValue = pg.noise(i * settings.smoothingFactor); //Scale input to smoothen noise
-            int yPosition = (int) ((noiseValue + 1) / 2 * (settings.groundMax - settings.groundMin) + settings.groundMin);
-
-            float yPos = ProcGen.fitGrid(yPosition, tileWidth);
-            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
-                int x = 1;
-                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
-                    dirtTiles.add(new TileInfo(i * tileWidth, lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
-                    x++;
-                }
-            }
-            else if (lastTileY - tileWidth > yPos) { //if the tile is more than one tile spaces lower than the last tile
-                int x = 1;
-                while (lastTileY - (tileWidth * x) > yPos) {
-                    dirtTiles.add(new TileInfo(i * tileWidth - tileWidth, lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
-                    x++;
-                }
-            }
-            //fills in the dirt blocks
-            int j = 1;
-            while (yPos - (tileWidth * j) >= settings.groundMin - settings.tileWidth
-            ) { //filling in the below tiles
-                dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.DIRT));
-                j++;
-            }
-            lastTileY = yPos;
-
-            platformTiles.add(new TileInfo(i * tileWidth, yPos, tileWidth, tileWidth, TileType.PLATFORM));
-        }
-
-        mapBorders = createBorders(settings.roomWidth, settings.roomHeight);
+        mapBorders = createBorders(platformTiles, settings.roomWidth, settings.roomHeight);
 
         for (TileInfo info : mapBorders) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
+        }
+
+        while (xProgress < settings.roomWidth) {
+            int x = generatePlatformLength();
+            if (x + xProgress > settings.roomWidth) {
+                x = settings.roomWidth - xProgress;
+            }
+            if (platform) {
+                longPlatform(xProgress, Math.round(yPos), x); // xstart ystart width tileHeight
+                platform = false;
+            }
+            else {
+                yPos = joinGround(xProgress, Math.round(yPos), x, pg);
+                platform = true;
+            }
+            xProgress += x;
         }
 
         for (TileInfo info : dirtTiles) {
@@ -90,8 +66,7 @@ public class MapManager {
         }
     }
 
-    private List<TileInfo> createBorders(int w, int h) {
-        ArrayList<TileInfo> tiles = new ArrayList<>();
+    private List<TileInfo> createBorders(List<TileInfo> tiles, int w, int h) {
         int i = 0;
         while (i < w/settings.tileWidth) { //horizontal tiles
             tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
@@ -117,6 +92,90 @@ public class MapManager {
                 return new DirtTile(info.x, info.y, info.width, info.height);
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
+        }
+    }
+
+    private float joinGround(int xStart, int yStart, int width, ProcGen pg) { //used to join the long platforms using procedurally generated terrain
+        int seed = random.nextInt();
+        pg.generatePermutationTable(seed);
+
+
+        float persistence = 0.5f; //Amplitude "decay" for each octave
+        float frequency = 0.1f; //Frequency for the first octave
+        float noiseValue = 0;
+        float amplitude = 1.0f;
+
+        for (int i = 0; i < width / tileWidth; i++) {
+            noiseValue = 0;
+            for (int octave = 0; octave < octaves; octave++) {
+                noiseValue += pg.noise(i * frequency) * amplitude;
+                amplitude *= persistence;  // Reduce amplitude for each octave
+                frequency *= 2.0f;  // Double the frequency for each octave
+            }
+
+            noiseValue += pg.noise(i * settings.smoothingFactor); //Scale input to smoothen noise
+            int yPosition = (int) ((noiseValue + 1) / 2 * ((settings.groundMax - (settings.groundMax/6)) - settings.groundMin) + settings.groundMin);
+            yPos = ProcGen.fitGrid(yPosition, tileWidth);
+            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
+                int x = 1;
+                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
+                    dirtTiles.add(new TileInfo((i * tileWidth) + xStart, lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
+                    x++;
+                }
+            } else if (lastTileY - tileWidth > yPos) { //if the tile is more than one tile spaces lower than the last tile
+                int x = 1;
+                while (lastTileY - (tileWidth * x) > yPos) {
+                    dirtTiles.add(new TileInfo((i * tileWidth - tileWidth) + xStart, lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
+                    x++;
+                }
+            }
+
+            //fills in the dirt blocks
+            int j = 0;
+            while (yPos - (tileWidth * j) >= settings.groundMin
+            ) { //filling in the below tiles
+                dirtTiles.add(new TileInfo((i * tileWidth) + xStart, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.DIRT));
+                j++;
+            }
+            lastTileY = yPos;
+
+            platformTiles.add(new TileInfo(xStart + (tileWidth * i), yPos, tileWidth, tileWidth, TileType.PLATFORM));
+        }
+        return yPos;
+    }
+
+    private void longPlatform(int xStart, int yStart, int width) {
+        for (int i = 0; i < width / tileWidth; i++) {
+            platformTiles.add(new TileInfo(xStart + (i*tileWidth), yStart, tileWidth, tileWidth, TileType.PLATFORM));
+
+            int j = settings.groundMin;
+            while (j < yStart/tileWidth) {
+                dirtTiles.add(new TileInfo(xStart + (i * tileWidth), j * tileWidth, tileWidth, tileWidth, TileType.DIRT));
+                j++;
+            }
+        }
+    }
+
+    private int generatePlatformLength () {
+        Random r = new Random();
+        int x = r.nextInt(100);
+        if (x < 10) {
+            return tileWidth * 9;
+        }
+        else if (x < 30) {
+            return tileWidth * 8;
+        }
+        else if (x < 50) {
+            return tileWidth * 7;
+        }
+        else if (x < 80) {
+            return tileWidth * 6;
+        }
+        else if (x < 85) {
+            return tileWidth * 5;
+        }
+        else {
+            return tileWidth * 4;
         }
     }
 }
