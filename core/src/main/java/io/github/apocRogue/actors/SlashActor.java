@@ -1,24 +1,43 @@
 package io.github.apocRogue.actors;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.weapons.DamageNumber;
 
 public class SlashActor extends Image {
     private float timeAlive = 0f;
-    private float maxDuration = 0.2f;
-    private int damage = 10; // how much damage slash does
-    private Stage stage; // reference to the stage for collision + spawning damage numbers
-    private float direction = 1f; // +1 for right, -1 for left
+    private float maxDuration = 0.2f; // Duration the slash remains visible (in seconds)
+    private int damage = 10;
+    private Stage stage;
+    private boolean facingRight; // Derived from the player
 
-    public SlashActor(Texture slashTexture, float x, float y, float direction, Stage stage) {
+    /**
+     * Creates a SlashActor that appears in front of the player based on the player's facing direction.
+     * @param slashTexture the texture for the slash effect
+     * @param player the PlayerActor from which the slash originates
+     * @param stage the stage to which the slash will be added
+     */
+    public SlashActor(Texture slashTexture, PlayerActor player, Stage stage) {
         super(slashTexture);
-        setPosition(x, y);
         this.stage = stage;
-        this.direction = direction;
+        this.facingRight = player.isFacingRight();
+
+        // Position the slash relative to the player's position.
+        // For example, if the player is facing right, place it slightly to the right; if left, place it to the left.
+        float offsetX = facingRight ? player.getWidth() : -getWidth();
+        float offsetY = player.getHeight() / 2f - getHeight() / 2f; // center vertically on the player
+
+        setPosition(player.getX() + offsetX, player.getY() + offsetY);
+
+        // Optionally, if your slash texture should be flipped when the player is facing left:
+        if (!facingRight) {
+            setScaleX(-1); // This flips the image horizontally
+        }
     }
 
     @Override
@@ -26,45 +45,46 @@ public class SlashActor extends Image {
         super.act(delta);
         timeAlive += delta;
 
-        // Collision check with any DummyActor
-        checkCollisionWithDummies();
+        // Optionally, you could move the slash a little in the player's facing direction.
+        // For a melee slash, however, it might be static.
+        // Example: move a few pixels forward:
+        float moveDistance = 200f * delta; // adjust as needed
+        if (facingRight) {
+            setX(getX() + moveDistance);
+        } else {
+            setX(getX() - moveDistance);
+        }
 
-        // Remove slash after time is up
+        // Check collision with targets.
+        checkCollisionWithDummies();
+        checkCollisionWithChests();
+
+        // Remove the slash after its duration has elapsed.
         if (timeAlive >= maxDuration) {
             remove();
         }
     }
 
     private void checkCollisionWithDummies() {
-        // The slash bounding box
         Rectangle slashRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
-
-        // Loop through all actors in the stage
         for (Actor actor : stage.getActors()) {
             if (actor instanceof DummyActor) {
                 DummyActor dummy = (DummyActor) actor;
-                // If slashRect overlaps the dummy
                 if (slashRect.overlaps(dummy.getBounds())) {
-                    // Deal damage
                     dummy.takeDamage(damage);
-
-                    // Spawn damage number
-                    // Suppose you have a static or accessible 'skin' for labels
-                    // or pass it in the constructor.
-                    // For quick example:
                     DamageNumber dmgNum = new DamageNumber(String.valueOf(damage),
                         new com.badlogic.gdx.scenes.scene2d.ui.Skin(
-                            com.badlogic.gdx.Gdx.files.internal("ui/uiskin.json")),
-                        dummy.getX() + dummy.getWidth()/2f,
-                        dummy.getY() + dummy.getHeight()
-                    );
+                            Gdx.files.internal("ui/uiskin.json")),
+                        dummy.getX() + dummy.getWidth() / 2f,
+                        dummy.getY() + dummy.getHeight());
                     stage.addActor(dmgNum);
-
-                    break; // exit loop so we don't hit multiple dummies at once
+                    remove();
+                    break;
                 }
             }
         }
     }
+
     private void checkCollisionWithChests() {
         Rectangle slashRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
         for (Actor actor : stage.getActors()) {
@@ -72,10 +92,9 @@ public class SlashActor extends Image {
                 ChestActor chest = (ChestActor) actor;
                 if (!chest.isOpened() && slashRect.overlaps(chest.getBounds())) {
                     chest.takeDamage(damage);
-                    // Optionally spawn some slash effect or damage number
+                    // Optionally, spawn some effect or damage number here.
                 }
             }
         }
     }
-
 }
