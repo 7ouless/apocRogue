@@ -7,7 +7,7 @@ public class ProcGen {
     private static final int SIZE = 256;
     private static int[] permutation = new int[SIZE * 2];
 
-    public static void generatePermutationTable(long seed) {
+    public static int[] generatePermutationTable(long seed) {
         Random random = new Random(seed);
         int[] p = new int[SIZE];
 
@@ -30,6 +30,7 @@ public class ProcGen {
             permutation[i] = p[i];
             permutation[i + SIZE] = p[i]; // Duplicate values for indexing
         }
+        return permutation;
     }
 
     private float fade(float t) {
