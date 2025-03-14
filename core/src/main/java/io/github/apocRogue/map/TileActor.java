@@ -3,6 +3,7 @@ package io.github.apocRogue.map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.Color;
 
@@ -23,4 +24,8 @@ public abstract class TileActor extends Actor {
         batch.draw(WHITE_PIXEL, getX(), getY(), getWidth(), getHeight());
         batch.setColor(oldColor);
     }
+    public Rectangle getBounds() {
+        return new Rectangle(getX(), getY(), getWidth(), getHeight());
+    }
+
 }
