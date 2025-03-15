@@ -117,7 +117,7 @@ public class MapManager {
 
             if (canCreateIsland) {
                 int var = random.nextInt(15);
-                if (var == 12) { //this is the only condition where an island will be created
+                if (var > 12) { //this is the only condition where an island will be created
                     islandGoalLength = random.nextInt(8, 15); // creating an island of a width between 5 and 15 (islands can be near continuous after each other so no point in making it too big
                     islandCurrentLength = 1;
                     islandCurrentY = yPos;
