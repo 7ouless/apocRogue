@@ -13,7 +13,6 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import io.github.apocRogue.actors.ChestActor;
 import io.github.apocRogue.actors.DummyActor;
-import io.github.apocRogue.actors.PigActor;
 import io.github.apocRogue.actors.PlayerActor;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.inventory.ItemManager;
@@ -28,9 +27,7 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Texture playerTexture;
-    private Texture pigTexture;
     private PlayerActor player;
-    private PigActor pig;
     private Inventory inventory;
     private stageBuilder game;
 
@@ -69,11 +66,6 @@ public class GameScreen extends ScreenAdapter {
         player.setPosition(50, mapManager.settings.groundMax);
         float spawnYOffset = 10; // Adjust this offset as needed
         float spawnY = mapManager.settings.groundMax + spawnYOffset;
-
-        pigTexture = new Texture(Gdx.files.internal("ui/prolapse.png"));
-        pig = new PigActor(pigTexture, 100, mapManager.settings.groundMax);
-        stage.addActor(pig);
-        pig.setPosition(50, mapManager.settings.groundMax);
 
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);
