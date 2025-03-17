@@ -67,7 +67,6 @@ public class GameScreen extends ScreenAdapter {
         float spawnYOffset = 10; // Adjust this offset as needed
         float spawnY = mapManager.settings.groundMax + spawnYOffset;
 
-
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);
         player.setInventory(inventory);
