@@ -8,10 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.inventory.Inventory;
-import io.github.apocRogue.map.FloorTile;
-import io.github.apocRogue.map.HazardTile;
-import io.github.apocRogue.map.PlatformTile;
-import io.github.apocRogue.map.TileActor;
+import io.github.apocRogue.map.*;
 
 /**
  * A player character that can move, jump, dash, and collide with tiles.
@@ -214,14 +211,14 @@ public class PlayerActor extends Actor {
 
                         // If moving left and player's left edge crosses tile's right edge
                         if (velocityX < 0) {
-                            if (oldX >= tileRight && playerLeft < tileRight) {
+                            if (oldX >= tileRight && playerLeft < tileRight && getY() != tile.getY() + tile.getHeight()) {
                                 setX(tileRight);
                                 velocityX = 0;
                             }
                         }
                         // If moving right and player's right edge crosses tile's left edge
                         else if (velocityX > 0) {
-                            if (oldX + getWidth() <= tileLeft && playerRight > tileLeft) {
+                            if (oldX + getWidth() <= tileLeft && playerRight > tileLeft && getY() != tile.getY() + tile.getHeight()) {
                                 setX(tileLeft - getWidth());
                                 velocityX = 0;
                             }
@@ -245,7 +242,7 @@ public class PlayerActor extends Actor {
 
     private void clampTopOfScreen() {
         if (getStage() == null) return;
-        float topLimit = getStage().getHeight() - getHeight();
+        float topLimit = MapManager.settings.roomHeight - getHeight();
         if (getY() > topLimit) {
             setY(topLimit);
             velocityY = 0;
