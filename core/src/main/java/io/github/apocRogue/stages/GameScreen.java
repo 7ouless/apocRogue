@@ -4,6 +4,8 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -14,10 +16,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import io.github.apocRogue.actors.ChestActor;
 import io.github.apocRogue.actors.DummyActor;
 import io.github.apocRogue.actors.PlayerActor;
+import io.github.apocRogue.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.inventory.ItemManager;
+import io.github.apocRogue.map.DirtTile;
 import io.github.apocRogue.map.GenerationSettings;
 import io.github.apocRogue.map.MapManager;
+import io.github.apocRogue.map.PlatformTile;
 import io.github.apocRogue.weapons.Weapon;
 
 public class GameScreen extends ScreenAdapter {
@@ -34,6 +39,51 @@ public class GameScreen extends ScreenAdapter {
     public GameScreen(stageBuilder game) {
         this.game = game;
     }
+
+    private boolean isOverlappingWithDirt(Stage stage, float spawnX, float spawnY) {
+        Array<Actor> actors = stage.getActors();
+        for (int i = 0; i < actors.size; i++) {
+            Actor actor = actors.get(i);
+            if (actor instanceof DirtTile) {
+                float x = actor.getX();
+                float y = actor.getY();
+                float width = actor.getWidth();
+                float height = actor.getHeight();
+                // Check if the spawn point is within this dirt tile.
+                if (spawnX >= x && spawnX <= (x + width) &&
+                    spawnY >= y && spawnY <= (y + height)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private float[] getRandomSpawnPosition(Stage stage, GenerationSettings settings) {
+        Array<Actor> candidates = new Array<>();
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof PlatformTile) {
+                if (actor.getX() > settings.tileWidth && actor.getX() < settings.roomWidth - settings.tileWidth) {
+                    float spawnX = actor.getX() + actor.getWidth() / 2f;
+                    float spawnY = actor.getY() + actor.getHeight();
+                    // Only add candidate if it doesn't collide with a DirtTile.
+                    if (!isOverlappingWithDirt(stage, spawnX, spawnY)) {
+                        candidates.add(actor);
+                    }
+                }
+            }
+        }
+        if (candidates.size == 0) {
+            return null;
+        }
+        int index = MathUtils.random(candidates.size - 1);
+        Actor chosenTile = candidates.get(index);
+        float spawnX = chosenTile.getX() + chosenTile.getWidth() / 2f;
+        float spawnY = chosenTile.getY() + chosenTile.getHeight();
+        return new float[] { spawnX, spawnY };
+    }
+
+
 
     @Override
     public void show() {
@@ -99,7 +149,6 @@ public class GameScreen extends ScreenAdapter {
             }
         });
         Texture dummyTexture = new Texture("ui/dummy.png");
-        DummyActor dummy = new DummyActor(dummyTexture, 400, spawnY);
         Texture chestTexture = new Texture("ui/chest.png");
 
         // Create a list of possible items for the chest to drop
@@ -110,10 +159,35 @@ public class GameScreen extends ScreenAdapter {
         Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
 
         // If you want to create a chest with random items from that list:
-        ChestActor chest = new ChestActor(chestTexture, 500, spawnY, allWeapons, skin);
-        stage.addActor(chest);
-        stage.addActor(chest);
-        stage.addActor(dummy);
+        // Create a list of possible items for the chest to drop//
+        itemManager.loadFromFile("items.json"); // your JSON file
+        int enemyCount = DifficultyLevelGen.getEnemyCount();
+        int chestCount = DifficultyLevelGen.getChestCount();
+
+        for (int i = 0; i < enemyCount; i++) {
+            float[] pos = getRandomSpawnPosition(stage, mapManager.settings);
+            if (pos != null) {
+                DummyActor dummy = new DummyActor(dummyTexture, pos[0], pos[1]);
+                stage.addActor(dummy);
+            } else {
+                // Fallback: use a default position if no valid tile is found.
+                DummyActor dummy = new DummyActor(dummyTexture, 400, mapManager.settings.groundMax + 10);
+                stage.addActor(dummy);
+            }
+        }
+
+        for (int i = 0; i < chestCount; i++) {
+            float[] pos = getRandomSpawnPosition(stage, mapManager.settings);
+            if (pos != null) {
+                ChestActor chest = new ChestActor(chestTexture, pos[0], pos[1], allWeapons, skin);
+                stage.addActor(chest);
+            } else {
+                ChestActor chest = new ChestActor(chestTexture, 500, mapManager.settings.groundMax + 10, allWeapons, skin);
+                stage.addActor(chest);
+            }
+        }
+
+        // If you want to create a chest with random items from that list:
         multiplexer.addProcessor(uiStage);   // UI first
         multiplexer.addProcessor(stage);     // Game second
         Gdx.input.setInputProcessor(multiplexer);

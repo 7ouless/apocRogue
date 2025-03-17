@@ -33,6 +33,7 @@ public class MapManager {
 
     private List<TileInfo> platformTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
+    private List<TileInfo> borderTiles = new ArrayList<>();
 
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
@@ -44,7 +45,10 @@ public class MapManager {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
-
+        for (TileInfo info : borderTiles) {
+            Actor tileActor = createTileActor(info);
+            stage.addActor(tileActor);
+        }
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
@@ -52,21 +56,21 @@ public class MapManager {
     }
 
     private void createRoom() {
-        createBorders(platformTiles);
+        createBorders(borderTiles);
         createGround();
     }
 
     private void createBorders(List<TileInfo> tiles) {
         int i = 0;
         while (i < settings.roomWidth/settings.tileWidth) { //horizontal tiles
-            tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
-            tiles.add(new TileInfo(i*settings.tileWidth, 0, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.BORDER));
+            tiles.add(new TileInfo(i*settings.tileWidth, 0, settings.tileWidth, settings.tileWidth, TileType.BORDER));
             i++;
         }
         i = 0;
         while (i <= settings.roomHeight/ settings.tileWidth) { //vertical tiles
-            tiles.add(new TileInfo(-settings.tileWidth, i*settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
-            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+            tiles.add(new TileInfo(-settings.tileWidth, i*settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.BORDER));
+            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.BORDER));
             i++;
         }
     }
@@ -170,6 +174,8 @@ public class MapManager {
                 return new HazardTile(info.x, info.y, info.width, info.height);
             case DIRT:
                 return new DirtTile(info.x, info.y, info.width, info.height);
+            case BORDER:
+                return new BorderTile(info.x, info.y, info.width, info.height);
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
