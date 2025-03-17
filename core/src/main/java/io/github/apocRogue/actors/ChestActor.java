@@ -105,7 +105,7 @@ public class ChestActor extends Image {
         super.setStage(stage);
         if (stage != null && pressELabel == null) {
             // Create the label with the provided skin
-            pressELabel = new Label("Press E to open", uiSkin);
+            pressELabel = new Label("Press R to open", uiSkin);
             pressELabel.setVisible(false);
             // Add it to the stage
             stage.addActor(pressELabel);

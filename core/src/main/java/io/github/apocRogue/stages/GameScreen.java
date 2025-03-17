@@ -230,6 +230,20 @@ public class GameScreen extends ScreenAdapter {
                 return true;
             }
         });
+// Inside GameScreen.show() or after setting up the stage:
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ESCAPE) {
+                    // Switch to the pause screen, passing the current GameScreen instance.
+                    game.setScreen(new EscScreen(game, GameScreen.this));
+                    return true;
+                }
+                return false;
+            }
+        });
+
+
         uiStage.setDebugAll(true);
     }
 

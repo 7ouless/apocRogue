@@ -27,7 +27,7 @@ public class ArrowActor extends Image {
         Vector2 directionVector = new Vector2(targetX - startX, targetY - startY).nor();
 
         // Set an initial speed. Adjust this value to your liking.
-        float initialSpeed = 500f;
+        float initialSpeed = 1000f;
         velocity = new Vector2(directionVector).scl(initialSpeed);
 
         // Rotate the arrow to face the initial direction.

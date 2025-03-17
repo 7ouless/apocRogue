@@ -22,7 +22,7 @@ public class PlayerActor extends Actor {
 
     // Physics
     private float gravity = -600f; // Gravity in pixels/sec^2
-    private float jumpPower = 600f;
+    private float jumpPower = 900f;
     private boolean isOnGround = false;
 
     // Movement parameters
@@ -31,10 +31,7 @@ public class PlayerActor extends Actor {
     private float maxSpeed = 600f; // clamp on horizontal speed
 
     // Double-tap dash
-    private float doubleTapThreshold = 0.2f;
-    private float lastLeftTapTime = 0f;
-    private float lastRightTapTime = 0f;
-    private float dashSpeed = 800f;
+    private float dashSpeed = 1500f;
     private float dashDuration = 0.15f;
     private float dashTimer = 0f;
     private boolean isDashing = false;
@@ -86,6 +83,7 @@ public class PlayerActor extends Actor {
             jump();
         }
 
+
         // Update position
         setX(getX() + velocityX * delta);
         setY(getY() + velocityY * delta);
@@ -125,18 +123,12 @@ public class PlayerActor extends Actor {
 
     private void handleDoubleTapDash() {
         // Left double-tap
-        if (Gdx.input.isKeyJustPressed(Input.Keys.A) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-            if (timeCounter - lastLeftTapTime < doubleTapThreshold) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
                 startDash(-dashSpeed);
-            }
-            lastLeftTapTime = timeCounter;
         }
         // Right double-tap
-        if (Gdx.input.isKeyJustPressed(Input.Keys.D) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-            if (timeCounter - lastRightTapTime < doubleTapThreshold) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
                 startDash(dashSpeed);
-            }
-            lastRightTapTime = timeCounter;
         }
     }
 
@@ -294,7 +286,7 @@ public class PlayerActor extends Actor {
         }
     }
     private void handleChestInteraction() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             // Check if near any chest
             float interactRange = 200f;
             for (Actor actor : getStage().getActors()) {
