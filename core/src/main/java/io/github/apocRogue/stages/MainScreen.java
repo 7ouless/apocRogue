@@ -35,6 +35,7 @@ public class MainScreen extends ScreenAdapter {
         buttonOpen.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
+                // Goes to actual game screen
                 game.setScreen(new GameScreen(game));
             }
         });
@@ -44,21 +45,26 @@ public class MainScreen extends ScreenAdapter {
         shopBtn.pad(8f);
         shopBtn.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
+                // Switch to shop screen
                 game.setScreen(new ShopScreen(game));
             }
         });
         window.add(shopBtn).row();
 
         window.pack();
-        window.setPosition(MathUtils.roundPositive(stage.getWidth() / 2f - window.getWidth() / 2f),
-            MathUtils.roundPositive(stage.getHeight() / 2f - window.getHeight() / 2f));
+        window.setPosition(
+            MathUtils.roundPositive(stage.getWidth() / 2f - window.getWidth() / 2f),
+            MathUtils.roundPositive(stage.getHeight() / 2f - window.getHeight() / 2f)
+        );
         stage.addActor(window);
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
+        // Clears background so you only see this screen’s UI
         ScreenUtils.clear(0f, 0f, 0f, 1f);
+
         stage.act(delta);
         stage.draw();
     }
