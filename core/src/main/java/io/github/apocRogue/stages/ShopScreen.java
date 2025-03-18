@@ -38,12 +38,15 @@ public class ShopScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-        // Clear the background to black so the old menu isn’t visible
         ScreenUtils.clear(0, 0, 0, 1);
+
+        // Update the shop UI logic (including typing effect)
+        shopUI.update(delta);
 
         stage.act(delta);
         stage.draw();
     }
+
 
     @Override
     public void resize(int width, int height) {
