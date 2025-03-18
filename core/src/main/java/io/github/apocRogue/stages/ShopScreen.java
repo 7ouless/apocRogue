@@ -31,7 +31,7 @@ public class ShopScreen extends ScreenAdapter {
         // Load the shopkeepers
         List<ShopKeeper> shopkeepers = ShopInventory.loadShopkeepers(skin);
 
-        // Initialize our ShopUI, passing in game
+        // Initialise our ShopUI, passing in game
         shopUI = new ShopUI(stage, skin, shopkeepers, game);
         Gdx.input.setInputProcessor(stage);
     }

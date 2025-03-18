@@ -10,16 +10,16 @@ public class ShopInventory {
         List<ShopKeeper> shopkeepers = new ArrayList<>();
 
         List<ShopItem> traderAItems = new ArrayList<>();
-        traderAItems.add(new ShopItem("Potion", "Restores Health", 100));
-        traderAItems.add(new ShopItem("Random Brew", "Provides a random effect", 150));
+        traderAItems.add(new ShopItem("Potion", "Ah! A potion, I blieve this one cures your wounds. I'll let you have it for 100 gold.", 100));
+        traderAItems.add(new ShopItem("Random Brew", "I unfortunetly lost the label on this one. Whoopsie! I'll let you have it for 50 gold.", 50));
 
         List<ShopItem> traderBItems = new ArrayList<>();
-        traderBItems.add(new ShopItem("Stabiliser", "Seems to stabilise the affected area", 50));
-        traderBItems.add(new ShopItem("Grenade", "Boom?", 200));
+        traderBItems.add(new ShopItem("Stabiliser", "Seems to stabilise the affected area. I like to throw them and just sit there for a while. It's all yours for 500 gold.", 500));
+        traderBItems.add(new ShopItem("Grenade", "Boom? Boom! It's all yours for 200 gold.", 200));
 
         List<ShopItem> traderCItems = new ArrayList<>();
-        traderCItems.add(new ShopItem("Armor", "Defensive wear", 300));
-        traderCItems.add(new ShopItem("Axe", "Heavy weapon", 250));
+        traderCItems.add(new ShopItem("Armor", "Small iron armour, should fit you fine though. Give me 300 gold and it's yours.", 300));
+        traderCItems.add(new ShopItem("Axe", "Tiny Axe. You might need two hands for it though. Give me 250 gold and it's yours.", 250));
 
 
         shopkeepers.add(new ShopKeeper("Trader A", "portrait-traderA", traderAItems));
