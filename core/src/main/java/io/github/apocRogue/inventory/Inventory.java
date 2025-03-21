@@ -171,9 +171,6 @@ public class Inventory {
         stage.act(0f);                 // Force one layout pass
         for (int i = 0; i < hotbarSlots.size; i++) {
             InventorySlot s = hotbarSlots.get(i);
-            Gdx.app.log("SlotCoords", "Slot #" + i
-                + ": x=" + s.getX() + " y=" + s.getY()
-                + " w=" + s.getWidth() + " h=" + s.getHeight());
         }
         stage.addActor(inventoryTable);
     }

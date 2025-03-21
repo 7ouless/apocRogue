@@ -5,89 +5,129 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import io.github.apocRogue.actorAi.lineOfSight;
+import io.github.apocRogue.globals.stats.StatsComponent;  // <--- import your StatsComponent
 import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
 import io.github.apocRogue.map.TileActor;
 
 public class DummyActor extends Image {
-    private int health = 50;
+
+    // Remove "private int health = 50;"
+    // Instead, store a StatsComponent
+    private StatsComponent stats;
 
     // Movement & physics
-    private float maxSpeed = 60f;      // horizontal speed
     private float velocityY = 0f;
     private float gravity = -600f;
     private boolean isOnGround = false;
-
+    private boolean lockedOn = false;
     // Jump logic
     private float jumpCooldown = 2f;   // seconds between jumps
     private float jumpTimer = 0f;
     private float jumpPower = 600f;
+    private float lockOnTimerFinal = 10f;
+    private float lockOnTimer = lockOnTimerFinal;
+
+    // We can also store or retrieve speed from stats if we want
+    private float maxSpeed; // read from stats?
 
     public DummyActor(Texture texture, float x, float y) {
         super(texture);
         setPosition(x, y);
         setSize(texture.getWidth(), texture.getHeight());
+
+        // Initialize stats (health, maxHealth, strength, defense, speed, dashes, jumps)
+        // Fill in values that make sense for your dummy
+        stats = new StatsComponent(
+            50,  // health
+            50,  // maxHealth
+            5,   // strength
+            0,   // defense
+            60,  // speed
+            0,   // dashes
+            1,    // jumps
+            1000    // sight sens
+        );
+
+        // If you want to unify speed with stats, you can read it here
+        this.maxSpeed = stats.getSpeed(); // if you have a getSpeed() returning a float or int
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
 
-        // Save old positions for collision resolution
         float oldX = getX();
         float oldY = getY();
 
-        // Apply gravity if not on the ground
+        // Gravity
         if (!isOnGround) {
             velocityY += gravity * delta;
         }
 
-        // Horizontal chase toward player
+        // Horizontal chase
         chasePlayer(delta);
 
         // Vertical movement
         setY(getY() + velocityY * delta);
 
-        // Simple floor check (y=0 is the floor)
+        // Floor check
         if (getY() < 0) {
             setY(0);
             velocityY = 0;
             isOnGround = true;
         }
 
-        // Jump logic: occasionally jump if on ground
-        jumpTimer -= delta;
-        if (isOnGround && jumpTimer <= 0f) {
-            jump();
-        }
+        // Jump logic
 
-        // Handle collisions with tiles (both vertical and horizontal)
+
+        // Tile collisions
         handleTileCollisions(delta, oldX, oldY);
 
-        // Check collision with PlayerActor (for damage, etc.)
+        // Check collision with PlayerActor
         checkCollisionWithPlayer();
     }
 
     private void chasePlayer(float delta) {
-        // 1. Find the player
         PlayerActor player = findPlayer();
         if (player == null) return;
 
-        // 2. Determine direction toward the player
-        float dummyCenterX = getX() + getWidth() / 2f;
-        float playerCenterX = player.getX() + player.getWidth() / 2f;
-        float dx = playerCenterX - dummyCenterX;
-        float desiredDirection = Math.signum(dx);
-        float moveAmount = desiredDirection * maxSpeed * delta;
-        setX(getX() + moveAmount);
+        // If can't see the player, do nothing
+        if (lineOfSight.canSeeTarget(this, player, stats.sightSens(), getStage())) {
+            lockedOn = true;
+        } else{
+            lockOnTimer = lockOnTimer - 1;
+            if (lockOnTimer < 0){
+                lockedOn = false;
+                lockOnTimer = lockOnTimerFinal;
+            }
+        }
 
-        // Optional: clamp to stage boundaries
-        if (getStage() != null) {
-            float stageWidth = getStage().getWidth();
-            if (getX() < 0) {
-                setX(0);
-            } else if (getX() + getWidth() > stageWidth) {
-                setX(stageWidth - getWidth());
+
+        if(lockedOn) {
+            // Otherwise, we see the player => do chase or attack
+            float dummyCenterX = getX() + getWidth() / 2f;
+            float playerCenterX = player.getX() + player.getWidth() / 2f;
+            float dx = playerCenterX - dummyCenterX;
+            float desiredDirection = Math.signum(dx);
+            if (isOnGround && jumpTimer <= 0f) {
+                jump();
+            }
+            jumpTimer -= delta;
+
+            // Move horizontally
+            float moveAmount = stats.getSpeed() * desiredDirection * delta;
+            setX(getX() + moveAmount);
+
+            // Optional boundary clamp
+            if (getStage() != null) {
+                float stageWidth = getStage().getWidth();
+                if (getX() < 0) {
+                    setX(0);
+                } else if (getX() + getWidth() > stageWidth) {
+                    setX(stageWidth - getWidth());
+                }
             }
         }
     }
@@ -114,11 +154,12 @@ public class DummyActor extends Image {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
                 if (overlaps(tile)) {
-                    // Handle collisions only for floor/platform tiles
                     if (tile instanceof FloorTile || tile instanceof PlatformTile) {
                         float tileTop = tile.getY() + tile.getHeight();
-
-                        // Vertical collision: if falling and crossing the tile's top edge
+                        System.out.println("Collision with tile at x=" + tile.getX()
+                            + " width=" + tile.getWidth()
+                            + " => setting X to " + (tile.getX() - getWidth()));
+                        // Vertical collision if falling
                         if (velocityY <= 0f) {
                             float oldBottom = oldY;
                             float newBottom = getY();
@@ -129,18 +170,15 @@ public class DummyActor extends Image {
                             }
                         }
 
-                        // Horizontal collision:
+                        // Horizontal collision
                         float tileLeft = tile.getX();
                         float tileRight = tile.getX() + tile.getWidth();
                         float currentLeft = getX();
                         float currentRight = getX() + getWidth();
 
-                        // If moving left (oldX > currentX) and crossing tile's right edge:
                         if (oldX > getX() && oldX >= tileRight && currentLeft < tileRight) {
                             setX(tileRight);
-                        }
-                        // If moving right (oldX < currentX) and crossing tile's left edge:
-                        else if (oldX < getX() && oldX + getWidth() <= tileLeft && currentRight > tileLeft) {
+                        } else if (oldX < getX() && oldX + getWidth() <= tileLeft && currentRight > tileLeft) {
                             setX(tileLeft - getWidth());
                         }
                     }
@@ -149,11 +187,10 @@ public class DummyActor extends Image {
         }
     }
 
-    // Helper method to check if DummyActor overlaps a TileActor
     private boolean overlaps(TileActor tile) {
-        Rectangle dummyRect = getBounds();
-        Rectangle tileRect = new Rectangle(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
-        return dummyRect.overlaps(tileRect);
+        return getBounds().overlaps(
+            new Rectangle(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight())
+        );
     }
 
     private void checkCollisionWithPlayer() {
@@ -162,21 +199,21 @@ public class DummyActor extends Image {
         for (Actor actor : getStage().getActors()) {
             if (actor instanceof PlayerActor) {
                 PlayerActor player = (PlayerActor) actor;
-                Rectangle playerRect = new Rectangle(
-                    player.getX(), player.getY(), player.getWidth(), player.getHeight()
-                );
+                Rectangle playerRect = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
                 if (dummyRect.overlaps(playerRect)) {
                     System.out.println("Dummy collided with the player!");
-                    // Add additional collision response (damage, knockback, etc.) here if desired.
+                    // Possibly do damage to player or dummy, etc.
                 }
             }
         }
     }
 
     public void takeDamage(int amount) {
-        health -= amount;
-        System.out.println("Dummy took " + amount + " damage! Health now " + health);
-        if (health <= 0) {
+        // Delegate to stats
+        stats.takeDamage(amount);
+        System.out.println("Dummy took " + amount + " damage! Health now " + stats.getHealth());
+
+        if (stats.isDead()) {
             remove();
         }
     }

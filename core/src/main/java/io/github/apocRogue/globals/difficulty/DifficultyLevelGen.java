@@ -1,4 +1,4 @@
-package io.github.apocRogue.difficulty;
+package io.github.apocRogue.globals.difficulty;
 
 import com.badlogic.gdx.math.MathUtils;
 

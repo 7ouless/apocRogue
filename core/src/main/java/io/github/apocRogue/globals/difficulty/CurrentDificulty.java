@@ -1,4 +1,4 @@
-package io.github.apocRogue.difficulty;
+package io.github.apocRogue.globals.difficulty;
 
 public class CurrentDificulty {
     private static int difficulty = 3;

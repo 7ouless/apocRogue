@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.PlayerActor;
 import io.github.apocRogue.actors.ChestActor;
 import io.github.apocRogue.actors.DummyActor;
-import io.github.apocRogue.difficulty.DifficultyLevelGen;
+import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.inventory.ItemManager;
 import io.github.apocRogue.map.GenerationSettings;
@@ -187,6 +187,5 @@ public class GameWorld {
         if (playerTexture != null) playerTexture.dispose();
         if (dummyTexture != null) dummyTexture.dispose();
         if (chestTexture != null) chestTexture.dispose();
-        // etc.
     }
 }
