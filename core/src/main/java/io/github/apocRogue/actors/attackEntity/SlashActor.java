@@ -1,12 +1,14 @@
-package io.github.apocRogue.actors;
+package io.github.apocRogue.actors.attackEntity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.graphics.Texture;
+import io.github.apocRogue.actors.mapEntities.ChestActor;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.weapons.DamageNumber;
 
 public class SlashActor extends Image {

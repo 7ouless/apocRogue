@@ -1,4 +1,4 @@
-package io.github.apocRogue.actors;
+package io.github.apocRogue.actors.mapEntities;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -12,6 +12,8 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.actors.useClasses.ItemActor;
 import io.github.apocRogue.weapons.Weapon;
 
 public class ChestActor extends Image {

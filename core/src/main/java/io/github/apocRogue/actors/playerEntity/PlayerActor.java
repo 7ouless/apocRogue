@@ -1,4 +1,4 @@
-package io.github.apocRogue.actors;
+package io.github.apocRogue.actors.playerEntity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import groovy.console.ui.ButtonOrDefaultRenderer;
+import com.badlogic.gdx.utils.Array;
+import io.github.apocRogue.actors.mapEntities.ChestActor;
+import io.github.apocRogue.actors.useClasses.ItemActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.map.*;
@@ -76,7 +78,6 @@ public class PlayerActor extends Actor {
         handleDashTimer(delta);
         handleChestInteraction();
         handleItemPickups();
-
 
         // Gravity
         velocityY += gravity * delta;
@@ -273,13 +274,68 @@ public class PlayerActor extends Actor {
     // -------------- Items & Chests --------------
 
     private void handleItemPickups() {
-        // same as your original code
+        if (getStage() == null) return;
+
+        Rectangle playerRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
+        Array<Actor> toRemove = new Array<>();
+
+        for (Actor actor : getStage().getActors()) {
+            if (actor instanceof ItemActor) {
+                ItemActor item = (ItemActor) actor;
+                if (playerRect.overlaps(item.getBounds())) {
+                    boolean success = getInventory().addItem(item.getWeapon());
+                    if (success) {
+                        // Inventory accepted the item
+                        toRemove.add(item);
+                    } else {
+                        // Inventory is full; drop it from the player
+                        // Place it near the player's center
+                        float dropX = getX() + getWidth() / 2f - item.getWidth() / 2f;
+                        float dropY = getY() + getHeight() / 2f;
+                        item.setPosition(dropX, dropY);
+
+                        // Give it a little upward + sideways velocity
+                        float horizontalPush = isFacingRight() ? 100f : -100f;
+                        item.setVelocity(horizontalPush, 200f);
+                    }
+                }
+            }
+        }
+
+        // Remove picked-up items
+        for (Actor a : toRemove) {
+            a.remove();
+        }
     }
 
     private void handleChestInteraction() {
-        // same as your original code
-    }
+        // If user pressed R this frame:
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            // Check if near any chest
+            float interactRange = 80f; // or use the chest’s own range
 
+            // Loop through stage actors to find chests
+            for (Actor actor : getStage().getActors()) {
+                if (actor instanceof ChestActor) {
+                    ChestActor chest = (ChestActor) actor;
+                    // if chest is not opened, check distance
+                    if (!chest.isOpened()) {
+                        float dx = (getX() + getWidth()/2f) - (chest.getX() + chest.getWidth()/2f);
+                        float dy = (getY() + getHeight()/2f) - (chest.getY() + chest.getHeight()/2f);
+                        float dist2 = dx*dx + dy*dy;
+
+                        if (dist2 < interactRange * interactRange) {
+                            // We are close enough to open
+                            chest.openByInteraction();
+                            System.out.println("Chest opened!");
+                            // Optionally break if you only open one chest at a time
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
     // If you want a "facingRight" check
     public boolean isFacingRight() {
         return facingRight;

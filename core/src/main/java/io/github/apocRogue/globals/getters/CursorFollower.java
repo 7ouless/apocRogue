@@ -1,4 +1,4 @@
-package io.github.apocRogue.actors;
+package io.github.apocRogue.globals.getters;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

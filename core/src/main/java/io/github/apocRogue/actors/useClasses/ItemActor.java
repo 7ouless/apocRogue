@@ -1,4 +1,4 @@
-package io.github.apocRogue.actors;
+package io.github.apocRogue.actors.useClasses;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.math.Rectangle;
