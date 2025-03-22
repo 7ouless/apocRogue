@@ -17,13 +17,7 @@ public class DummyActor extends EnemyActor {
 
     // Remove "private int health = 50;"
     // Instead, store a StatsComponent
-    //private StatsComponent stats;
-
-    // Movement & physics
-    private float gravity = -600f;
-    private boolean isOnGround = false;
-    // Jump logic
-
+    //private StatsComponent stats
     // We can also store or retrieve speed from stats if we want
     private float maxSpeed; // read from stats?
 

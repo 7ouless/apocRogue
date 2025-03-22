@@ -43,6 +43,8 @@ public class EnemyActor extends Image {
     @Override
     public void act(float delta) {
         super.act(delta);
+        isOnGround = false;
+
         // For example, apply gravity:
         if (!isOnGround) {
             velocityY += gravity * delta;
@@ -54,21 +56,17 @@ public class EnemyActor extends Image {
         // Vertical movement
         setY(getY() + velocityY * delta);
 
-        if (getY() < 0) {
-            setY(0);
-            velocityY = 0;
-            isOnGround = true;
-        }
-        handleTileCollisions(delta, oldX, oldY);
+        handleTileCollisions(oldX, oldY);
 
-        // Check collision with PlayerActor
-        checkCollisionWithPlayer();
-        // ...
+
+
         if (aiBehavior != null) {
             aiBehavior.updateAI(this, delta);
         }
+
+        checkCollisionWithPlayer();
     }
-    private void handleTileCollisions(float delta, float oldX, float oldY) {
+    private void handleTileCollisions(float oldX, float oldY) {
         if (getStage() == null) return;
         for (Actor actor : getStage().getActors()) {
             if (actor instanceof TileActor) {
