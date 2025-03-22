@@ -340,4 +340,7 @@ public class PlayerActor extends Actor {
     public boolean isFacingRight() {
         return facingRight;
     }
+    public boolean isPlayerDead(){
+        return this.stats.getHealth() <= 0;
+    }
 }

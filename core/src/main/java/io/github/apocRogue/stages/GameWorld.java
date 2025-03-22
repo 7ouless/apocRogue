@@ -164,6 +164,7 @@ public class GameWorld {
         // Example: do the normal Stage act() call here, or any
         // special game logic that might occur each frame
         stage.act(delta);
+
         // You can do additional logic such as enemy AI, or handle collisions,
         // or handle game events, etc.
     }

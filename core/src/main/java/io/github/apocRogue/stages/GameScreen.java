@@ -221,9 +221,15 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+
         // If not paused, update the game logic
         if (!paused) {
             gameWorld.update(delta);
+            if (gameWorld.getPlayer().isPlayerDead()) {
+                // 2) Switch screens from here, because we have "game"
+                game.setScreen(new DeathScreen(game));
+                return; // Make sure we don't keep rendering this screen
+            }
         }
         gameWorld.getInventory().draw(uiStage);
 
