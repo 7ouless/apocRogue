@@ -21,6 +21,28 @@ public class ShopKeeper {
         this.portrait = new Image(portraitTexture);
     }
 
+    // Buy logic
+    public void buyItem(ShopItem item) {
+        // If item still has stock
+        if (item.getStock() > 0) {
+            item.decrementStock();
+            goldSpent += item.getPrice(); // For now, just adds price to goldSpent
+        }
+
+        // If we cross 10,000 for the first time
+        if (goldSpent >= 10000 && level == 1) {
+            level = 2;
+        }
+    }
+
+    // Called by ShopUI to restock all items
+    public void restock() {
+        for (ShopItem item : inventory) {
+            item.restock();
+        }
+    }
+
+    // Basic getters
     public String getName() {
         return name;
     }
@@ -41,30 +63,20 @@ public class ShopKeeper {
         return goldSpent;
     }
 
-    public void buyItem(ShopItem item) {
-        goldSpent += item.getPrice(); //temporary, only increments goldSpent
-
-        // Check if we cross the 10,000 threshold
-        if (goldSpent >= 10000 && level == 1) {
-            level = 2;
-        }
-    }
-
     // Personality lines
-    // These are meant to be overridden by each trader
     public String getGreeting() {
         return "Welcome! Good to see you.";
     }
-
     public String getThankYouLine() {
         return "Thank you for your purchase!";
     }
-
     public String getCannotAffordLine() {
         return "You don't have enough gold, friend.";
     }
-
     public String getLockedItemLine() {
         return "Hmm, you seem unworthy to buy that just yet...";
+    }
+    public String getSoldOutLine() {
+        return "Sorry, that item is sold out!";
     }
 }

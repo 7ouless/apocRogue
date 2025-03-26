@@ -11,19 +11,27 @@ public class TraderC extends ShopKeeper {
     private static List<ShopItem> createInventory() {
         List<ShopItem> items = new ArrayList<>();
         //Always unlocked items
-        items.add(new ShopItem("Armor", "Small iron armour, should fit you fine though. Give me 300 gold and it's yours.", 300));
-        items.add(new ShopItem("Axe", "Tiny Axe. You might need two hands for it though. Give me 250 gold and it's yours.", 250));
+        items.add(new ShopItem("Armor", "Small iron armour, should fit you fine though. Give me 300 gold and it's yours.",
+            300,
+            1,
+            3));
+        items.add(new ShopItem("Axe", "Tiny Axe. You might need two hands for it though. Give me 250 gold and it's yours.",
+            250,
+            1,
+            5));
 
         // Level 2 items
         items.add(new ShopItem("Big Axe",
             "A normal Axe! Maybe you can use it as roof... or SeeSaw. You're small man. Give me 500 gold and it's yours.",
             1000,
-            2)
+            2,
+            5)
         );
         items.add(new ShopItem("Bow",
             "Toothpick shooter! Maybe you can be dentist from far away. HA HA HA! Me funny! Give me 700 gold and it's yours. ",
             700,
-            2)
+            2,
+            5)
         );
 
         return items;
@@ -46,6 +54,10 @@ public class TraderC extends ShopKeeper {
 
     @Override
     public String getLockedItemLine() {
-        return "Trader C: Ha Ha Ha, that is for grown ups little boy.";
+        return "Trader C: Ha Ha Ha, that is for grown ups, little boy.";
+    }
+    @Override
+    public String getSoldOutLine() {
+        return "Hmmm, I do not wear more of that. Sorry little man.";
     }
 }
