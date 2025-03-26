@@ -16,30 +16,47 @@ public class ShopUI {
     private stageBuilder game;
     private Skin skin;
 
-    // UI elements
+    // Layout elements
     private Table itemsTable;
     private ScrollPane itemsScrollPane;
     private Image portraitImage;
     private Label traderDialogLabel;
-    private TextButton buyButton;
+    private Label spentLabel; // shows how much gold spent for current trader
 
-    // For typing effect
+    // Buttons for user actions
+    private TextButton buyButton;
+    private TextButton buyAgainButton;
+
+    // Typewriter logic
     private String currentLine = "";
     private int displayIndex = 0;
     private float charTimer = 0f;
     private float timeBetweenChars = 0.04f;
     private boolean doneTyping = true;
 
-    // How many items per row in the center panel
-    private static final int ITEMS_PER_ROW = 4;
+    // Which buttons to show after the typewriter finishes
+    private boolean showBuyButtonAfterTyping = false;
+    private boolean showBuyAgainButtonAfterTyping = false;
+
+    // Trader / item logic
+    private static final int ITEMS_PER_ROW = 3;
+
+    private ShopKeeper currentTrader;
+    private ShopItem selectedItem;
 
     public ShopUI(Stage stage, Skin skin, List<ShopKeeper> shopkeepers, stageBuilder game) {
         this.skin = skin;
         this.game = game;
 
+        // Root table
         Table root = new Table();
         root.setFillParent(true);
         stage.addActor(root);
+
+        // SPENT LABEL (top-right)
+        spentLabel = new Label("Spent: 0 / 10000", skin);
+        root.add(spentLabel).expandX().right().pad(10);
+        root.row();
 
         // BACK BUTTON (top-left)
         TextButton backButton = new TextButton("Back", skin);
@@ -52,7 +69,7 @@ public class ShopUI {
         root.add(backButton).left().pad(10);
         root.row();
 
-        // Main row: Trader list, Items, Right column n shit
+        // Main row (Trader list, Items, Right column)
         Table mainRow = new Table();
         root.add(mainRow).expand().fill().row();
 
@@ -68,7 +85,7 @@ public class ShopUI {
             traderBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    loadItemsForTrader(trader);
+                    loadTraderAndGreet(trader); // greet on first load
                 }
             });
             traderListTable.add(traderBtn).expandX().fillX().row();
@@ -85,6 +102,7 @@ public class ShopUI {
         itemsContainer.setBackground(createGrayDrawable());
 
         itemsTable = new Table();
+
         itemsTable.defaults().size(120, 80).pad(5);
 
         itemsScrollPane = new ScrollPane(itemsTable, skin);
@@ -93,7 +111,7 @@ public class ShopUI {
 
         mainRow.add(itemsContainer).expand().fill().pad(10);
 
-        // Right: Portrait + "dialog" box
+        // Right: Portrait + Dialog Box
         Table rightColumn = new Table();
 
         // Trader Portrait
@@ -106,7 +124,7 @@ public class ShopUI {
 
         rightColumn.add(portraitContainer).expandX().fillX().pad(20).row();
 
-        // Dialog box
+        // Dialog container
         Table dialogContainer = new Table();
         dialogContainer.setBackground(createGrayDrawable());
         dialogContainer.defaults().pad(5);
@@ -118,20 +136,64 @@ public class ShopUI {
         traderDialogLabel.setWrap(true);
         dialogContainer.add(traderDialogLabel).expand().fill().row();
 
+        // BUY button
         buyButton = new TextButton("Buy", skin);
         buyButton.setVisible(false);
+        buyButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (selectedItem == null || currentTrader == null) return;
+
+                // If item is locked
+                if (selectedItem.getRequiredLevel() > currentTrader.getLevel()) {
+                    showDialog(currentTrader.getLockedItemLine(), false, false);
+                    return;
+                }
+
+                // Otherwise buy
+                currentTrader.buyItem(selectedItem);
+
+                // If crossing the 10k threshold unlocked level 2, let's instantly refresh
+                if (currentTrader.getLevel() == 2) {
+                    refreshTraderItems(); // now ??? items become real
+                }
+
+                // Show Thank You text, then allow Buy Again
+                showDialog(currentTrader.getThankYouLine(), false, true);
+            }
+        });
         dialogContainer.add(buyButton).size(110, 50).pad(10).row();
 
-        rightColumn.add(dialogContainer).width(260).pad(10).row();
+        // BUY AGAIN button
+        buyAgainButton = new TextButton("Buy Again", skin);
+        buyAgainButton.setVisible(false);
+        buyAgainButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (selectedItem == null || currentTrader == null) return;
+                // Re-buy the same item, no new text
+                currentTrader.buyItem(selectedItem);
 
+                // If crossing the threshold unlocked level 2, refresh here too
+                if (currentTrader.getLevel() == 2) {
+                    refreshTraderItems();
+                }
+
+                updateSpentLabel();
+            }
+        });
+        dialogContainer.add(buyAgainButton).size(110, 50).pad(10).row();
+
+        rightColumn.add(dialogContainer).width(260).pad(10).row();
         mainRow.add(rightColumn).width(300).expandY().fillY().pad(10);
 
         // If we have at least one trader, load the first
         if (!shopkeepers.isEmpty()) {
-            loadItemsForTrader(shopkeepers.get(0));
+            loadTraderAndGreet(shopkeepers.get(0));
         }
     }
 
+    //Called every frame. Handles the typewriter effect for the currently displayed text
     public void update(float delta) {
         if (!doneTyping) {
             charTimer += delta;
@@ -142,36 +204,63 @@ public class ShopUI {
             }
             if (displayIndex >= currentLine.length()) {
                 doneTyping = true;
-                buyButton.setVisible(true);
+                // Show the relevant buttons after typing completes
+                buyButton.setVisible(showBuyButtonAfterTyping);
+                buyAgainButton.setVisible(showBuyAgainButtonAfterTyping);
             }
         }
     }
 
+    //Loads the given trader and shows their greeting.
+    private void loadTraderAndGreet(ShopKeeper trader) {
+        this.currentTrader = trader;
+        selectedItem = null;
 
-     //Loads this trader's items.
-
-    private void loadItemsForTrader(ShopKeeper trader) {
-        itemsTable.clearChildren();
-        buyButton.setVisible(false);
-
-        // Cancel any ongoing typing
-        doneTyping = true;
-        traderDialogLabel.setText("Pick an item!");
+        // Greet in the typewriter
+        showDialog(trader.getGreeting(), false, false);
 
         // Update portrait
         portraitImage.setDrawable(trader.getPortrait().getDrawable());
 
+        // Update spent label
+        updateSpentLabel();
+
+        // Now build the item grid
+        rebuildItemGrid();
+    }
+
+    //Rebuilds the item grid *without* overwriting the dialog text. This is used after we buy something (to unlock items or see them instantly).
+    private void refreshTraderItems() {
+        updateSpentLabel();
+        rebuildItemGrid();
+    }
+
+    // Actually populates the center items table based on currentTrader's inventory. If item is locked, label ???, else actual name.
+    private void rebuildItemGrid() {
+        itemsTable.clearChildren();
+        selectedItem = null; // Clear selection each time
         int count = 0;
-        for (ShopItem item : trader.getInventory()) {
-            TextButton itemBtn = new TextButton(item.getName(), skin);
+        for (ShopItem item : currentTrader.getInventory()) {
+            String buttonLabel = (item.getRequiredLevel() > currentTrader.getLevel())
+                ? "???" : item.getName();
+
+            TextButton itemBtn = new TextButton(buttonLabel, skin);
             itemBtn.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    // description from ShopInventory
-                    startTyping(item.getDescription());
+                    selectedItem = item;
+                    // If locked, show locked line
+                    if (item.getRequiredLevel() > currentTrader.getLevel()) {
+                        showDialog(currentTrader.getLockedItemLine(), false, false);
+                    } else {
+                        // Shows item description & allow a 'Buy' after typing
+                        showDialog(item.getDescription(), true, false);
+                    }
                 }
             });
+
             itemsTable.add(itemBtn);
+
             count++;
             if (count % ITEMS_PER_ROW == 0) {
                 itemsTable.row();
@@ -179,17 +268,34 @@ public class ShopUI {
         }
     }
 
-    // Starts typing out the given text from scratch.
+    //Updates the label showing how much gold the current trader has received from you.
+    private void updateSpentLabel() {
+        if (currentTrader != null) {
+            spentLabel.setText("Spent: " + currentTrader.getGoldSpent() + " / 10000");
+        }
+    }
 
+    //Shows text in the dialog box using the typewriter effect, and configures which buttons to appear after typing finishes.
+    private void showDialog(String text, boolean showBuy, boolean showBuyAgain) {
+        startTyping(text);
+        showBuyButtonAfterTyping = showBuy;
+        showBuyAgainButtonAfterTyping = showBuyAgain;
+    }
+
+    //Initialises the typewriter effect for a new line of text, hiding both buttons while it types.
     private void startTyping(String text) {
         currentLine = text;
         displayIndex = 0;
         charTimer = 0;
         doneTyping = false;
         traderDialogLabel.setText("");
+
+        // Hide buttons during typing
         buyButton.setVisible(false);
+        buyAgainButton.setVisible(false);
     }
 
+    //Creates a gray background for the trader list, items panel, etc.
     private Drawable createGrayDrawable() {
         return skin.newDrawable("white", Color.GRAY);
     }

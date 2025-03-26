@@ -10,6 +10,9 @@ public class ShopKeeper {
     private Image portrait;
     private List<ShopItem> inventory;
 
+    private int level = 1;
+    private int goldSpent = 0;
+
     public ShopKeeper(String name, String portraitPath, List<ShopItem> inventory) {
         this.name = name;
         this.inventory = inventory;
@@ -28,5 +31,40 @@ public class ShopKeeper {
 
     public List<ShopItem> getInventory() {
         return inventory;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getGoldSpent() {
+        return goldSpent;
+    }
+
+    public void buyItem(ShopItem item) {
+        goldSpent += item.getPrice(); //temporary, only increments goldSpent
+
+        // Check if we cross the 10,000 threshold
+        if (goldSpent >= 10000 && level == 1) {
+            level = 2;
+        }
+    }
+
+    // Personality lines
+    // These are meant to be overridden by each trader
+    public String getGreeting() {
+        return "Welcome! Good to see you.";
+    }
+
+    public String getThankYouLine() {
+        return "Thank you for your purchase!";
+    }
+
+    public String getCannotAffordLine() {
+        return "You don't have enough gold, friend.";
+    }
+
+    public String getLockedItemLine() {
+        return "Hmm, you seem unworthy to buy that just yet...";
     }
 }
