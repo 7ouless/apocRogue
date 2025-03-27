@@ -17,8 +17,9 @@ import io.github.apocRogue.actors.PlayerActor;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.inventory.ItemManager;
 import io.github.apocRogue.map.GenerationSettings;
-import io.github.apocRogue.map.MapManager;
+import io.github.apocRogue.map.RoomCreator;
 import io.github.apocRogue.weapons.Weapon;
+import io.github.apocRogue.map.MapCreator;
 
 public class GameScreen extends ScreenAdapter {
     private Stage stage;
@@ -30,6 +31,7 @@ public class GameScreen extends ScreenAdapter {
     private PlayerActor player;
     private Inventory inventory;
     private stageBuilder game;
+
 
     public GameScreen(stageBuilder game) {
         this.game = game;
@@ -59,13 +61,14 @@ public class GameScreen extends ScreenAdapter {
         GenerationSettings settings = new GenerationSettings();
         settings.roomWidth = 3000;
         settings.platformDensity = 5;
-        MapManager mapManager = new MapManager();
-        mapManager.generateMap(stage);
+        MapCreator mc = new MapCreator();
+        RoomCreator roomCreator = new RoomCreator();
+        roomCreator.generateMap(stage);
 
 // Update player's starting position based on generated ground.
-        player.setPosition(50, mapManager.settings.groundMax);
+        player.setPosition(50, roomCreator.settings.groundMax);
         float spawnYOffset = 10; // Adjust this offset as needed
-        float spawnY = mapManager.settings.groundMax + spawnYOffset;
+        float spawnY = roomCreator.settings.groundMax + spawnYOffset;
 
         // Create inventory UI and add it to the UI stage.
         inventory = new Inventory(skin);

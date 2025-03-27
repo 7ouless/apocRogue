@@ -242,7 +242,7 @@ public class PlayerActor extends Actor {
 
     private void clampTopOfScreen() {
         if (getStage() == null) return;
-        float topLimit = MapManager.settings.roomHeight - getHeight();
+        float topLimit = RoomCreator.settings.roomHeight - getHeight();
         if (getY() > topLimit) {
             setY(topLimit);
             velocityY = 0;

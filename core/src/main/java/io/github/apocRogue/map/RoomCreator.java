@@ -9,7 +9,7 @@ import java.util.Random;
 /**
  * Builds either a procedural or predefined set of tiles (including the floor).
  */
-public class MapManager {
+public class RoomCreator {
 
     public static GenerationSettings settings = GenerationType.PLAINS.settings;
 
@@ -19,6 +19,9 @@ public class MapManager {
     private int islandGoalLength;
     private int islandCurrentLength;
     private float islandCurrentY;
+    private float islandHeight;
+
+    private int EEHeight;
 
     private int tileWidth = settings.tileWidth;
 
@@ -37,8 +40,9 @@ public class MapManager {
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
 
-    public void generateMap(Stage stage) {
+    public void generateMap(Stage stage) { //adding chest spawns and mob spawns later as parameters to be used in later created methods
         createRoom();
+        EEHeight = settings.roomHeight - (settings.roomHeight / tileWidth);
 
         for (TileInfo info : dirtTiles) {
             Actor tileActor = createTileActor(info);
@@ -72,9 +76,9 @@ public class MapManager {
     }
 
     private void createIslandStrip(int xStart, float yLevel) {
-        platformTiles.add(new TileInfo(xStart, yLevel + 400, tileWidth, tileWidth, TileType.PLATFORM)); //placing standeable platform
+        platformTiles.add(new TileInfo(xStart, yLevel + islandHeight, tileWidth, tileWidth, TileType.PLATFORM)); //placing standeable platform
         for (int y = 1; y < 3; y++) {
-            dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileWidth * y) + 400, tileWidth, tileWidth, TileType.DIRT)); //placing blocks below main platform for aesthetics
+            dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileWidth * y) + islandHeight, tileWidth, tileWidth, TileType.DIRT)); //placing blocks below main platform for aesthetics
         }
     }
 
@@ -117,12 +121,14 @@ public class MapManager {
 
             if (canCreateIsland) {
                 int var = random.nextInt(15);
-                if (var > 12) { //this is the only condition where an island will be created
+                if (var == 12) { //this is the only condition where an island will be created
                     islandGoalLength = random.nextInt(8, 15); // creating an island of a width between 5 and 15 (islands can be near continuous after each other so no point in making it too big
                     islandCurrentLength = 1;
                     islandCurrentY = yPos;
                     creatingIsland = true;
                     canCreateIsland = false;
+                    islandHeight = random.nextInt(370,550);
+                    islandHeight = pg.fitGrid(Math.round(islandHeight), tileWidth);
                 }
             }
             else if (!creatingIsland) { //
