@@ -21,7 +21,9 @@ public class RoomCreator {
     private float islandCurrentY;
     private float islandHeight;
 
-    private int EEHeight;
+    private int EEHEIGHT = 5;
+    private int EEWIDTH = 12;
+    private int EEYLevel;
 
     private int tileWidth = settings.tileWidth;
 
@@ -42,7 +44,6 @@ public class RoomCreator {
 
     public void generateMap(Stage stage) { //adding chest spawns and mob spawns later as parameters to be used in later created methods
         createRoom();
-        EEHeight = settings.roomHeight - (settings.roomHeight / tileWidth);
 
         for (TileInfo info : dirtTiles) {
             Actor tileActor = createTileActor(info);
@@ -56,11 +57,14 @@ public class RoomCreator {
     }
 
     private void createRoom() {
-        createBorders(platformTiles);
         createGround();
+        createBorders(platformTiles);
     }
 
     private void createBorders(List<TileInfo> tiles) {
+        EEYLevel = random.nextInt(EEYLevel, settings.roomHeight - ((EEHEIGHT + 1) * tileWidth));
+        EEYLevel = (int) pg.fitGrid(EEYLevel, tileWidth);
+
         int i = 0;
         while (i < settings.roomWidth/settings.tileWidth) { //horizontal tiles
             tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
@@ -69,14 +73,30 @@ public class RoomCreator {
         }
         i = 0;
         while (i <= settings.roomHeight/ settings.tileWidth) { //vertical tiles
-            tiles.add(new TileInfo(-settings.tileWidth, i*settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
-            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
-            i++;
+            if (i * tileWidth < EEYLevel || i * tileWidth > EEYLevel) {
+                tiles.add(new TileInfo(-settings.tileWidth, i * settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                tiles.add(new TileInfo(settings.roomWidth, i * settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                i++;
+            }
+            else {
+                for (int x = 0; x < EEWIDTH; x++) {
+                    //Adding the horizontal 'bars' of the entrance and exit
+                    tiles.add(new TileInfo(settings.roomWidth + (x * tileWidth), EEYLevel + (EEHEIGHT * tileWidth), settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                    tiles.add(new TileInfo(settings.roomWidth + (x * tileWidth), EEYLevel, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                    tiles.add(new TileInfo(-settings.tileWidth - (x * tileWidth), EEYLevel + (EEHEIGHT * tileWidth), settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                    tiles.add(new TileInfo(-settings.tileWidth - (x * tileWidth), EEYLevel, settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                }
+                for (int x = 0; x <= EEHEIGHT ; x++) {
+                    tiles.add(new TileInfo(-settings.tileWidth - (EEWIDTH * tileWidth), EEYLevel + (x * tileWidth), settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                    tiles.add(new TileInfo(settings.roomWidth + (EEWIDTH * tileWidth), EEYLevel + (x * tileWidth), settings.tileWidth, settings.tileWidth, TileType.PLATFORM));
+                }
+                i += EEHEIGHT;
+            }
         }
     }
 
     private void createIslandStrip(int xStart, float yLevel) {
-        platformTiles.add(new TileInfo(xStart, yLevel + islandHeight, tileWidth, tileWidth, TileType.PLATFORM)); //placing standeable platform
+        platformTiles.add(new TileInfo(xStart, yLevel + islandHeight, tileWidth, tileWidth, TileType.PLATFORM)); //placing standeable platform tiles
         for (int y = 1; y < 3; y++) {
             dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileWidth * y) + islandHeight, tileWidth, tileWidth, TileType.DIRT)); //placing blocks below main platform for aesthetics
         }
@@ -102,6 +122,7 @@ public class RoomCreator {
             noiseValue += pg.noise(i * 0.02f); //Scale input to smoothen noise
             int yPosition = (int) ((noiseValue + 1) / 2 * ((settings.groundMax - (settings.groundMin)) - settings.groundMin) + settings.groundMin);
             yPos = ProcGen.fitGrid(yPosition, tileWidth);
+
 //            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
 //                int x = 1;
 //                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
@@ -155,6 +176,7 @@ public class RoomCreator {
                     creatingIsland = false;
                 }
             }
+            EEYLevel = Math.round(yPos);
         }
     }
 
