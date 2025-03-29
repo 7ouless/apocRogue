@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
@@ -31,12 +32,14 @@ public class GameWorld {
 
     // Any other fields you need (enemy lists, chest lists, etc.)
     private Array<DummyActor> enemies;
+    private Array<FlyingEnemyActor> flyingEnemies;
     private Array<ChestActor> chests;
 
     // Textures (you can store them here or load them externally)
     private Texture playerTexture;
     private Texture dummyTexture;
     private Texture chestTexture;
+    private Texture flyingCreatureTexture;
 
     public GameWorld(Stage stage) {
         // We receive the stage from outside so that GameScreen still “owns”
@@ -45,6 +48,7 @@ public class GameWorld {
 
         // Initialize any data structures
         enemies = new Array<>();
+        flyingEnemies = new Array<>();
         chests = new Array<>();
     }
 
@@ -63,6 +67,7 @@ public class GameWorld {
         playerTexture = new Texture("ui/sprite.png");
         dummyTexture = new Texture("ui/dummy.png");
         chestTexture = new Texture("ui/chest.png");
+        flyingCreatureTexture = new Texture("ui/bat.png");
 
         // Create the player
         player = new PlayerActor(playerTexture);
@@ -93,6 +98,20 @@ public class GameWorld {
                 DummyActor dummy = new DummyActor(dummyTexture, 400, mapManager.settings.groundMax + 10);
                 enemies.add(dummy);
                 stage.addActor(dummy);
+            }
+        }
+
+        for (int i = 0; i < enemyCount; i++) {
+            float[] pos = getRandomSpawnPosition();
+            if (pos != null) {
+                FlyingEnemyActor bat = new FlyingEnemyActor(flyingCreatureTexture, pos[0], pos[1]);
+                flyingEnemies.add(bat);
+                stage.addActor(bat);
+            } else {
+                // fallback position
+                FlyingEnemyActor bat = new FlyingEnemyActor(flyingCreatureTexture, 400, mapManager.settings.groundMax + 10);
+                flyingEnemies.add(bat);
+                stage.addActor(bat);
             }
         }
 

@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import io.github.apocRogue.actorAi.AIBehavior;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.stats.StatsComponent;
 import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
@@ -17,110 +18,44 @@ import com.badlogic.gdx.math.Rectangle;
  */
 public class EnemyActor extends Image {
 
-    protected StatsComponent stats;
-
-    // Movement & physics
-    protected float velocityX = 0f;
-    protected float velocityY = 0f;
-    protected float gravity   = -600f;
+    // If you want them accessible to GravitySystem, keep them public or use getters
+    public float velocityX = 0f;
+    public float velocityY = 0f;
     public boolean isOnGround = false;
-    protected AIBehavior aiBehavior;
 
-    // Possibly some base jump logic
+    // Gravity used to be here, but we handle it in GravitySystem now
+    // protected float gravity = -600f;
+
     protected float jumpCooldown = 2f;
     protected float jumpTimer = 0f;
     protected float jumpPower = 600f;
+    protected AIBehavior aiBehavior;
+    protected StatsComponent stats;
 
     public EnemyActor(Texture texture, float x, float y, StatsComponent stats) {
         super(texture);
         setPosition(x, y);
         setSize(texture.getWidth(), texture.getHeight());
-
         this.stats = stats;
-
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        isOnGround = false;
 
-        // For example, apply gravity:
-        if (!isOnGround) {
-            velocityY += gravity * delta;
-        }
+        // Instead of applying gravity/collisions here, call GravitySystem:
+        float gravityFactor = 1f; // Could be 0f for flying, 2f for heavy area, etc.
+        GravitySystem.applyGravityAndPhysics(this, delta, gravityFactor);
 
-        float oldX = getX();
-        float oldY = getY();
-
-        // Vertical movement
-        setY(getY() + velocityY * delta);
-
-        handleTileCollisions(oldX, oldY);
-
-
-
+        // AI update
         if (aiBehavior != null) {
             aiBehavior.updateAI(this, delta);
         }
 
+        // e.g., check collision with player
         checkCollisionWithPlayer();
     }
-    private void handleTileCollisions(float oldX, float oldY) {
-        if (getStage() == null) return;
-        for (Actor actor : getStage().getActors()) {
-            if (actor instanceof TileActor) {
-                TileActor tile = (TileActor) actor;
-                if (overlaps(tile)) {
-                    // Handle collisions only for floor/platform tiles
-                    if (tile instanceof FloorTile || tile instanceof PlatformTile) {
-                        float tileTop = tile.getY() + tile.getHeight();
 
-                        // Vertical collision: if falling and crossing the tile's top edge
-                        if (velocityY <= 0f) {
-                            float oldBottom = oldY;
-                            float newBottom = getY();
-                            if (oldBottom >= tileTop && newBottom < tileTop) {
-                                setY(tileTop);
-                                velocityY = 0;
-                                isOnGround = true;
-                            }
-                        }
-
-                        // Horizontal collision:
-                        float tileLeft = tile.getX();
-                        float tileRight = tile.getX() + tile.getWidth();
-                        float currentLeft = getX();
-                        float currentRight = getX() + getWidth();
-
-                        // If moving left (oldX > currentX) and crossing tile's right edge:
-                        if (oldX > getX() && oldX >= tileRight && currentLeft < tileRight) {
-                            setX(tileRight);
-                        }
-                        // If moving right (oldX < currentX) and crossing tile's left edge:
-                        else if (oldX < getX() && oldX + getWidth() <= tileLeft && currentRight > tileLeft) {
-                            setX(tileLeft - getWidth());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    protected boolean overlaps(TileActor tile) {
-        // same as your existing code
-        Rectangle mobRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        Rectangle tileRect = new Rectangle(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
-        return mobRect.overlaps(tileRect);
-    }
-
-    public void takeDamage(int amount) {
-        stats.takeDamage(amount);
-        System.out.println("Enemy took " + amount + " damage! Health now " + stats.getHealth());
-        if (stats.isDead()) {
-            remove();
-        }
-    }
     public void jump() {
         if (isOnGround && jumpTimer <= 0f) {
             velocityY = jumpPower;
