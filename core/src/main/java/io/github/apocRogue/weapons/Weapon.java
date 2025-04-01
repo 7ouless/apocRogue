@@ -37,21 +37,26 @@ public class Weapon {
         return projectileType;
     }
 
-    public void use(PlayerActor player, Stage gameStage) {
+    public void use(PlayerActor player, Stage stage) {
+        int wepDamage = getDamage(); // e.g. 10
         if (projectileType) {
-            // For projectiles, shoot in the direction of the cursor.
+            // Ranged: create arrow
             Texture arrowTexture = new Texture("ui/arrow.png");
-            // Get target from cursor, convert screen coordinates to stage coordinates.
-            Vector2 target = gameStage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-            // Spawn the arrow starting at the player's position (or an offset)
-            ArrowActor arrow = new ArrowActor(arrowTexture, player.getX(), player.getY() + 20, target.x, target.y, gameStage);
-            gameStage.addActor(arrow);
+            Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            ArrowActor arrow = new ArrowActor(
+                arrowTexture,
+                player.getX(), player.getY() + 20,
+                target.x, target.y,
+                stage,
+                wepDamage
+            );
+            stage.addActor(arrow);
         } else {
-            // For melee (slash) type, use the player's facing direction.
-            Texture slashTexture = new Texture(Gdx.files.internal("ui/slash.png"));
-            // Pass the player actor so the SlashActor can follow the player's current facing direction.
-            SlashActor slash = new SlashActor(slashTexture, player, gameStage);
-            gameStage.addActor(slash);
+            // Melee: create slash
+            Texture slashTexture = new Texture("ui/slash.png");
+            SlashActor slash = new SlashActor(slashTexture, player, wepDamage, stage);
+            stage.addActor(slash);
         }
     }
+
 }

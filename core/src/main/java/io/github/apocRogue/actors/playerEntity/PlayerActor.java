@@ -5,130 +5,81 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
+import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.map.*;
+import io.github.apocRogue.globals.physics.GravitySystem;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+// ... other imports
 
-// A player character that can move, jump, dash, and have stats
-public class PlayerActor extends Actor {
+public class PlayerActor extends PhysicalActor {
 
     private Texture texture;
 
-    // Movement & physics fields...
-    private float velocityX = 0f;
-    private float velocityY = 0f;
-    private float gravity   = -600f;
     private float jumpPower = 900f;
-    private boolean isOnGround = false;
+    private float friction  = 0.95f;
+    private boolean facingRight = true;
 
-    // For demonstration, we unify maxSpeed with Stats if you want
-    private float friction = 0.95f;
-
-    // Double-tap dash
+    // For double-tap dash:
     private float dashSpeed    = 1500f;
     private float dashDuration = 0.15f;
     private float dashTimer    = 0f;
     private boolean isDashing  = false;
-
-    // Extra jumps
-    private float extraJumpFinal = 10000;
-    private float extraJump = 0;
-    private boolean facingRight = true;
-
+    private Inventory inventory;  // store a reference to the player's Inventory
     // For double-tap detection
     private float timeCounter = 0f;
 
     // The Player's Stats
+    // Example Stats
     private StatsComponent stats;
 
-    // Inventory reference
-    private Inventory inventory;
-
     public PlayerActor(Texture texture) {
+        super(texture);
         this.texture = texture;
         setSize(texture.getWidth(), texture.getHeight());
 
-        // Example: initialize your stats with some values
-        // (health=100, maxHealth=100, strength=10, defense=2, speed=600, dashes=2, jumps=2)
+        // Example stats
         stats = new StatsComponent(100, 100, 10, 2, 1200, 2, 2, 10);
-        extraJumpFinal = stats.getJumps();
-        // If you want to unify your old 'maxSpeed' with stats:
-        // float speedFromStats = stats.getSpeed();
-        // Now you can read 'speedFromStats' whenever you do horizontal movement
-    }
-
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
 
+        // Apply physics via GravitySystem with factor=1f for normal gravity:
+        GravitySystem.applyGravityAndPhysics(this, delta, 1f);
         timeCounter += delta;
-        handleDoubleTapDash();
-        handleDashTimer(delta);
         handleChestInteraction();
         handleItemPickups();
-
-        // Gravity
-        velocityY += gravity * delta;
-
-        // If not dashing, handle normal horizontal movement
+        // Apply friction if not dashing:
         if (!isDashing) {
-            handleHorizontalMovement(delta);
+            velocityX *= friction;
         }
 
-        // Jump
+        // Horizontal input (left-right) and dash logic:
+        handleHorizontalMovement(delta);
+        handleDash(delta);
+
+        // Jump input:
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
             || Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             jump();
         }
-        float oldX = getX();
-        float oldY = getY();
-        // Update position
+
+        // Move horizontally (GravitySystem handled vertical in applyGravityAndPhysics)
         setX(getX() + velocityX * delta);
-        setY(getY() + velocityY * delta);
 
-        // E.g., clamp top or wrap horizontally
-        clampTopOfScreen();
-        wrapHorizontal();
 
-        // Collisions
-        handleTileCollisions(delta);
     }
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
-    }
-
-    // Example of a new method to apply damage using stats
-    public void takeDamage(int amount) {
-        stats.takeDamage(amount);
-        System.out.println("Player took " + amount + " damage! Health now: " + stats.getHealth());
-        if (stats.isDead()) {
-            // e.g. do something on death
-            System.out.println("Player died!");
-            remove();
-        }
-    }
-
-    // -------------- Movement & Dash --------------
 
     private void handleHorizontalMovement(float delta) {
         boolean movingLeft  = Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT);
         boolean movingRight = Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT);
 
-        // If you want to unify with stats, read from stats.getSpeed()
         float speed = stats.getSpeed(); // e.g. 600
         if (movingLeft) {
             velocityX -= speed * delta;
@@ -139,18 +90,24 @@ public class PlayerActor extends Actor {
             facingRight = true;
         }
 
-        velocityX *= friction;
-        // clamp horizontal speed
+        // Optionally clamp horizontal speed if you like:
         if (velocityX > speed)  velocityX = speed;
         if (velocityX < -speed) velocityX = -speed;
     }
 
-    private void handleDoubleTapDash() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
+    private void handleDash(float delta) {
+        // Example dash logic:
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
             startDash(-dashSpeed);
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E) || Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             startDash(dashSpeed);
+        }
+
+        if (isDashing) {
+            dashTimer -= delta;
+            if (dashTimer <= 0f) {
+                endDash();
+            }
         }
     }
 
@@ -160,119 +117,44 @@ public class PlayerActor extends Actor {
         velocityX = dashVel;
     }
 
-    private void handleDashTimer(float delta) {
-        if (isDashing) {
-            dashTimer -= delta;
-            if (dashTimer <= 0f) {
-                endDash();
-            }
-        }
-    }
-
     private void endDash() {
         isDashing = false;
         dashTimer = 0f;
     }
 
-    // -------------- Jump & Extra Jumps --------------
-
     public void jump() {
-        if (isOnGround || extraJump > 0) {
+        if (isOnGround) {
             velocityY = jumpPower;
-            if (!isOnGround) {
-                extraJump -= 1;
-            }
             isOnGround = false;
         }
     }
 
-    // -------------- Collision with Tiles --------------
-
-    private void handleTileCollisions(float delta) {
-        if (getStage() == null) return;
-
-        isOnGround = false; // reset each frame
-
-        // Compute "old" positions based on current velocities
-        float oldX = getX() - velocityX * delta;
-        float oldY = getY() - velocityY * delta;
-
-        for (Actor actor : getStage().getActors()) {
-            if (actor instanceof TileActor) {
-                TileActor tile = (TileActor) actor;
-                if (overlaps(tile)) {
-                    if (tile instanceof FloorTile || tile instanceof PlatformTile || tile instanceof BorderTile) {
-                        float tileTop = tile.getY() + tile.getHeight();
-
-                        // Vertical collision: if moving downward and crossing the tile's top
-                        if (velocityY <= 0f) {
-                            float oldBottom = oldY;
-                            float newBottom = getY();
-                            if (oldBottom >= tileTop && newBottom < tileTop) {
-                                setY(tileTop);
-                                velocityY = 0;
-                                isOnGround = true;
-                                extraJump = extraJumpFinal;
-                            }
-                        }
-
-                        // Horizontal collision:
-                        float tileLeft = tile.getX();
-                        float tileRight = tile.getX() + tile.getWidth();
-                        float playerLeft = getX();
-                        float playerRight = getX() + getWidth();
-
-                        // If moving left and player's left edge crosses tile's right edge
-                        if (velocityX < 0) {
-                            if (oldX >= tileRight && playerLeft < tileRight && getY() != tile.getY() + tile.getHeight()) {
-                                setX(tileRight);
-                                velocityX = 0;
-                            }
-                        }
-                        // If moving right and player's right edge crosses tile's left edge
-                        else if (velocityX > 0) {
-                            if (oldX + getWidth() <= tileLeft && playerRight > tileLeft && getY() != tile.getY() + tile.getHeight()) {
-                                setX(tileLeft - getWidth());
-                                velocityX = 0;
-                            }
-                        }
-                    } else if (tile instanceof HazardTile) {
-                        System.out.println("Hit a hazard! (Respawn or lose health)");
-                    }
-                }
-            }
-        }
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
     }
 
+    // If you have logic for collisions, you can either keep that in GravitySystem
+    // or handle them separately here. Up to you. For example, if you want advanced collisions:
+    // private void handleTileCollisions(float delta) { ... }
 
-
-    private boolean overlaps(TileActor tile) {
-        Rectangle playerRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        Rectangle tileRect   = new Rectangle(tile.getX(), tile.getY(), tile.getWidth(), tile.getHeight());
-        return playerRect.overlaps(tileRect);
+    public StatsComponent getStats() {
+        return stats;
     }
 
-    // -------------- Utility / Clamping --------------
-
-    private void clampTopOfScreen() {
-        if (getStage() == null) return;
-        float topLimit = MapManager.settings.roomHeight - getHeight();
-        if (getY() > topLimit) {
-            setY(topLimit);
-            velocityY = 0;
-        }
+    public boolean isFacingRight() {
+        return facingRight;
+    }
+    public boolean isPlayerDead() {
+        return stats.isDead();
+    }
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
-    private void wrapHorizontal() {
-        if (getStage() == null) return;
-        float stageW = getStage().getWidth();
-        if (getX() + getWidth() < 0) {
-            setX(stageW);
-        }
+    public Inventory getInventory() {
+        return inventory;
     }
-
-    // -------------- Items & Chests --------------
-
     private void handleItemPickups() {
         if (getStage() == null) return;
 
@@ -336,11 +218,5 @@ public class PlayerActor extends Actor {
             }
         }
     }
-    // If you want a "facingRight" check
-    public boolean isFacingRight() {
-        return facingRight;
-    }
-    public boolean isPlayerDead(){
-        return this.stats.getHealth() <= 0;
-    }
 }
+

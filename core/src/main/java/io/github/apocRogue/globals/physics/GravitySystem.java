@@ -19,24 +19,22 @@ public class GravitySystem {
      * @param delta The time step
      * @param gravityFactor A multiplier for gravity (e.g., 1 = normal, 0 = no gravity, 2 = double gravity)
      */
-    public static void applyGravityAndPhysics(EnemyActor actor, float delta, float gravityFactor) {
-        // Start the frame assuming the actor is not on the ground
+    public static void applyGravityAndPhysics(PhysicalActor actor, float delta, float gravityFactor) {
+        // 1) Mark not on ground each frame
         actor.isOnGround = false;
 
-        // 1) Apply gravity if not on ground (if you want to skip gravity entirely, set gravityFactor=0)
-        if (!actor.isOnGround) {
-            float gravityToApply = BASE_GRAVITY * gravityFactor;
-            actor.velocityY += gravityToApply * delta;
-        }
+        // 2) Apply gravity
+        float gravityToApply = BASE_GRAVITY * gravityFactor;
+        actor.velocityY += gravityToApply * delta;
 
-        // 2) Store old positions for collision checks
+        // 3) old positions
         float oldX = actor.getX();
         float oldY = actor.getY();
 
-        // 3) Apply vertical movement
+        // 4) vertical movement
         actor.setY(actor.getY() + actor.velocityY * delta);
 
-        // 4) Check for collisions against tiles (so we can land on floors, stop at platforms, etc.)
+        // 5) collisions
         handleTileCollisions(actor, oldX, oldY);
     }
 
@@ -47,14 +45,13 @@ public class GravitySystem {
      * @param oldX The X position of the actor before movement
      * @param oldY The Y position of the actor before movement
      */
-    private static void handleTileCollisions(EnemyActor actor, float oldX, float oldY) {
+    private static void handleTileCollisions(PhysicalActor actor, float oldX, float oldY) {
         if (actor.getStage() == null) return;
 
         for (Actor stageActor : actor.getStage().getActors()) {
             if (stageActor instanceof TileActor) {
                 TileActor tile = (TileActor) stageActor;
 
-                // Only handle collisions if the bounding boxes overlap
                 if (overlaps(actor, tile)) {
                     // We treat FloorTile & PlatformTile as collidable
                     if (tile instanceof FloorTile || tile instanceof PlatformTile) {
@@ -96,9 +93,20 @@ public class GravitySystem {
     /**
      * Utility method to check if the actor's bounding box overlaps with a tile's bounding box.
      */
-    private static boolean overlaps(EnemyActor actor, TileActor tile) {
-        Rectangle actorRect = new Rectangle(actor.getX(), actor.getY(), actor.getWidth(), actor.getHeight());
-        Rectangle tileRect  = new Rectangle(tile.getX(),  tile.getY(),  tile.getWidth(),  tile.getHeight());
+    private static boolean overlaps(PhysicalActor actor, TileActor tile) {
+        Rectangle actorRect = new Rectangle(
+            actor.getX(),
+            actor.getY(),
+            actor.getWidth(),
+            actor.getHeight()
+        );
+        Rectangle tileRect  = new Rectangle(
+            tile.getX(),
+            tile.getY(),
+            tile.getWidth(),
+            tile.getHeight()
+        );
         return actorRect.overlaps(tileRect);
     }
+
 }

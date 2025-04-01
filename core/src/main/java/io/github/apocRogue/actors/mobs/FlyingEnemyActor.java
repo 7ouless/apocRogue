@@ -9,7 +9,7 @@ import io.github.apocRogue.globals.stats.StatsComponent;
 public class FlyingEnemyActor extends EnemyActor {
 
     public FlyingEnemyActor(Texture texture, float x, float y) {
-        super(texture, x, y, new StatsComponent(50, 50, 5, 0, 60, 0, 1, 1000));
+        super(texture, x, y, new StatsComponent(50, 50, 5, 0, 200, 0, 1, 1000));
         // Assign the flying AI behavior.
         this.aiBehavior = new FlyingAi();
         // Remove any call to setAffectedByGravity if it doesn't exist.

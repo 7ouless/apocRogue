@@ -55,6 +55,9 @@ public class StatsComponent {
     public int sightSens() {
         return sightSens;
     }
+    public boolean isPlayerDead() {
+        return isDead();
+    }
 
     // getters, setters, etc.
 }

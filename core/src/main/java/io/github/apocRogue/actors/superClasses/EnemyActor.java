@@ -6,17 +6,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import io.github.apocRogue.actorAi.AIBehavior;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
+import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
-import io.github.apocRogue.map.FloorTile;
-import io.github.apocRogue.map.PlatformTile;
-import io.github.apocRogue.map.TileActor;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
  * A base class for any AI-driven enemy/mob in your game.
  * It holds common fields like stats, velocity, collision, etc.
  */
-public class EnemyActor extends Image {
+public class EnemyActor extends PhysicalActor {
 
     // If you want them accessible to GravitySystem, keep them public or use getters
     public float velocityX = 0f;
@@ -38,6 +36,7 @@ public class EnemyActor extends Image {
         setSize(texture.getWidth(), texture.getHeight());
         this.stats = stats;
     }
+
 
     @Override
     public void act(float delta) {
