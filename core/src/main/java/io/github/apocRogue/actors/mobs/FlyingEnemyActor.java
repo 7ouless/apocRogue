@@ -19,9 +19,10 @@ public class FlyingEnemyActor extends EnemyActor {
     public void act(float delta) {
         // No call to super.act(delta) if we want to skip certain parent's code
         // But if you want collisions from GravitySystem, do:
+        super.act(delta);
 
         // Gravity is 0 => no downward pull
-        GravitySystem.applyGravityAndPhysics(this, delta, 0f);
+        GravitySystem.applyGravityAndPhysics(this, delta, getGravityFactor());
 
         // Then your AI
         if (aiBehavior != null) {
@@ -29,4 +30,8 @@ public class FlyingEnemyActor extends EnemyActor {
         }
     }
 
+    @Override
+    protected float getGravityFactor() {
+        return 0f;
+    }
 }

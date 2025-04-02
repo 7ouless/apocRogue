@@ -1,4 +1,5 @@
 package io.github.apocRogue.map;
+import io.github.apocRogue.globals.getters.ObstacleGetters;
 
 public class GenerationSettings {
     public int roomWidth;
@@ -18,7 +19,7 @@ public class GenerationSettings {
         // Provide sensible defaults:
         this.roomWidth = 3000;
         this.roomHeight = 720;
-        this.tileWidth = 25;
+        this.tileWidth = ObstacleGetters.getStandardTileSize();
         this.octaves = 2000;
         this.groundMax = 750;
         this.groundMin = 50;

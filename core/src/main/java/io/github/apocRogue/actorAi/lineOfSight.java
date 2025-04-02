@@ -27,9 +27,6 @@ public class lineOfSight {
         float dist2 = dx * dx + dy * dy;
         float range2 = sightRange * sightRange;
         if (dist2 > range2) {
-            // Target is too far away
-            System.out.println("LOS distance=" + Math.sqrt(dist2)
-                + ", range=" + sightRange);
             return false;
         }
 

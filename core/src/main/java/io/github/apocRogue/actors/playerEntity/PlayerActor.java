@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
+import io.github.apocRogue.globals.movementProcesses.StepUpProcessor;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
 import io.github.apocRogue.inventory.Inventory;
@@ -19,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class PlayerActor extends PhysicalActor {
 
     private Texture texture;
+    private static final float STEP_HEIGHT = 32f;
 
     private float jumpPower = 900f;
     private float friction  = 0.95f;
@@ -47,12 +49,20 @@ public class PlayerActor extends PhysicalActor {
     }
 
     @Override
+    public void takeDamage(int amount) {
+        stats.takeDamage(amount);
+        System.out.println("Damage Taken" + amount);
+    }
+
+    @Override
     public void act(float delta) {
         super.act(delta);
 
         // Apply physics via GravitySystem with factor=1f for normal gravity:
         GravitySystem.applyGravityAndPhysics(this, delta, 1f);
         timeCounter += delta;
+        StepUpProcessor.attemptStepUp(this);
+
         handleChestInteraction();
         handleItemPickups();
         // Apply friction if not dashing:
@@ -128,6 +138,27 @@ public class PlayerActor extends PhysicalActor {
             isOnGround = false;
         }
     }
+
+    private boolean overlapsHorizontally(TileActor tile) {
+        float playerLeft = getX();
+        float playerRight = getX() + getWidth();
+        float tileLeft = tile.getX();
+        float tileRight = tile.getX() + tile.getWidth();
+
+        // If there's any horizontal overlap
+        return (playerRight > tileLeft && playerLeft < tileRight);
+    }
+
+    private static final float TILE_SIZE = 32f; // Adjust to your tile size.
+
+    private int getPlayerTileX() {
+        return (int)((getX() + getWidth() / 2f) / TILE_SIZE);
+    }
+
+    private int getPlayerTileY() {
+        return (int)(getY() / TILE_SIZE);
+    }
+
 
     @Override
     public void draw(Batch batch, float parentAlpha) {

@@ -2,7 +2,6 @@ package io.github.apocRogue.actors.superClasses;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import io.github.apocRogue.actorAi.AIBehavior;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
@@ -14,7 +13,20 @@ import com.badlogic.gdx.math.Rectangle;
  * A base class for any AI-driven enemy/mob in your game.
  * It holds common fields like stats, velocity, collision, etc.
  */
-public class EnemyActor extends PhysicalActor {
+public class EnemyActor
+    extends PhysicalActor
+    implements DamageableActor
+{
+    // Existing fields...
+    protected StatsComponent stats;
+
+
+    @Override
+    public int getHealth() {
+        return stats.getHealth();
+    }
+
+    // rest of your code...
 
     // If you want them accessible to GravitySystem, keep them public or use getters
     public float velocityX = 0f;
@@ -28,7 +40,6 @@ public class EnemyActor extends PhysicalActor {
     protected float jumpTimer = 0f;
     protected float jumpPower = 600f;
     protected AIBehavior aiBehavior;
-    protected StatsComponent stats;
 
     public EnemyActor(Texture texture, float x, float y, StatsComponent stats) {
         super(texture);
@@ -43,8 +54,7 @@ public class EnemyActor extends PhysicalActor {
         super.act(delta);
 
         // Instead of applying gravity/collisions here, call GravitySystem:
-        float gravityFactor = 1f; // Could be 0f for flying, 2f for heavy area, etc.
-        GravitySystem.applyGravityAndPhysics(this, delta, gravityFactor);
+        GravitySystem.applyGravityAndPhysics(this, delta, getGravityFactor());
 
         // AI update
         if (aiBehavior != null) {
@@ -53,6 +63,9 @@ public class EnemyActor extends PhysicalActor {
 
         // e.g., check collision with player
         checkCollisionWithPlayer();
+    }
+    protected float getGravityFactor() {
+        return 1f; // default for ground-based enemies
     }
 
     public void jump() {
@@ -77,9 +90,17 @@ public class EnemyActor extends PhysicalActor {
             }
         }
     }
-    // Possibly getters for velocity, stats, etc.
-    // ...
+    @Override
+    public void takeDamage(int amount) {
+        stats.takeDamage(amount);
+        if (stats.getHealth() <= 0) {
+            remove();  // remove from stage, or handle death
+        }
+    }
+
+    @Override
     public Rectangle getBounds() {
+        // The bounding box for collisions
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
     public void setAIBehavior(AIBehavior ai) {

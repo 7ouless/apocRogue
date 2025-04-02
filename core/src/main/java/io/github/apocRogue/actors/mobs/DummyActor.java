@@ -8,6 +8,7 @@ import io.github.apocRogue.actorAi.chaseAi;
 import io.github.apocRogue.actorAi.lineOfSight;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
+import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.stats.StatsComponent;  // <--- import your StatsComponent
 import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
@@ -37,6 +38,8 @@ public class DummyActor extends EnemyActor {
     @Override
     public void act(float delta) {
         super.act(delta);
+        GravitySystem.applyGravityAndPhysics(this, delta, 1f);
+
     }
 
 

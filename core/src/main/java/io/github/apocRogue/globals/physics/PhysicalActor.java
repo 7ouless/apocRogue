@@ -14,6 +14,8 @@ public abstract class PhysicalActor extends Image {
         super(texture); // This calls the Image(Texture) constructor.
     }
 
+    public abstract void takeDamage(int amount);
+
     public Rectangle getBounds() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
