@@ -39,22 +39,22 @@ public class TraderC extends ShopKeeper {
     // Personality lines
     @Override
     public String getGreeting() {
-        return "Trader C: Hello, I am Igor. I am Shop. Thank you.";
+        return "Hello, I am Igor. I am Shop. Thank you.";
     }
 
     @Override
     public String getThankYouLine() {
-        return "Trader C: This makes me happy, tiny person! Do you want another?";
+        return "This makes me happy, tiny person! Do you want another?";
     }
 
     @Override
     public String getCannotAffordLine() {
-        return "Trader C: It seems your wallet is as small as you, give more money.";
+        return "It seems your wallet is as small as you, give more money.";
     }
 
     @Override
     public String getLockedItemLine() {
-        return "Trader C: Ha Ha Ha, that is for grown ups, little boy.";
+        return "Ha Ha Ha, that is for grown ups, little boy.";
     }
     @Override
     public String getSoldOutLine() {

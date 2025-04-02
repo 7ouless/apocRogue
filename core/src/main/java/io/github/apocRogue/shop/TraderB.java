@@ -40,22 +40,22 @@ public class TraderB extends ShopKeeper {
     // Personality lines
     @Override
     public String getGreeting() {
-        return "Trader B: What's up man! Take a look, anything you see you can buy. Not me though, I won't fall for that again,";
+        return "What's up man! Take a look, anything you see you can buy. Not me though, I won't fall for that again,";
     }
 
     @Override
     public String getThankYouLine() {
-        return "Trader B: Thank you! I'll be sure to spend this... responsibly. Want one more?";
+        return "Thank you! I'll be sure to spend this... responsibly. Want one more?";
     }
 
     @Override
     public String getCannotAffordLine() {
-        return "Trader B: You don't have enough money man. Are you trying to scam me?";
+        return "You don't have enough money man. Are you trying to scam me?";
     }
 
     @Override
     public String getLockedItemLine() {
-        return "Trader B: Wow wow wow. That's reserved for my brothers in ummm... arm?."; //maybe only 1 arm from testing his own products... explosives
+        return "Wow wow wow. That's reserved for my brothers in ummm... arm?."; //maybe only 1 arm from testing his own products... explosives
     }
 
     @Override

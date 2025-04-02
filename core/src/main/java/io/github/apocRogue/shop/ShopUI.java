@@ -42,7 +42,7 @@ public class ShopUI {
     private ShopItem selectedItem;
 
     // Restock logic
-    private float restockTimer = 20f;
+    private float restockTimer = 200f;
     private List<ShopKeeper> allTraders;
 
     public ShopUI(Stage stage, Skin skin, List<ShopKeeper> shopkeepers, stageBuilder game) {
@@ -243,7 +243,7 @@ public class ShopUI {
             for (ShopKeeper sk : allTraders) {
                 sk.restock();
             }
-            restockTimer = 20f;
+            restockTimer = 200f;
             if (currentTrader != null) {
                 rebuildItemGrid();
             }
