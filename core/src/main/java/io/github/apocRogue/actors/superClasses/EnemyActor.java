@@ -84,7 +84,7 @@ public class EnemyActor
                 PlayerActor player = (PlayerActor) actor;
                 Rectangle playerRect = new Rectangle(player.getX(), player.getY(), player.getWidth(), player.getHeight());
                 if (hitbox.overlaps(playerRect)) {
-                    System.out.println("hitbox collided with the player!");
+             //       System.out.println("hitbox collided with the player!");
                     // Possibly do damage to player or dummy, etc.
                 }
             }

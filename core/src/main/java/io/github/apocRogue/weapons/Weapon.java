@@ -13,12 +13,16 @@ public class Weapon {
     private int damage;
     private Texture texture;
     private boolean projectileType;
+    private int projectileValue; // can be null
+    private String ammoTexture;
 
-    public Weapon(String name, int damage, Texture texture, boolean projectileType) {
+    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture) {
         this.name = name;
         this.damage = damage;
         this.texture = texture;
         this.projectileType = projectileType;
+        this.projectileValue = projectileValue;
+        this.ammoTexture = ammoTexture;
     }
 
     public String getName() {
@@ -36,24 +40,31 @@ public class Weapon {
     public boolean isProjectileType() {
         return projectileType;
     }
+    public int getProjectileValue() {
+        return projectileValue;
+    }
+    public String getAmmoTexture() {
+        return ammoTexture;
+    }
 
     public void use(PlayerActor player, Stage stage) {
         int wepDamage = getDamage(); // e.g. 10
         if (projectileType) {
             // Ranged: create arrow
-            Texture arrowTexture = new Texture("ui/arrow.png");
+            Texture arrowTexture = new Texture(getAmmoTexture());
             Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
             ArrowActor arrow = new ArrowActor(
                 arrowTexture,
                 player.getX(), player.getY() + 20,
                 target.x, target.y,
                 stage,
-                wepDamage
+                wepDamage,
+                this.getProjectileValue()
             );
             stage.addActor(arrow);
         } else {
             // Melee: create slash
-            Texture slashTexture = new Texture("ui/slash.png");
+            Texture slashTexture = new Texture(getAmmoTexture());
             SlashActor slash = new SlashActor(slashTexture, player, wepDamage, stage);
             stage.addActor(slash);
         }

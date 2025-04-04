@@ -5,6 +5,7 @@ public class WeaponData {
     public int damage;
     public String texturePath;
     public boolean projectileType;
-
+    public int projectileValue;
+    public String ammoTexture;
     // If you have more fields, add them here
 }

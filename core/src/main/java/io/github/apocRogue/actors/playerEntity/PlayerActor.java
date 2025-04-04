@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
+import io.github.apocRogue.globals.getters.ObstacleGetters;
 import io.github.apocRogue.globals.movementProcesses.StepUpProcessor;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
@@ -149,7 +150,7 @@ public class PlayerActor extends PhysicalActor {
         return (playerRight > tileLeft && playerLeft < tileRight);
     }
 
-    private static final float TILE_SIZE = 32f; // Adjust to your tile size.
+    private static final float TILE_SIZE = ObstacleGetters.getStandardTileSize();
 
     private int getPlayerTileX() {
         return (int)((getX() + getWidth() / 2f) / TILE_SIZE);

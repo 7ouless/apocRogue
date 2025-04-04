@@ -3,12 +3,24 @@
     "name": "Sword",
     "damage": 10,
     "texturePath": "ui/sword.png",
-    "projectileType": false
+    "projectileType": false,
+    "projectileValue": 0,
+    "ammoTexture": "ui/slash.png"
   },
   {
     "name": "Bow",
     "damage": 5,
     "texturePath": "ui/bow.png",
-    "projectileType": true
+    "projectileType": true,
+    "projectileValue": 2,
+    "ammoTexture": "ui/arrow.png"
+  },
+  {
+    "name": "HandGun",
+    "damage": 10,
+    "texturePath": "ui/bow.png",
+    "projectileType": true,
+    "projectileValue": 10,
+    "ammoTexture": "ui/arrow.png"
   }
 ]

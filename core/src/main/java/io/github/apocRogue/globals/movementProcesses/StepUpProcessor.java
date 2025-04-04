@@ -1,72 +1,91 @@
 package io.github.apocRogue.globals.movementProcesses;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.map.TileActor;
 import io.github.apocRogue.globals.getters.ObstacleGetters;
 
 public class StepUpProcessor {
 
-    // Get the standard tile size from your ObstacleGetters or GenerationSettings.
-    private static final float TILE_SIZE = ObstacleGetters.getStandardTileSize();
+    // Use the standard tile size from your settings.
+    private static final int TILE_SIZE = ObstacleGetters.getStandardTileSize(); // e.g., 25 pixels
+    // Adjust this if your sprite's getY() is not exactly at the feet.
+    private static final float FOOT_OFFSET = 24.0f;
 
     /**
-     * Attempts to step the actor up onto an adjacent tile if the tile in the next column
-     * is exactly one tile high (i.e. there's only one tile, not two or more).
-     *
-     * @param actor The actor (player or enemy) to process.
+     * Attempts to step the actor up onto an adjacent tile if that tile is one grid cell higher,
+     * has no tile directly above it, and if the actor’s center is within its horizontal bounds.
+     * This method only triggers if the actor is not falling.
      */
     public static void attemptStepUp(PhysicalActor actor) {
-        if (actor.getStage() == null) return;
+        Stage stage = actor.getStage();
+        if (stage == null) return;
 
-        // Determine the direction based on whether the actor is facing right.
-        // For this example, assume the actor has a boolean field "facingRight".
-        // (You might need to pass that in as a parameter or have a getter.)
-        int direction = actor instanceof HasFacingDirection
-            ? (((HasFacingDirection) actor).isFacingRight() ? 1 : -1)
-            : 1; // default to right if not implemented
+        // Do not step up if the actor is falling.
+        if (actor.velocityY < 0) return;
 
-        int playerTileX = getActorTileX(actor);
-        int playerTileY = getActorTileY(actor);
-        int nextColumn = playerTileX + direction;
+        // Determine facing direction.
+        boolean isFacingRight = true;
+        if (actor instanceof HasFacingDirection) {
+            isFacingRight = ((HasFacingDirection) actor).isFacingRight();
+        }
 
-        int tileCount = 0;
-        int highestTileY = -999;
+        // Compute the actor's grid column using its horizontal center.
+        float actorCenterX = actor.getX() + actor.getWidth() / 2f;
+        int actorGridCol = (int)(actorCenterX / TILE_SIZE);
+        // Target column is one cell in the facing direction.
+        int targetCol = actorGridCol + (isFacingRight ? 1 : -1);
 
-        // Loop through all TileActor objects in the stage.
-        for (Actor stageActor : actor.getStage().getActors()) {
-            if (stageActor instanceof TileActor) {
-                TileActor tile = (TileActor) stageActor;
-                int tileX = (int)(tile.getX() / TILE_SIZE);
-                int tileY = (int)(tile.getY() / TILE_SIZE);
+        // Compute the actor's grid row using its feet (adjusted by FOOT_OFFSET).
+        float actorFeetY = actor.getY() + FOOT_OFFSET;
+        int actorGridRow = (int)(actorFeetY / TILE_SIZE);
+        // Candidate tile should be exactly one cell higher.
+        int targetRow = actorGridRow + 1;
 
-                if (tileX == nextColumn && tileY >= playerTileY) {
-                    tileCount++;
-                    highestTileY = Math.max(highestTileY, tileY);
+        // Check overhead: if there's a tile directly above the candidate tile, don't step up.
+        if (getTileAt(targetCol, targetRow + 1, stage) != null) return;
+
+        // Get the candidate tile at (targetCol, targetRow)
+        TileActor candidateTile = getTileAt(targetCol, targetRow, stage);
+        if (candidateTile != null) {
+            // For full horizontal collision, check that the actor's center lies within the candidate tile.
+            float tileLeft = candidateTile.getX();
+            float tileRight = tileLeft + candidateTile.getWidth();
+            if (actorCenterX >= tileLeft && actorCenterX <= tileRight) {
+                // Step up: align actor's feet with the tile's top.
+                float newY = candidateTile.getY() + candidateTile.getHeight() - FOOT_OFFSET;
+                actor.setY(newY);
+                actor.velocityY = 0f;
+                actor.isOnGround = true;
+                Gdx.app.log("STEP_UP_DEBUG", "Stepped up to Y: " + newY);
+            }
+        }
+    }
+
+    /**
+     * Helper: Returns the TileActor at a given grid column and row in the stage, or null if none exists.
+     * Uses index-based iteration to avoid nested iterators.
+     */
+    private static TileActor getTileAt(int col, int row, Stage stage) {
+        Array<Actor> actors = stage.getActors();
+        for (int i = 0; i < actors.size; i++) {
+            Actor obj = actors.get(i);
+            if (obj instanceof TileActor) {
+                TileActor tile = (TileActor) obj;
+                int tileCol = (int)(tile.getX() / TILE_SIZE);
+                int tileRow = (int)(tile.getY() / TILE_SIZE);
+                if (tileCol == col && tileRow == row) {
+                    return tile;
                 }
             }
         }
-
-        // If exactly one tile is found in that column and it's exactly one tile higher...
-        if (tileCount == 1 && highestTileY == playerTileY + 1) {
-            float tileTopPixels = (highestTileY + 1) * TILE_SIZE;
-            actor.setY(tileTopPixels);
-            actor.velocityY = 0f;
-            actor.isOnGround = true;
-            System.out.println("Stepped up one tile!");
-        }
+        return null;
     }
 
-    // Helper methods to compute the actor's grid position from its pixel position.
-    private static int getActorTileX(PhysicalActor actor) {
-        // Use the actor's center x for a more robust calculation.
-        return (int)((actor.getX() + actor.getWidth() / 2f) / TILE_SIZE);
-    }
     public interface HasFacingDirection {
         boolean isFacingRight();
-    }
-    private static int getActorTileY(PhysicalActor actor) {
-        // Assume the actor's bottom (getY()) is its foot.
-        return (int)(actor.getY() / TILE_SIZE);
     }
 }
