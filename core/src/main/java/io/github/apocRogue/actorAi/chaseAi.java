@@ -42,15 +42,6 @@ public class chaseAi extends AIBehavior {
             float moveAmount = self.getStats().getSpeed() * direction * delta;
             self.setX(self.getX() + moveAmount);
 
-            // clamp X if desired
-            if (self.getStage() != null) {
-                float stageW = self.getStage().getWidth();
-                if (self.getX() < 0) {
-                    self.setX(0);
-                } else if (self.getX() + self.getWidth() > stageW) {
-                    self.setX(stageW - self.getWidth());
-                }
-            }
         }
     }
 

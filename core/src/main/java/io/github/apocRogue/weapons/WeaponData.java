@@ -7,5 +7,6 @@ public class WeaponData {
     public boolean projectileType;
     public int projectileValue;
     public String ammoTexture;
+    public int animationSpeed;
     // If you have more fields, add them here
 }

@@ -50,7 +50,6 @@ public abstract class RangedAttackActor extends BaseAttackActor {
                 TileActor tile = (TileActor) actor;
                 if (projectileRect.overlaps(tile.getBounds())) {
                     // If we hit a floor or platform, remove ourselves
-                    if (tile instanceof FloorTile || tile instanceof PlatformTile) {
                         remove();
                         break;
                     }
@@ -58,4 +57,3 @@ public abstract class RangedAttackActor extends BaseAttackActor {
             }
         }
     }
-}

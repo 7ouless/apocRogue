@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import io.github.apocRogue.actorAi.CompositeAIBehavior;
 import io.github.apocRogue.actorAi.chaseAi;
 import io.github.apocRogue.actorAi.lineOfSight;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
@@ -28,9 +29,9 @@ public class DummyActor extends EnemyActor {
             texture,
             x,
             y,
-            new StatsComponent(50, 50, 5, 0, 60, 0, 1, 1000) // example stats
+            new StatsComponent(50, 50, 5, 0, 60, 0, 1, 45) // example stats
         );
-        setAIBehavior(new chaseAi());
+        setAIBehavior(new CompositeAIBehavior());
 
 
     }

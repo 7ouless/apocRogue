@@ -15,14 +15,16 @@ public class Weapon {
     private boolean projectileType;
     private int projectileValue; // can be null
     private String ammoTexture;
+    private int animationSpeed;
 
-    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture) {
+    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture, int animationSpeed) {
         this.name = name;
         this.damage = damage;
         this.texture = texture;
         this.projectileType = projectileType;
         this.projectileValue = projectileValue;
         this.ammoTexture = ammoTexture;
+        this.animationSpeed = animationSpeed;
     }
 
     public String getName() {

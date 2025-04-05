@@ -5,7 +5,8 @@
     "texturePath": "ui/sword.png",
     "projectileType": false,
     "projectileValue": 0,
-    "ammoTexture": "ui/slash.png"
+    "ammoTexture": "ui/slash.png",
+    "animationSpeed": 5
   },
   {
     "name": "Bow",
@@ -13,7 +14,8 @@
     "texturePath": "ui/bow.png",
     "projectileType": true,
     "projectileValue": 2,
-    "ammoTexture": "ui/arrow.png"
+    "ammoTexture": "ui/arrow.png",
+    "animationSpeed": 1
   },
   {
     "name": "HandGun",
@@ -21,6 +23,7 @@
     "texturePath": "ui/bow.png",
     "projectileType": true,
     "projectileValue": 10,
-    "ammoTexture": "ui/arrow.png"
+    "ammoTexture": "ui/arrow.png",
+    "animationSpeed": 1
   }
 ]
