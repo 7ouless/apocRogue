@@ -13,14 +13,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.actorAi.lineOfSight;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.stages.GameWorld; // <-- Our new logic class
 
+import io.github.apocRogue.globals.physics.SoundPhysics;
 
 public class GameScreen extends ScreenAdapter {
 
@@ -228,19 +232,15 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-
-        // If not paused, update the game logic
         if (!paused) {
             gameWorld.update(delta);
-            if (gameWorld.getPlayer().isPlayerDead()) {
-                // 2) Switch screens from here, because we have "game"
-                game.setScreen(new DeathScreen(game));
-                return; // Make sure we don't keep rendering this screen
-            }
+
+            // ... check player dead logic ...
         }
+
         gameWorld.getInventory().draw(uiStage);
 
-        // Then, regardless of paused or not, do camera stuff
+        // Camera stuff
         camera.position.set(
             gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth() / 2f,
             gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f,
@@ -250,39 +250,51 @@ public class GameScreen extends ScreenAdapter {
         stage.getViewport().apply();
         batch.setProjectionMatrix(camera.combined);
 
-        // Clear the screen
+        // Clear
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Render the main stage (game)
+        // Render the stage
         stage.draw();
-            shapeRenderer.setProjectionMatrix(camera.combined);
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            // Iterate through enemy actors in the stage.
-            for (Actor actor : stage.getActors()) {
-                if (actor instanceof EnemyActor) {
-                    EnemyActor enemy = (EnemyActor) actor;
-                    if (enemy.isAlerted()) {
-                        // Locked on: draw red dot at alert/last seen position.
-                        shapeRenderer.setColor(1, 0, 0, 1);
-                        Vector2 target = enemy.getAlertPosition();
-                        shapeRenderer.circle(target.x, target.y, 5);
-                    } else {
-                        // Not locked on: draw green dot at enemy's center.
-                        shapeRenderer.setColor(0, 1, 0, 1);
-                        float centerX = enemy.getX() + enemy.getWidth() / 2f;
-                        float centerY = enemy.getY() + enemy.getHeight() / 2f;
-                        shapeRenderer.circle(centerX, centerY, 5);
-                    }
-                }
-            }
-            shapeRenderer.end();
 
+        shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // Update & render the UI stage (includes the pause overlay)
+        // 1) Draw your enemy debug
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // ... your existing logic for enemies ...
+        shapeRenderer.end();
+
+        // 2) Draw the sound debug rings
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for (SoundPhysics.SoundDebugEvent evt : SoundPhysics.debugEvents) {
+            // fraction of time used up
+            float t = evt.timeAlive / evt.duration;
+            // alpha goes from 1 down to 0
+            float alpha = 1f - t;
+
+            // If you want the ring to fade out, set the color alpha
+            shapeRenderer.setColor(evt.color.r, evt.color.g, evt.color.b, alpha);
+
+            // Draw the ring with the currentRadius
+            shapeRenderer.circle(evt.center.x, evt.center.y, evt.currentRadius);
+        }
+        shapeRenderer.end();
+
+        // Finally draw UI
         uiStage.act(delta);
         uiStage.draw();
     }
+
+    private PlayerActor findPlayerInStage(Stage stage) {
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof PlayerActor) {
+                return (PlayerActor) actor;
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public void resize(int width, int height) {

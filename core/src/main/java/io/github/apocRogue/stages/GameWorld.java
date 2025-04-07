@@ -8,6 +8,7 @@ import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
+import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.inventory.ItemManager;
@@ -19,6 +20,7 @@ import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import io.github.apocRogue.globals.physics.SoundPhysics;
 
 public class GameWorld {
 
@@ -184,6 +186,8 @@ public class GameWorld {
         // Example: do the normal Stage act() call here, or any
         // special game logic that might occur each frame
         stage.act(delta);
+        SoundPhysics.updateDebugEvents(delta);
+
 
         // You can do additional logic such as enemy AI, or handle collisions,
         // or handle game events, etc.
@@ -209,4 +213,5 @@ public class GameWorld {
         if (dummyTexture != null) dummyTexture.dispose();
         if (chestTexture != null) chestTexture.dispose();
     }
+
 }

@@ -10,52 +10,42 @@ public class chaseAi extends AIBehavior {
     private float lockOnTimer = 10f;
     private final float lockOnTimerMax = 10f;
     private boolean lockedOn = false;
-
+    private SoundAlertComponent alertComponent = new SoundAlertComponent(0.2f);
     @Override
     public void updateAI(EnemyActor enemy, float delta) {
         PlayerActor player = findPlayer(enemy);
         if (player == null) return;
 
+        // LoS check
         boolean canSeePlayer = lineOfSight.canSeeTarget(enemy, player, enemy.getStats().sightSens(), enemy.getStage());
-
         if (canSeePlayer) {
-            // Update last seen position and set alerted flag.
-            enemy.setAlertPosition(new Vector2(player.getX(), player.getY()));
+            // Update last known position to player's real-time position
+            alertComponent.setAlertPosition(new Vector2(player.getX(), player.getY()));
             lockedOn = true;
-            enemy.setAlerted(true);
+            alertComponent.setAlerted(true);
             lockOnTimer = lockOnTimerMax;
         } else {
             lockOnTimer -= delta;
             if (lockOnTimer < 0) {
                 lockedOn = false;
-                enemy.setAlerted(false);
+                alertComponent.setAlerted(false);
             }
         }
 
+        // If locked on, move toward the stored position
         if (lockedOn) {
             Vector2 enemyPos = new Vector2(enemy.getX(), enemy.getY());
-            Vector2 lastSeen = enemy.getAlertPosition().cpy();
-            Vector2 toLastSeen = lastSeen.sub(enemyPos);
-            float baseDistance = toLastSeen.len();
+            Vector2 targetPos = enemy.getAlertPosition().cpy();
+            Vector2 direction = targetPos.sub(enemyPos);
 
-            // Incorporate aggression: higher aggression means search further.
-            float aggression = enemy.getStats().getAggression(); // e.g., 0 to 10
-            float searchMultiplier = 1f + aggression / 10f; // Adjust multiplier as needed
-
-            // Calculate the search target beyond the last seen position.
-            Vector2 searchTarget = enemyPos.cpy().add(toLastSeen.nor().scl(baseDistance * searchMultiplier));
-
-            // Move enemy toward the search target.
-            Vector2 moveDir = searchTarget.sub(enemyPos);
-            if (moveDir.len() > 1f) {
-                moveDir.nor();
-                enemy.moveBy(moveDir.x * enemy.getStats().getSpeed() * delta,
-                    moveDir.y * enemy.getStats().getSpeed() * delta);
+            float distance = direction.len();
+            if (distance > 1f) {
+                direction.nor();
+                float moveSpeed = enemy.getStats().getSpeed();
+                enemy.moveBy(direction.x * moveSpeed * delta, direction.y * moveSpeed * delta);
             }
         }
     }
-
-
 
     private PlayerActor findPlayer(EnemyActor self) {
         if (self.getStage() == null) return null;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.superClasses.DamageableActor;
 
 /**
@@ -33,19 +34,20 @@ public abstract class BaseAttackActor extends Image {
     protected void checkCollisionWithDamageables() {
         if (stage == null) return;
 
+        // Copy the actor list
+        Array<Actor> copy = new Array<>(stage.getActors());
+
         Rectangle bounds = new Rectangle(getX(), getY(), getWidth(), getHeight());
-        for (Actor actor : stage.getActors()) {
-            // If this actor implements DamageableActor, we can damage it
+        for (Actor actor : copy) {
             if (actor instanceof DamageableActor) {
                 DamageableActor dmgActor = (DamageableActor) actor;
                 if (bounds.overlaps(dmgActor.getBounds())) {
                     dmgActor.takeDamage(damage);
-
-                    // For single-target hits, remove ourselves immediately
                     remove();
                     break;
                 }
             }
         }
     }
+
 }

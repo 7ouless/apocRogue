@@ -5,7 +5,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
+import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
 import io.github.apocRogue.map.TileActor;
@@ -18,10 +21,18 @@ public abstract class RangedAttackActor extends BaseAttackActor {
     protected Vector2 velocity = new Vector2(0, 0);
     protected float gravity = -300f; // downward acceleration
     protected int noiseLevel; // Added field to store the noise level
+    private Weapon weapon;
+    private float timeSinceLastSound = 0f;  // for periodic flight sound
+    private PlayerActor player;
 
 
-    public RangedAttackActor(Texture texture, int damage, Stage stage) {
+    public RangedAttackActor(PlayerActor player, Texture texture, int damage, Stage stage, Weapon weapon, Vector2 direction) {
         super(texture, damage, stage);
+        this.weapon = weapon;
+        this.player = player;
+        setPosition(player.getX(), player.getY());
+        this.velocity = direction.nor().scl(500f); // example speed
+        this.noiseLevel = weapon.getNoiseLevel();
     }
     @Override
     public void act(float delta) {
@@ -39,39 +50,57 @@ public abstract class RangedAttackActor extends BaseAttackActor {
             setRotation(velocity.angleDeg());
         }
 
+        if (timeSinceLastSound >= 0.25f) {
+            timeSinceLastSound -= 0.25f;
+            SoundPhysics.emitSound(
+                new Vector2(getX(), getY()),
+                weapon.getFlightNoiseIntensity(),
+                weapon.getFlightNoiseRadius(),
+                SoundPhysics.SoundType.PROJECTILE_FLIGHT,
+                player.getStage()
+            );
+        }
         // 5) Collide with the map
         checkCollisionWithTile();
     }
 
     protected void checkCollisionWithTile() {
         if (stage == null) return;
+
+        // Make a copy of the actor list to avoid nested iteration conflicts.
+        Array<Actor> actorsCopy = new Array<>(stage.getActors());
+
         Rectangle projectileRect = new Rectangle(getX(), getY(), getWidth(), getHeight());
 
-        for (Actor actor : stage.getActors()) {
+        for (Actor actor : actorsCopy) {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
                 if (projectileRect.overlaps(tile.getBounds())) {
-                    // Get collision position
+                    // 1) Trigger sound alert for enemies
                     Vector2 collisionPoint = new Vector2(getX(), getY());
-                    // Use the noiseLevel stored in this projectile.
-                    float noise = noiseLevel; // or modify this value as needed
-                    // Optionally, define a hearing range.
-                    float hearingRange = 500f;
-                    for (Actor a : stage.getActors()) {
+                    SoundPhysics.emitSound(
+                        new Vector2(player.getX(), player.getY()),
+                        weapon.getMeleeNoiseIntensity(),
+                        weapon.getMeleeNoiseRadius(),
+                        SoundPhysics.SoundType.PROJECTILE_IMPACT,
+                        player.getStage()
+                    );
+                    // Copy again if you need another loop in the same method
+                    Array<Actor> secondCopy = new Array<>(stage.getActors());
+                    for (Actor a : secondCopy) {
                         if (a instanceof EnemyActor) {
                             EnemyActor enemy = (EnemyActor) a;
-                            if (collisionPoint.dst(enemy.getX(), enemy.getY()) < hearingRange) {
-                                enemy.getAlertComponent().triggerAlert(collisionPoint, noise);
-                            }
+                            float dist = collisionPoint.dst(enemy.getX(), enemy.getY());
+
                         }
                     }
-                    // Remove the projectile after collision.
                     remove();
                     break;
                 }
             }
         }
     }
+
 
 
 }

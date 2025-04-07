@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.attackEntity.SlashActor;
 import io.github.apocRogue.actors.attackEntity.ArrowActor;
+import io.github.apocRogue.globals.physics.SoundPhysics;
 
 public class Weapon {
     private String name;
@@ -53,10 +54,14 @@ public class Weapon {
 
     public void use(PlayerActor player, Stage stage) {
         int wepDamage = getDamage(); // e.g. 10
+        Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+
+        Vector2 direction = new Vector2(target.x - player.getX(), target.y - player.getY()).nor();
+
         if (projectileType) {
             // Ranged: create arrow
             Texture arrowTexture = new Texture(getAmmoTexture());
-            Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
             // Pass noise level from the weapon into the ArrowActor.
             ArrowActor arrow = new ArrowActor(
                 arrowTexture,
@@ -65,16 +70,61 @@ public class Weapon {
                 stage,
                 wepDamage,
                 this.getProjectileValue(),
-                this.noiseLevel   // Pass noise level here.
+                this.noiseLevel,
+                this,
+                player,
+                direction
+
+            );
+            SoundPhysics.emitSound(
+                new Vector2(player.getX(), player.getY()),
+                getMeleeNoiseIntensity(),
+                getMeleeNoiseRadius(),
+                SoundPhysics.SoundType.PROJECTILE_IMPACT,
+                player.getStage()
             );
             stage.addActor(arrow);
         } else {
             // Melee: create slash (no noise triggered in melee by default).
             Texture slashTexture = new Texture(getAmmoTexture());
             SlashActor slash = new SlashActor(slashTexture, player, wepDamage, stage);
+            SoundPhysics.emitSound(
+                new Vector2(player.getX(), player.getY()),
+                getMeleeNoiseIntensity(),
+                getMeleeNoiseRadius(),
+                SoundPhysics.SoundType.MELEE_NOISE,
+                player.getStage()
+            );
             stage.addActor(slash);
         }
     }
 
+    public float getMuzzleNoiseIntensity() {
+        return noiseLevel * 1.0f;
+    }
+    public float getMuzzleNoiseRadius() {
+        return noiseLevel * 30f;
+    }
+    public float getFlightNoiseIntensity() {
+        return noiseLevel * 0.1f;
+    }
+    public float getFlightNoiseRadius() {
+        return noiseLevel * 20f;
+    }
+    public float getImpactNoiseIntensity() {
+        return noiseLevel * 0.5f;
+    }
+    public float getImpactNoiseRadius() {
+        return noiseLevel * 60f;
+    }
+    public float getMeleeNoiseIntensity() {
+        return noiseLevel * 1.0f;
+    }
+    public float getMeleeNoiseRadius() {
+        return noiseLevel * 50f;
+    }
+    public int getNoiseLevel() {
+        return noiseLevel;
+    }
 
 }

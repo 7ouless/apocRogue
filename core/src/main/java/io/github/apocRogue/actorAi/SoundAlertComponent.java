@@ -4,20 +4,36 @@ import com.badlogic.gdx.math.Vector2;
 
 public class SoundAlertComponent {
     private Vector2 alertPosition = new Vector2();
-    private float alertLevel = 0f;
     private boolean alerted = false;
+    private float alertLevel = 0f;
     private float lockOnTimer = 0f;
     private final float LOCK_ON_TIMER_MAX = 10f;
+    public float hearingThreshold;
 
-    // Called externally by the sound system when a sound occurs.
-    public void triggerAlert(Vector2 soundPosition, float noiseLevel) {
-        alertPosition.set(soundPosition);
-        alertLevel += noiseLevel;
+    public void setAlertPosition(Vector2 pos) {
+        alertPosition.set(pos);
+    }
+
+    public Vector2 getAlertPosition() {
+        return alertPosition;
+    }
+
+    public void setAlerted(boolean val) {
+        alerted = val;
+    }
+
+    public boolean isAlerted() {
+        return alerted;
+    }
+
+    public void triggerAlert(Vector2 soundPos, float noise) {
+        alertPosition.set(soundPos);
+        alertLevel += noise;
         alerted = true;
         lockOnTimer = LOCK_ON_TIMER_MAX;
     }
 
-    // Update the alert state each frame.
+
     public void update(float delta) {
         if (alerted) {
             lockOnTimer -= delta;
@@ -28,11 +44,16 @@ public class SoundAlertComponent {
         }
     }
 
-    public Vector2 getAlertPosition() {
-        return alertPosition;
+    public SoundAlertComponent(float threshold) {
+        this.hearingThreshold = threshold;
+    }
+    public void reduceAlertLevel(float amount) {
+        alertLevel = Math.max(0f, alertLevel - amount);
     }
 
-    public boolean isAlerted() {
-        return alerted;
+    public float getAlertLevel() {
+        return alertLevel;
     }
+
+
 }
