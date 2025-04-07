@@ -1,5 +1,6 @@
 package io.github.apocRogue.actorAi;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
@@ -11,39 +12,50 @@ public class chaseAi extends AIBehavior {
     private boolean lockedOn = false;
 
     @Override
-    public void updateAI(EnemyActor self, float delta) {
-        // e.g. chase logic
-        PlayerActor player = findPlayer(self);
+    public void updateAI(EnemyActor enemy, float delta) {
+        PlayerActor player = findPlayer(enemy);
         if (player == null) return;
 
-        // If can't see the player, do nothing
-        // Use the parent's stats for sight range: self.stats.sightSens()
-        if (lineOfSight.canSeeTarget(self, player, self.getStats().sightSens(), self.getStage())) {
+        boolean canSeePlayer = lineOfSight.canSeeTarget(enemy, player, enemy.getStats().sightSens(), enemy.getStage());
+
+        if (canSeePlayer) {
+            // Update last seen position and set alerted flag.
+            enemy.setAlertPosition(new Vector2(player.getX(), player.getY()));
             lockedOn = true;
+            enemy.setAlerted(true);
+            lockOnTimer = lockOnTimerMax;
         } else {
             lockOnTimer -= delta;
             if (lockOnTimer < 0) {
                 lockedOn = false;
-                lockOnTimer = lockOnTimerMax;
+                enemy.setAlerted(false);
             }
         }
 
         if (lockedOn) {
-            float enemyCenterX  = self.getX() + self.getWidth() / 2f;
-            float playerCenterX = player.getX() + player.getWidth() / 2f;
-            float dx = playerCenterX - enemyCenterX;
-            float direction = Math.signum(dx);
+            Vector2 enemyPos = new Vector2(enemy.getX(), enemy.getY());
+            Vector2 lastSeen = enemy.getAlertPosition().cpy();
+            Vector2 toLastSeen = lastSeen.sub(enemyPos);
+            float baseDistance = toLastSeen.len();
 
-            // Possibly jump if on ground
-            if (self.isOnGround && self.getJumpTimer() <= 0f) {
-                self.jump(); // uses parent's jump() method
+            // Incorporate aggression: higher aggression means search further.
+            float aggression = enemy.getStats().getAggression(); // e.g., 0 to 10
+            float searchMultiplier = 1f + aggression / 10f; // Adjust multiplier as needed
+
+            // Calculate the search target beyond the last seen position.
+            Vector2 searchTarget = enemyPos.cpy().add(toLastSeen.nor().scl(baseDistance * searchMultiplier));
+
+            // Move enemy toward the search target.
+            Vector2 moveDir = searchTarget.sub(enemyPos);
+            if (moveDir.len() > 1f) {
+                moveDir.nor();
+                enemy.moveBy(moveDir.x * enemy.getStats().getSpeed() * delta,
+                    moveDir.y * enemy.getStats().getSpeed() * delta);
             }
-            // Move horizontally
-            float moveAmount = self.getStats().getSpeed() * direction * delta;
-            self.setX(self.getX() + moveAmount);
-
         }
     }
+
+
 
     private PlayerActor findPlayer(EnemyActor self) {
         if (self.getStage() == null) return null;

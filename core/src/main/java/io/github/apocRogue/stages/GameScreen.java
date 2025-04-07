@@ -4,6 +4,9 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -13,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.inventory.Inventory;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.stages.GameWorld; // <-- Our new logic class
@@ -32,6 +36,7 @@ public class GameScreen extends ScreenAdapter {
     // Pause overlay members
     private Table pauseOverlay;    // We'll add this table to uiStage and toggle visibility
     private Skin skin;             // We assume you load a Skin for UI
+    private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
         this.game = game;
@@ -39,6 +44,8 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
+        shapeRenderer = new ShapeRenderer();
+
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1920, 1080);
 
@@ -249,6 +256,28 @@ public class GameScreen extends ScreenAdapter {
 
         // Render the main stage (game)
         stage.draw();
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            // Iterate through enemy actors in the stage.
+            for (Actor actor : stage.getActors()) {
+                if (actor instanceof EnemyActor) {
+                    EnemyActor enemy = (EnemyActor) actor;
+                    if (enemy.isAlerted()) {
+                        // Locked on: draw red dot at alert/last seen position.
+                        shapeRenderer.setColor(1, 0, 0, 1);
+                        Vector2 target = enemy.getAlertPosition();
+                        shapeRenderer.circle(target.x, target.y, 5);
+                    } else {
+                        // Not locked on: draw green dot at enemy's center.
+                        shapeRenderer.setColor(0, 1, 0, 1);
+                        float centerX = enemy.getX() + enemy.getWidth() / 2f;
+                        float centerY = enemy.getY() + enemy.getHeight() / 2f;
+                        shapeRenderer.circle(centerX, centerY, 5);
+                    }
+                }
+            }
+            shapeRenderer.end();
+
 
         // Update & render the UI stage (includes the pause overlay)
         uiStage.act(delta);
@@ -268,5 +297,7 @@ public class GameScreen extends ScreenAdapter {
         uiStage.dispose();
         skin.dispose();
         batch.dispose();
+        shapeRenderer.dispose();
+
     }
 }

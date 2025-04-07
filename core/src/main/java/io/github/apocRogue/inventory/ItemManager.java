@@ -29,7 +29,8 @@ public class ItemManager {
                 data.projectileType,
                 data.projectileValue,
                 data.ammoTexture,
-                data.animationSpeed
+                data.animationSpeed,
+                data.noiseLevel
             );
             loadedWeapons.add(w);
         }

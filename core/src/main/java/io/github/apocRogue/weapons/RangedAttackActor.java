@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
 import io.github.apocRogue.map.TileActor;
@@ -16,11 +17,12 @@ import io.github.apocRogue.map.TileActor;
 public abstract class RangedAttackActor extends BaseAttackActor {
     protected Vector2 velocity = new Vector2(0, 0);
     protected float gravity = -300f; // downward acceleration
+    protected int noiseLevel; // Added field to store the noise level
+
 
     public RangedAttackActor(Texture texture, int damage, Stage stage) {
         super(texture, damage, stage);
     }
-
     @Override
     public void act(float delta) {
         // 1) Perform the default collision check in BaseAttackActor
@@ -49,11 +51,27 @@ public abstract class RangedAttackActor extends BaseAttackActor {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
                 if (projectileRect.overlaps(tile.getBounds())) {
-                    // If we hit a floor or platform, remove ourselves
-                        remove();
-                        break;
+                    // Get collision position
+                    Vector2 collisionPoint = new Vector2(getX(), getY());
+                    // Use the noiseLevel stored in this projectile.
+                    float noise = noiseLevel; // or modify this value as needed
+                    // Optionally, define a hearing range.
+                    float hearingRange = 500f;
+                    for (Actor a : stage.getActors()) {
+                        if (a instanceof EnemyActor) {
+                            EnemyActor enemy = (EnemyActor) a;
+                            if (collisionPoint.dst(enemy.getX(), enemy.getY()) < hearingRange) {
+                                enemy.getAlertComponent().triggerAlert(collisionPoint, noise);
+                            }
+                        }
                     }
+                    // Remove the projectile after collision.
+                    remove();
+                    break;
                 }
             }
         }
     }
+
+
+}

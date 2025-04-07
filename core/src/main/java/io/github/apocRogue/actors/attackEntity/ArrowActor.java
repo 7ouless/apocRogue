@@ -10,14 +10,17 @@ import io.github.apocRogue.weapons.RangedAttackActor;
  * We set velocity in the constructor based on a target location.
  */
 public class ArrowActor extends RangedAttackActor {
-    private int projectileValue;
+    // You can now use the inherited noiseLevel field from RangedAttackActor.
     public ArrowActor(Texture texture,
                       float startX, float startY,
                       float targetX, float targetY,
                       Stage stage,
                       int damage,
-                      int projectileValue) {
+                      int projectileValue,
+                      int noiseLevel) {
         super(texture, damage, stage);
+        // Set the noise level from the weapon.
+        this.noiseLevel = noiseLevel;
         setPosition(startX, startY);
 
         // Compute direction from start to target

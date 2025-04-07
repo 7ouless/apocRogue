@@ -16,8 +16,8 @@ public class Weapon {
     private int projectileValue; // can be null
     private String ammoTexture;
     private int animationSpeed;
-
-    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture, int animationSpeed) {
+    private int noiseLevel;
+    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture, int animationSpeed, int noiseLevel) {
         this.name = name;
         this.damage = damage;
         this.texture = texture;
@@ -25,6 +25,8 @@ public class Weapon {
         this.projectileValue = projectileValue;
         this.ammoTexture = ammoTexture;
         this.animationSpeed = animationSpeed;
+        this.noiseLevel = noiseLevel;
+
     }
 
     public String getName() {
@@ -55,21 +57,24 @@ public class Weapon {
             // Ranged: create arrow
             Texture arrowTexture = new Texture(getAmmoTexture());
             Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            // Pass noise level from the weapon into the ArrowActor.
             ArrowActor arrow = new ArrowActor(
                 arrowTexture,
                 player.getX(), player.getY() + 20,
                 target.x, target.y,
                 stage,
                 wepDamage,
-                this.getProjectileValue()
+                this.getProjectileValue(),
+                this.noiseLevel   // Pass noise level here.
             );
             stage.addActor(arrow);
         } else {
-            // Melee: create slash
+            // Melee: create slash (no noise triggered in melee by default).
             Texture slashTexture = new Texture(getAmmoTexture());
             SlashActor slash = new SlashActor(slashTexture, player, wepDamage, stage);
             stage.addActor(slash);
         }
     }
+
 
 }

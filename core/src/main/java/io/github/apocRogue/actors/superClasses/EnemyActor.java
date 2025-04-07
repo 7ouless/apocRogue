@@ -5,6 +5,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 import io.github.apocRogue.actorAi.AIBehavior;
+import io.github.apocRogue.actorAi.SoundAlertComponent;
+import io.github.apocRogue.actorAi.lineOfSight;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.physics.PhysicalActor;
@@ -33,20 +35,25 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
     protected float jumpPower = 600f;
     protected AIBehavior aiBehavior;
     public float health = 0f;
+    private SoundAlertComponent alertComponent = new SoundAlertComponent();
+
+
     public EnemyActor(Texture texture, float x, float y, StatsComponent stats) {
         super(texture);
         setPosition(x, y);
         setSize(texture.getWidth(), texture.getHeight());
         this.stats = stats;
     }
-
+    public SoundAlertComponent getAlertComponent() {
+        return alertComponent;
+    }
     @Override
     public void act(float delta) {
         super.act(delta);
 
         // Apply gravity and physics.
         GravitySystem.applyGravityAndPhysics(this, delta, getGravityFactor());
-
+        alertComponent.update(delta);
         // AI update
         if (aiBehavior != null) {
             aiBehavior.updateAI(this, delta);
@@ -154,5 +161,37 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         setAlertness(getAlertness() + noiseLevel);
         setAlertPosition(soundPosition);
         setAlerted(true);
+
     }
+    // In EnemyActor.java
+    protected float lockOnTimer = 10f;
+    protected final float lockOnTimerMax = 10f;
+
+    public void updateAlertState(float delta) {
+        PlayerActor player = findPlayer();
+        if (player != null) {
+            boolean canSee = lineOfSight.canSeeTarget(this, player, stats.sightSens(), getStage());
+            if (canSee) {
+                setAlertPosition(new Vector2(player.getX(), player.getY()));
+                setAlerted(true);
+                lockOnTimer = lockOnTimerMax;
+            } else {
+                lockOnTimer -= delta;
+                if (lockOnTimer < 0) {
+                    setAlerted(false);
+                }
+            }
+        }
+    }
+
+    private PlayerActor findPlayer() {
+        if (getStage() == null) return null;
+        for (Actor actor : getStage().getActors()) {
+            if (actor instanceof PlayerActor) {
+                return (PlayerActor) actor;
+            }
+        }
+        return null;
+    }
+
 }

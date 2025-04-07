@@ -46,7 +46,7 @@ public class PlayerActor extends PhysicalActor {
         setSize(texture.getWidth(), texture.getHeight());
 
         // Example stats
-        stats = new StatsComponent(100, 100, 10, 2, 1200, 2, 2, 10);
+        stats = new StatsComponent(100, 100, 10, 2, 1200, 2, 2, 10, 0);
     }
 
     @Override

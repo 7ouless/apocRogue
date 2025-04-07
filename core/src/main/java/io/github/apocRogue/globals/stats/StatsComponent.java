@@ -9,8 +9,9 @@ public class StatsComponent {
     private int dashes;
     private int jumps;
     private int sightSens;
+    private float aggression;
 
-    public StatsComponent(int health, int maxHealth, int strength, int defense, int speed, int dashes, int jumps, int sightSens) {
+    public StatsComponent(int health, int maxHealth, int strength, int defense, int speed, int dashes, int jumps, int sightSens, float aggression) {
         this.health = health;
         this.maxHealth = maxHealth;
         this.strength = strength;
@@ -19,6 +20,7 @@ public class StatsComponent {
         this.dashes = dashes;
         this.jumps = jumps;
         this.sightSens = sightSens;
+        this.aggression = aggression;
     }
 
     public void takeDamage(int amount) {
@@ -57,6 +59,9 @@ public class StatsComponent {
     }
     public boolean isPlayerDead() {
         return isDead();
+    }
+    public float getAggression() {
+        return aggression;
     }
 
     // getters, setters, etc.
