@@ -10,6 +10,11 @@ public abstract class PhysicalActor extends Image {
     public float velocityY = 0f;
     public boolean isOnGround = false;
 
+    // Step-up support
+    public boolean isSteppingUp = false;
+    public float stepTargetY = 0f;
+    public float stepCooldown = 0f; // new: cooldown to prevent instant retrigger
+
     public PhysicalActor(Texture texture) {
         super(texture); // This calls the Image(Texture) constructor.
     }
