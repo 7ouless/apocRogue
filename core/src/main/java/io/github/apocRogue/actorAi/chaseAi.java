@@ -10,34 +10,34 @@ public class chaseAi extends AIBehavior {
     private float lockOnTimer = 10f;
     private final float lockOnTimerMax = 10f;
     private boolean lockedOn = false;
-    private SoundAlertComponent alertComponent = new SoundAlertComponent(0.2f);
+
     @Override
     public void updateAI(EnemyActor enemy, float delta) {
+        // Use the enemy's own alert component instead of a local one.
         PlayerActor player = findPlayer(enemy);
         if (player == null) return;
 
-        // LoS check
+        // Perform line-of-sight check.
         boolean canSeePlayer = lineOfSight.canSeeTarget(enemy, player, enemy.getStats().sightSens(), enemy.getStage());
         if (canSeePlayer) {
-            // Update last known position to player's real-time position
-            alertComponent.setAlertPosition(new Vector2(player.getX(), player.getY()));
+            // Update the enemy's alert position directly.
+            enemy.getAlertComponent().setAlertPosition(new Vector2(player.getX(), player.getY()));
             lockedOn = true;
-            alertComponent.setAlerted(true);
+            enemy.getAlertComponent().setAlerted(true);
             lockOnTimer = lockOnTimerMax;
         } else {
             lockOnTimer -= delta;
             if (lockOnTimer < 0) {
                 lockedOn = false;
-                alertComponent.setAlerted(false);
+                enemy.getAlertComponent().setAlerted(false);
             }
         }
 
-        // If locked on, move toward the stored position
+        // If locked on, move toward the stored alert position.
         if (lockedOn) {
             Vector2 enemyPos = new Vector2(enemy.getX(), enemy.getY());
-            Vector2 targetPos = enemy.getAlertPosition().cpy();
+            Vector2 targetPos = enemy.getAlertComponent().getAlertPosition().cpy();
             Vector2 direction = targetPos.sub(enemyPos);
-
             float distance = direction.len();
             if (distance > 1f) {
                 direction.nor();

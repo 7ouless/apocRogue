@@ -112,10 +112,10 @@ public class Weapon {
         return noiseLevel * 20f;
     }
     public float getImpactNoiseIntensity() {
-        return noiseLevel * 0.5f;
+        return noiseLevel * 1000f;
     }
     public float getImpactNoiseRadius() {
-        return noiseLevel * 60f;
+        return noiseLevel * 100f;
     }
     public float getMeleeNoiseIntensity() {
         return noiseLevel * 1.0f;

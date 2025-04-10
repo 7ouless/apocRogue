@@ -16,7 +16,6 @@ import io.github.apocRogue.globals.stats.StatsComponent;
  * A base class for any AI-driven enemy/mob in your game.
  * It holds common fields like stats, velocity, collision, etc.
  */
-ppackage io.github.apocRogue.actors.superClasses;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
@@ -51,7 +50,7 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         this.stats = stats;
 
         // For example, set hearingThreshold = 0.2f
-        this.alertComponent = new SoundAlertComponent(0.2f);
+        this.alertComponent = new SoundAlertComponent(0.00000001f);
     }
 
     @Override
@@ -171,5 +170,18 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         }
         return null;
     }
-
+    protected void checkCollisionWithPlayer() {
+        if (getStage() == null) return;
+        for (Actor actor : getStage().getActors()) {
+            if (actor instanceof PlayerActor) {
+                PlayerActor player = (PlayerActor) actor;
+                // Assuming both EnemyActor and PlayerActor have a proper getBounds() method
+                if (getBounds().overlaps(player.getBounds())) {
+                    // Handle collision: for example, inflict damage or trigger an alert.
+                    player.takeDamage(0);  // Adjust damage accordingly
+                }
+            }
+        }
+    }
 }
+

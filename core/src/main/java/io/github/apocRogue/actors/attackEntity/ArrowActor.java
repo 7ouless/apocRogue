@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.weapons.RangedAttackActor;
 import io.github.apocRogue.weapons.Weapon;
 
@@ -21,6 +22,13 @@ public class ArrowActor extends RangedAttackActor {
                       int projectileValue,
                       int noiseLevel, Weapon weapon, PlayerActor player, Vector2 direction ) {
         super(player, texture, damage, stage, weapon, direction);
+        SoundPhysics.emitSound(
+            new Vector2(getX(), getY()),
+            weapon.getFlightNoiseIntensity(),
+            weapon.getFlightNoiseRadius(),
+            SoundPhysics.SoundType.PROJECTILE_FLIGHT,
+            player.getStage()
+        );
         // Set the noise level from the weapon.
         this.noiseLevel = noiseLevel;
         setPosition(startX, startY);

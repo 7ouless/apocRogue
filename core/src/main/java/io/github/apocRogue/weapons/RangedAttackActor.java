@@ -49,9 +49,9 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         if (velocity.len2() > 0) {
             setRotation(velocity.angleDeg());
         }
-
-        if (timeSinceLastSound >= 0.25f) {
-            timeSinceLastSound -= 0.25f;
+        timeSinceLastSound += delta;
+        if (timeSinceLastSound >= 0.05f) {
+            timeSinceLastSound -= 0.05f;
             SoundPhysics.emitSound(
                 new Vector2(getX(), getY()),
                 weapon.getFlightNoiseIntensity(),
@@ -79,21 +79,12 @@ public abstract class RangedAttackActor extends BaseAttackActor {
                     // 1) Trigger sound alert for enemies
                     Vector2 collisionPoint = new Vector2(getX(), getY());
                     SoundPhysics.emitSound(
-                        new Vector2(player.getX(), player.getY()),
-                        weapon.getMeleeNoiseIntensity(),
-                        weapon.getMeleeNoiseRadius(),
+                        new Vector2(getX(), getY()),
+                        weapon.getImpactNoiseIntensity(),
+                        weapon.getImpactNoiseRadius(),
                         SoundPhysics.SoundType.PROJECTILE_IMPACT,
                         player.getStage()
                     );
-                    // Copy again if you need another loop in the same method
-                    Array<Actor> secondCopy = new Array<>(stage.getActors());
-                    for (Actor a : secondCopy) {
-                        if (a instanceof EnemyActor) {
-                            EnemyActor enemy = (EnemyActor) a;
-                            float dist = collisionPoint.dst(enemy.getX(), enemy.getY());
-
-                        }
-                    }
                     remove();
                     break;
                 }
