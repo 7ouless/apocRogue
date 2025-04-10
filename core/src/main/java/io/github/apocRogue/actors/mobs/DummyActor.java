@@ -29,7 +29,7 @@ public class DummyActor extends EnemyActor {
             texture,
             x,
             y,
-            new StatsComponent(50, 50, 5, 0, 60, 0, 1, 1000, 8) // example stats
+            new StatsComponent(50, 50, 5, 0, 400, 0, 1, 300, 8) // example stats
         );
         setAIBehavior(new CompositeAIBehavior());
 

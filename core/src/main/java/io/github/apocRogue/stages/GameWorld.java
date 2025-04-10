@@ -89,7 +89,7 @@ public class GameWorld {
 
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
-        enemyCount = 0;
+        enemyCount = 1;
         for (int i = 0; i < enemyCount; i++) {
             float[] pos = getRandomSpawnPosition();
             if (pos != null) {
@@ -103,7 +103,7 @@ public class GameWorld {
                 stage.addActor(dummy);
             }
         }
-        enemyCount = 1;
+        enemyCount = 0;
         for (int i = 0; i < enemyCount; i++) {
             float[] pos = getRandomSpawnPosition();
             if (pos != null) {
