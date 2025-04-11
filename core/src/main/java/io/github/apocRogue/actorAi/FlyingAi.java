@@ -13,7 +13,7 @@ public class FlyingAi extends AIBehavior {
     private float frequency = 1f;   // Oscillations per second
 
     // Maximum distance (in game units) for chasing the player.
-    private float chaseRange = 300f;
+    private float chaseRange = 1000f;
 
     @Override
     public void updateAI(EnemyActor self, float delta) {
