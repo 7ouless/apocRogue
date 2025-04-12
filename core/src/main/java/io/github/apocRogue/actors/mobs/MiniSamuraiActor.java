@@ -37,11 +37,11 @@ public class MiniSamuraiActor extends EnemyActor {
     @Override
     public void act(float delta) {
         super.act(delta);
-        // Apply gravity, etc.
-        GravitySystem.applyGravityAndPhysics(this, delta, 1f);
-        // Update the FSM.
-        fsm.update(delta);
+        GravitySystem.applyGravityAndPhysics(this, delta, 1f);  // Then physics
+        fsm.update(delta);                      // AI (and roam) update first
+
     }
+
 
     public void changeState(State<MiniSamuraiActor> newState) {
         fsm.changeState(newState);
@@ -60,21 +60,27 @@ public class MiniSamuraiActor extends EnemyActor {
     public void roam(float delta) {
         Vector2 pos = new Vector2(getX(), getY());
         float distance = pos.dst(roamTarget);
+        System.out.println("Roaming: current pos = " + pos + ", roamTarget = " + roamTarget + ", distance = " + distance);
         if (distance < 5f) { // Target reached; pick a new roam target.
             roamTarget = getRandomRoamTarget();
+            System.out.println("New roam target set: " + roamTarget);
         } else {
             Vector2 direction = roamTarget.cpy().sub(pos).nor();
-            // Move using the normal speed stat.
+            System.out.println("Moving in direction: " + direction);
             moveBy(direction.x * normalSpeed * delta, direction.y * normalSpeed * delta);
         }
     }
 
     private Vector2 getRandomRoamTarget() {
-        // For example, choose a random point within a 200-unit radius around the current position.
-        float rx = getX() + (float)(Math.random() * 400 - 200);
-        float ry = getY() + (float)(Math.random() * 400 - 200);
+        // Generate a random offset for X within, for example, ±400 units.
+        float offsetX = (float)(Math.random() * 10000 - 400);
+        // Do not randomize Y; keep the actor's current Y.
+        float rx = getX() + offsetX;
+        float ry = getY();  // Keep the current y (remains on the platform)
+        System.out.println("Random offsets: offsetX=" + offsetX + "; New roam target: (" + rx + "," + ry + ")");
         return new Vector2(rx, ry);
     }
+
 
     /**
      * Detects if the player is close enough to trigger a state change.
