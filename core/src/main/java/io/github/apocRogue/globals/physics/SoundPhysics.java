@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
-import io.github.apocRogue.actorAi.SoundAlertComponent;
+import io.github.apocRogue.actorAi.baseAI.SoundAlertComponent;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
 
 public class SoundPhysics {

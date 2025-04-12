@@ -1,4 +1,4 @@
-package io.github.apocRogue.actorAi;
+package io.github.apocRogue.actorAi.baseAI;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;

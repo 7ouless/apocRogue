@@ -1,8 +1,7 @@
 package io.github.apocRogue.actors.mobs;
 
 import com.badlogic.gdx.graphics.Texture;
-import io.github.apocRogue.actorAi.CompositeFlyingAIBehavior;
-import io.github.apocRogue.actorAi.FlyingAi;
+import io.github.apocRogue.actorAi.flierAI.CompositeFlyingAIBehavior;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.stats.StatsComponent;

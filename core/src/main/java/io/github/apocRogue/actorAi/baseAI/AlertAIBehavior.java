@@ -1,4 +1,4 @@
-package io.github.apocRogue.actorAi;
+package io.github.apocRogue.actorAi.baseAI;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.apocRogue.actors.superClasses.EnemyActor;

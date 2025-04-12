@@ -1,19 +1,11 @@
 package io.github.apocRogue.actors.mobs;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import io.github.apocRogue.actorAi.CompositeAIBehavior;
-import io.github.apocRogue.actorAi.chaseAi;
-import io.github.apocRogue.actorAi.lineOfSight;
-import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.actorAi.flierAI.CompositeAIBehavior;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.stats.StatsComponent;  // <--- import your StatsComponent
-import io.github.apocRogue.map.FloorTile;
-import io.github.apocRogue.map.PlatformTile;
-import io.github.apocRogue.map.TileActor;
+
 
 public class DummyActor extends EnemyActor {
 

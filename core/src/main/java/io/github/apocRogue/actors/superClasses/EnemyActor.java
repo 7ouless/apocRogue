@@ -4,9 +4,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
-import io.github.apocRogue.actorAi.AIBehavior;
-import io.github.apocRogue.actorAi.SoundAlertComponent;
-import io.github.apocRogue.actorAi.lineOfSight;
+import io.github.apocRogue.actorAi.baseAI.AIBehavior;
+import io.github.apocRogue.actorAi.baseAI.SoundAlertComponent;
+import io.github.apocRogue.actorAi.baseAI.lineOfSight;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.physics.PhysicalActor;
@@ -16,18 +16,6 @@ import io.github.apocRogue.globals.stats.StatsComponent;
  * A base class for any AI-driven enemy/mob in your game.
  * It holds common fields like stats, velocity, collision, etc.
  */
-
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import io.github.apocRogue.actorAi.AIBehavior;
-import io.github.apocRogue.actorAi.SoundAlertComponent;
-import io.github.apocRogue.actorAi.lineOfSight;
-import io.github.apocRogue.actors.playerEntity.PlayerActor;
-import io.github.apocRogue.globals.physics.GravitySystem;
-import io.github.apocRogue.globals.physics.PhysicalActor;
-import io.github.apocRogue.globals.stats.StatsComponent;
 
 public class EnemyActor extends PhysicalActor implements DamageableActor {
     protected StatsComponent stats;

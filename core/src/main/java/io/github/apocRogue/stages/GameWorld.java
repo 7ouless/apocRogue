@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
+import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
@@ -36,13 +37,13 @@ public class GameWorld {
     private Array<DummyActor> enemies;
     private Array<FlyingEnemyActor> flyingEnemies;
     private Array<ChestActor> chests;
-
+    private Array<MiniSamuraiActor> samuraiActorArray;
     // Textures (you can store them here or load them externally)
     private Texture playerTexture;
     private Texture dummyTexture;
     private Texture chestTexture;
     private Texture flyingCreatureTexture;
-
+    private Texture samuraiTexture;
     public GameWorld(Stage stage) {
         // We receive the stage from outside so that GameScreen still “owns”
         // the actual rendering environment, but the logic class can manipulate it
@@ -52,6 +53,7 @@ public class GameWorld {
         enemies = new Array<>();
         flyingEnemies = new Array<>();
         chests = new Array<>();
+        samuraiActorArray = new Array<>();
     }
 
     public void initialize() {
@@ -69,6 +71,7 @@ public class GameWorld {
         playerTexture = new Texture("ui/sprite.png");
         dummyTexture = new Texture("ui/dummy.png");
         chestTexture = new Texture("ui/chest.png");
+        samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
         // Create the player
@@ -103,7 +106,7 @@ public class GameWorld {
                 stage.addActor(dummy);
             }
         }
-        enemyCount = 1;
+        enemyCount = 0;
         for (int i = 0; i < enemyCount; i++) {
             float[] pos = getRandomSpawnPosition();
             if (pos != null) {
@@ -115,6 +118,19 @@ public class GameWorld {
                 FlyingEnemyActor bat = new FlyingEnemyActor(flyingCreatureTexture, 400, mapManager.settings.groundMax + 10);
                 flyingEnemies.add(bat);
                 stage.addActor(bat);
+            }
+        }
+        enemyCount = 1;
+        for(int i = 0; i < enemyCount; i++) {
+            float[] pos = getRandomSpawnPosition();
+            if(pos != null) {
+                MiniSamuraiActor samurai = new MiniSamuraiActor(samuraiTexture, pos[0], pos[1]);
+                samuraiActorArray.add(samurai);
+                stage.addActor(samurai);
+            } else {
+                MiniSamuraiActor samurai = new MiniSamuraiActor(samuraiTexture, 400, mapManager.settings.groundMax + 35);
+                samuraiActorArray.add(samurai);
+                stage.addActor(samurai);
             }
         }
 
