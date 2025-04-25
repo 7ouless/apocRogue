@@ -19,6 +19,9 @@ import io.github.apocRogue.inventory.gameinventory.InventorySlot;
 import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.Weapon;
+import io.github.apocRogue.inventory.general.InventoryPreferences;
+import io.github.apocRogue.inventory.general.ItemManager;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,30 @@ public class InventoryUI {
 
         dragAndDrop = new DragAndDrop();
         buildLayout();
+        // Loads shit
+        ItemManager mgr = new ItemManager();
+        mgr.loadFromFile("ui/items.json");
+
+        // Pulls the saved list of names
+        List<String> saved = InventoryPreferences.load();
+
+        // Fills stash slots in order
+        for (int i = 0; i < stashSlots.size(); i++) {
+            InventorySlot slot = stashSlots.get(i);
+            if (i < saved.size()) {
+                String name = saved.get(i);
+                // find the matching Weapon by name
+                for (Weapon w : mgr.getLoadedWeapons()) {
+                    if (w.getName().equals(name)) {
+                        slot.setItem(w);
+                        break;
+                    }
+                }
+            } else {
+                slot.clearItem();
+            }
+        }
+
         setupDragAndDrop();
     }
 

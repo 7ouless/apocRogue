@@ -7,10 +7,12 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.inventory.general.ItemManager;
+import io.github.apocRogue.inventory.general.InventoryModel;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 
 import java.util.List;
@@ -187,6 +189,7 @@ public class ShopUI {
                 }
                 if (purchased != null) {
                     playerInventory.addItem(purchased);
+                    InventoryPreferences.add(itemRef.getName());
                 }
 
             }
