@@ -3,12 +3,30 @@
     "name": "Sword",
     "damage": 10,
     "texturePath": "ui/sword.png",
-    "projectileType": false
+    "projectileType": false,
+    "projectileValue": 0,
+    "ammoTexture": "ui/slash.png",
+    "animationSpeed": 5,
+    "noiseLevel": 1
   },
   {
     "name": "Bow",
     "damage": 5,
     "texturePath": "ui/bow.png",
-    "projectileType": true
+    "projectileType": true,
+    "projectileValue": 2,
+    "ammoTexture": "ui/arrow.png",
+    "animationSpeed": 1,
+    "noiseLevel": 4
+  },
+  {
+    "name": "HandGun",
+    "damage": 10,
+    "texturePath": "ui/bow.png",
+    "projectileType": true,
+    "projectileValue": 10,
+    "ammoTexture": "ui/arrow.png",
+    "animationSpeed": 1,
+    "noiseLevel": 10
   }
 ]

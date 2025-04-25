@@ -1,4 +1,6 @@
 package io.github.apocRogue.map;
+import io.github.apocRogue.globals.getters.ObstacleGetters;
+import io.github.apocRogue.globals.getters.worldGetters;
 
 public class GenerationSettings {
     public int roomWidth;
@@ -6,7 +8,6 @@ public class GenerationSettings {
     public int dummy1;
     public int dummy2;
     public int tileWidth;
-    public float smoothingFactor;
     public int octaves;
     public int groundMax;
     public int groundMin;
@@ -17,10 +18,9 @@ public class GenerationSettings {
     // 1) A default constructor (no arguments)
     public GenerationSettings() {
         // Provide sensible defaults:
-        this.roomWidth = 3000;
-        this.roomHeight = 720;
-        this.tileWidth = 25;
-        this.smoothingFactor = 0.02f;
+        this.roomWidth = worldGetters.getWorldOneWidth();
+        this.roomHeight = worldGetters.getWorldOneHeight();
+        this.tileWidth = ObstacleGetters.getStandardTileSize();
         this.octaves = 2000;
         this.groundMax = 750;
         this.groundMin = 50;
@@ -34,7 +34,6 @@ public class GenerationSettings {
         int dummy1,
         int dummy2,
         int tileWidth,
-        float smoothingFactor,
         int octaves,
         int groundMax,
         int groundMin
@@ -44,7 +43,6 @@ public class GenerationSettings {
         this.dummy1 = dummy1;
         this.dummy2 = dummy2;
         this.tileWidth = tileWidth;
-        this.smoothingFactor = smoothingFactor;
         this.octaves = octaves;
         this.groundMax = groundMax;
         this.groundMin = groundMin;

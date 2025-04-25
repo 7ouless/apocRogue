@@ -1,35 +1,39 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import io.github.apocRogue.actors.ChestActor;
-import io.github.apocRogue.actors.DummyActor;
-import io.github.apocRogue.actors.PlayerActor;
-import io.github.apocRogue.inventory.Inventory;
-import io.github.apocRogue.inventory.ItemManager;
-import io.github.apocRogue.map.GenerationSettings;
-import io.github.apocRogue.map.MapManager;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.weapons.Weapon;
 
+import io.github.apocRogue.globals.physics.SoundPhysics;
+
 public class GameScreen extends ScreenAdapter {
-    private Stage stage;
-    private Stage uiStage;
-    private Skin skin;
+
+    private stageBuilder game;
+    private Stage stage;       // For gameplay
+    private Stage uiStage;     // For HUD / normal UI
     private SpriteBatch batch;
     private OrthographicCamera camera;
-    private Texture playerTexture;
-    private PlayerActor player;
-    private Inventory inventory;
-    private stageBuilder game;
+
+    private GameWorld gameWorld;
+    private boolean paused = false; // Tracks if the game is paused
+
+    // Pause overlay members
+    private Table pauseOverlay;    // We'll add this table to uiStage and toggle visibility
+    private Skin skin;             // We assume you load a Skin for UI
+    private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
         this.game = game;
@@ -37,61 +41,69 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void show() {
+        shapeRenderer = new ShapeRenderer();
 
-        // Set up game camera and stage.
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1920, 1080);
-        stage = new Stage(new FitViewport(1920, 1080, camera));
 
-        // Set up UI stage with a ScreenViewport so it stays fixed on the screen.
+        stage = new Stage(new FitViewport(1920, 1080, camera));
         uiStage = new Stage(new FitViewport(1920, 1080));
-        // Load skin and create batch.
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
         batch = new SpriteBatch();
 
-        // Load player texture and create the player actor.
-        playerTexture = new Texture(Gdx.files.internal("ui/sprite.png"));
-        player = new PlayerActor(playerTexture);
-        player.setPosition(50, 100); // position near the bottom
-        stage.addActor(player);
+        // Load a skin for UI. If you already do this in GameWorld, that is fine
+        // but typically the game screen or the UI system loads the skin:
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create generation settings and generate the map.
-        GenerationSettings settings = new GenerationSettings();
-        settings.roomWidth = 3000;
-        settings.platformDensity = 5;
-        MapManager mapManager = new MapManager();
-        mapManager.generateMap(stage);
-
-// Update player's starting position based on generated ground.
-        player.setPosition(50, mapManager.settings.groundMax);
-        float spawnYOffset = 10; // Adjust this offset as needed
-        float spawnY = mapManager.settings.groundMax + spawnYOffset;
+        // Create the game logic container
+        gameWorld = new GameWorld(stage);
+        gameWorld.initialize();
+        gameWorld.getInventory().draw(uiStage);
 
 
-        // Create inventory UI and add it to the UI stage.
-        inventory = new Inventory(skin);
-        player.setInventory(inventory);
+        // Create normal UI or HUD elements here (if any)...
 
-        inventory.draw(uiStage);
-        Gdx.app.log("StageSize", "UI stage world width="
-            + uiStage.getViewport().getWorldWidth()
-            + ", height=" + uiStage.getViewport().getWorldHeight());
-        // Use an InputMultiplexer so both game stage and UI stage get input.
-        InputMultiplexer multiplexer = new InputMultiplexer();
+        // Create the pause overlay but keep it hidden initially
+        createPauseOverlay();
+
+        // Set up input
+        InputMultiplexer multiplexer = new InputMultiplexer(uiStage, stage);
+
+        // Optionally, you can also add a listener for ESC from here if you prefer:
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.ESCAPE) {
+                    togglePause();
+                }
+                return false;
+            }
+        });
+        multiplexer.addProcessor(new InputAdapter() {
+            @Override
+            public boolean keyDown(int keycode) {
+                if (keycode == Input.Keys.TAB) {
+                    gameWorld.getInventory().toggleInventory();
+                }
+                return false;
+            }
+        });
         multiplexer.addProcessor(new InputAdapter() {
             @Override
             public boolean scrolled(float amountX, float amountY) {
-                inventory.scrollHotbar((int) amountY);
-                return true;
+                // If user scrolls up/down, call inventory.scrollHotbar
+                // “amountY” is positive or negative depending on scroll direction
+                gameWorld.getInventory().scrollHotbar((int) amountY);
+                return false;
             }
         });
         uiStage.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 if (button == Input.Buttons.LEFT) {
-                    Weapon w = inventory.getSelectedWeapon();
+                    Weapon w = gameWorld.getInventory().getSelectedWeapon();
                     if (w != null) {
-                        w.use(player, stage);
+                        w.use(gameWorld.getPlayer(), stage);
                     }
                     // Return true if you want to consume the event
                     return true;
@@ -99,92 +111,183 @@ public class GameScreen extends ScreenAdapter {
                 return false;
             }
         });
-        Texture dummyTexture = new Texture("ui/dummy.png");
-        DummyActor dummy = new DummyActor(dummyTexture, 400, spawnY);
-        Texture chestTexture = new Texture("ui/chest.png");
 
-        // Create a list of possible items for the chest to drop
-        ItemManager itemManager = new ItemManager();
-        itemManager.loadFromFile("items.json"); // your JSON file
-
-        // Now you have an Array<Weapon> with all items
-        Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
-
-        // If you want to create a chest with random items from that list:
-        ChestActor chest = new ChestActor(chestTexture, 500, spawnY, allWeapons, skin);
-        stage.addActor(chest);
-        stage.addActor(chest);
-        stage.addActor(dummy);
-        multiplexer.addProcessor(uiStage);   // UI first
-        multiplexer.addProcessor(stage);     // Game second
+// Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
-        // Listen for key events on the UI stage.
-        uiStage.addListener(new InputListener() {
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                // Toggle inventory panel with Tab.
-                if (keycode == Input.Keys.TAB) {
-                    inventory.toggleInventory();
-                    return true;
-                }
-                // Number keys 1-5 select corresponding hotbar slots.
-                if (keycode == Input.Keys.NUM_1) {
-                    inventory.setSelectedHotbarIndex(0);
-                    return true;
-                }
-                if (keycode == Input.Keys.NUM_2) {
-                    inventory.setSelectedHotbarIndex(1);
-                    return true;
-                }
-                if (keycode == Input.Keys.NUM_3) {
-                    inventory.setSelectedHotbarIndex(2);
-                    return true;
-                }
-                if (keycode == Input.Keys.NUM_4) {
-                    inventory.setSelectedHotbarIndex(3);
-                    return true;
-                }
-                if (keycode == Input.Keys.NUM_5) {
-                    inventory.setSelectedHotbarIndex(4);
-                    return true;
-                }
-                return false;
-            }
+    }
 
-            public boolean scrolled(InputEvent event, float x, float y, int amount) {
-                // Scroll to change the selected hotbar slot.
-                inventory.scrollHotbar(amount);
-                return true;
+    private void createPauseOverlay() {
+        // This Table covers the entire screen and darkens the background
+        pauseOverlay = new Table();
+        pauseOverlay.setFillParent(true);
+
+        // A semi-transparent background (dark overlay)
+        pauseOverlay.setBackground(skin.newDrawable("white", 0, 0, 0, 0.7f));
+
+        // Add the table to the uiStage
+        uiStage.addActor(pauseOverlay);
+
+        // Now create an inner table to hold the actual menu buttons
+        Table menuTable = new Table();
+        // For convenience, we center it
+        menuTable.center();
+        pauseOverlay.add(menuTable);
+
+        // Example Buttons: Resume, Options, Quit
+        TextButton resumeButton = new TextButton("Resume", skin);
+        TextButton optionsButton = new TextButton("Options", skin);
+        TextButton exitButton = new TextButton("Exit to Main Menu", skin);
+
+        // Add them all to menuTable
+        menuTable.row();
+        menuTable.add(resumeButton).pad(10);
+        menuTable.row();
+        menuTable.add(optionsButton).pad(10);
+        menuTable.row();
+        menuTable.add(exitButton).pad(10);
+
+        // Add click listeners
+        resumeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                togglePause(); // unpause
             }
         });
-        uiStage.setDebugAll(true);
+
+        optionsButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+
+                // Hide the pause overlay so it no longer shows
+                pauseOverlay.setVisible(false);
+
+                OptionsOverlay myOverlay = new OptionsOverlay(skin);
+                myOverlay.setFillParent(true);
+                myOverlay.setModal(true);
+                myOverlay.setBackground(skin.newDrawable("white", 0, 0, 0, 0.8f));
+
+// Optionally center your internal content
+                Table content = new Table();
+                content.center();
+                myOverlay.add(content).expand().fill();
+
+// Then in 'content', add your "Controls" and "Audio" buttons.
+
+                myOverlay.setOptionsListener(new OptionsOverlay.OptionsListener() {
+                    @Override
+                    public void onShowControls() {
+                        // remove the OptionsOverlay and show the ControlsOverlay
+                        myOverlay.remove();
+                        uiStage.addActor(new ControlsOverlay(skin, myOverlay));
+                    }
+                    @Override
+                    public void onShowAudio() {
+                        myOverlay.remove();
+                        uiStage.addActor(new AudioOverlay(skin, myOverlay));
+                    }
+                    @Override
+                    public void onCloseOptions() {
+                        // remove the OptionsOverlay
+                        myOverlay.remove();
+                        // (Optional) If you want to go *back* to the pause overlay, re-show it:
+                        pauseOverlay.setVisible(true);
+                    }
+                });
+                uiStage.addActor(myOverlay);
+
+// 4) Now it has a Stage, so we can safely center it
+// Now center it on the UI stage
+                float stageWidth = uiStage.getViewport().getWorldWidth();
+                float stageHeight = uiStage.getViewport().getWorldHeight();
+                myOverlay.setPosition((stageWidth - myOverlay.getWidth()) / 2f,
+                    (stageHeight - myOverlay.getHeight()) / 2f);
+            }
+        });
+
+
+
+        exitButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                // Return to main menu or wherever you want
+                game.setScreen(new MainScreen(game));
+            }
+        });
+
+        // Hide it by default
+        pauseOverlay.setVisible(false);
+    }
+
+    private void togglePause() {
+        paused = !paused;
+        pauseOverlay.setVisible(paused);
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0, 0, 0, 1);
+        if (!paused) {
+            gameWorld.update(delta);
 
-        // Update both stages.
-        stage.act(delta);
-        uiStage.act(delta);
+            // ... check player dead logic ...
+        }
 
-        // Follow the player.
-        camera.position.set(player.getX() + player.getWidth() / 2f,
-            player.getY() + player.getHeight() / 2f, 0);
+        gameWorld.getInventory().draw(uiStage);
+
+        // Camera stuff
+        camera.position.set(
+            gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth() / 2f,
+            gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f,
+            0
+        );
         camera.update();
         stage.getViewport().apply();
         batch.setProjectionMatrix(camera.combined);
-        if(Gdx.input.isKeyJustPressed(Input.Buttons.LEFT)) {
-            Weapon w = inventory.getSelectedWeapon();
-            if (w != null) {
-                w.use(player, stage);
 
-            }
-        }
-        // Draw the game and UI.
+        // Clear
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Render the stage
         stage.draw();
+
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
+        // 1) Draw your enemy debug
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        // ... your existing logic for enemies ...
+        shapeRenderer.end();
+
+        // 2) Draw the sound debug rings
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        for (SoundPhysics.SoundDebugEvent evt : SoundPhysics.debugEvents) {
+            // fraction of time used up
+            float t = evt.timeAlive / evt.duration;
+            // alpha goes from 1 down to 0
+            float alpha = 1f - t;
+
+            // If you want the ring to fade out, set the color alpha
+            shapeRenderer.setColor(evt.color.r, evt.color.g, evt.color.b, alpha);
+
+            // Draw the ring with the currentRadius
+            shapeRenderer.circle(evt.center.x, evt.center.y, evt.currentRadius);
+        }
+        shapeRenderer.end();
+
+        // Finally draw UI
+        uiStage.act(delta);
         uiStage.draw();
     }
+
+    private PlayerActor findPlayerInStage(Stage stage) {
+        for (Actor actor : stage.getActors()) {
+            if (actor instanceof PlayerActor) {
+                return (PlayerActor) actor;
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public void resize(int width, int height) {
@@ -194,12 +297,12 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void dispose() {
+        gameWorld.dispose();
         stage.dispose();
         uiStage.dispose();
         skin.dispose();
-        if (playerTexture != null) {
-            playerTexture.dispose();
-        }
         batch.dispose();
+        shapeRenderer.dispose();
+
     }
 }

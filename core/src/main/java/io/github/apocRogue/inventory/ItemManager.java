@@ -26,7 +26,11 @@ public class ItemManager {
                 data.name,
                 data.damage,
                 new Texture(Gdx.files.internal(data.texturePath)),
-                data.projectileType
+                data.projectileType,
+                data.projectileValue,
+                data.ammoTexture,
+                data.animationSpeed,
+                data.noiseLevel
             );
             loadedWeapons.add(w);
         }
