@@ -6,6 +6,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.apocRogue.inventory.gameinventory.Inventory;
+import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.shop.ShopKeeper;
 import io.github.apocRogue.shop.ShopUI;
 import io.github.apocRogue.shop.ShopInventory;
@@ -32,7 +34,18 @@ public class ShopScreen extends ScreenAdapter {
         List<ShopKeeper> shopkeepers = ShopInventory.loadShopkeepers();
 
         // Initialise our ShopUI, passing in game
-        shopUI = new ShopUI(stage, skin, shopkeepers, game);
+        ItemManager mgr = new ItemManager();
+        mgr.loadFromFile("ui/items.json");    // now mgr.loadedWeapons contains Sword,Bow,HandGun
+
+        Inventory inv = new Inventory(skin);   // your game‐inventory UI
+        inv.draw(stage);                       // or however you show it
+
+        shopUI = new ShopUI(stage,
+            skin,
+            shopkeepers,
+            game,
+            mgr,
+            inv);
         Gdx.input.setInputProcessor(stage);
     }
 

@@ -15,7 +15,7 @@ public class TraderC extends ShopKeeper {
             300,
             1,
             3));
-        items.add(new ShopItem("Axe", "Tiny Axe. You might need two hands for it though. Give me 250 gold and it's yours.",
+        items.add(new ShopItem("Sword", "Tiny sword. You might need two hands for it though. Give me 250 gold and it's yours.",
             250,
             1,
             5));
@@ -30,6 +30,14 @@ public class TraderC extends ShopKeeper {
         items.add(new ShopItem("Bow",
             "Toothpick shooter! Maybe you can be dentist from far away. HA HA HA! Me funny! Give me 700 gold and it's yours. ",
             700,
+            2,
+            5)
+        );
+
+        items.add(new ShopItem(
+            "HandGun",
+            "Coward Bow, I prefer old style. Give me 600 gold and it's yours.",
+            600,
             2,
             5)
         );

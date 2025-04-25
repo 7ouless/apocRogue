@@ -9,6 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
+import io.github.apocRogue.weapons.Weapon;
+import io.github.apocRogue.inventory.general.ItemManager;
+import io.github.apocRogue.inventory.gameinventory.Inventory;
 
 import java.util.List;
 
@@ -40,15 +43,20 @@ public class ShopUI {
     private static final int ITEMS_PER_ROW = 3;
     private ShopKeeper currentTrader;
     private ShopItem selectedItem;
+    private final ItemManager itemManager;
+    private final Inventory playerInventory;
 
     // Restock logic
     private float restockTimer = 200f;
     private List<ShopKeeper> allTraders;
 
-    public ShopUI(Stage stage, Skin skin, List<ShopKeeper> shopkeepers, stageBuilder game) {
+    public ShopUI(Stage stage, Skin skin, List<ShopKeeper> shopkeepers, stageBuilder game, ItemManager itemManager,
+                  Inventory playerInventory) {
         this.skin = skin;
         this.game = game;
         this.allTraders = shopkeepers;
+        this.itemManager     = itemManager;
+        this.playerInventory = playerInventory;
 
         // Root layout
         Table root = new Table();
@@ -170,6 +178,17 @@ public class ShopUI {
                 } else {
                     showDialog(currentTrader.getThankYouLine(), false, true);
                 }
+                Weapon purchased = null;
+                for (Weapon w : itemManager.getLoadedWeapons()) {
+                    if (w.getName().equals(itemRef.getName())) {
+                        purchased = w;
+                        break;
+                    }
+                }
+                if (purchased != null) {
+                    playerInventory.addItem(purchased);
+                }
+
             }
         });
         dialogContainer.add(buyButton).size(110, 50).pad(10).row();

@@ -11,7 +11,7 @@ import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
-import io.github.apocRogue.inventory.gameinventory.ItemManager;
+import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.map.GenerationSettings;
 import io.github.apocRogue.map.MapManager;
 import io.github.apocRogue.map.DirtTile;

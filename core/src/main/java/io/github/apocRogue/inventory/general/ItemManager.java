@@ -1,4 +1,4 @@
-package io.github.apocRogue.inventory.gameinventory;
+package io.github.apocRogue.inventory.general;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
