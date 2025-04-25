@@ -12,7 +12,7 @@ import io.github.apocRogue.globals.getters.ObstacleGetters;
 import io.github.apocRogue.globals.movementProcesses.StepUpProcessor;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
-import io.github.apocRogue.inventory.Inventory;
+import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.map.*;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import com.badlogic.gdx.scenes.scene2d.Actor;

@@ -1,4 +1,4 @@
-package io.github.apocRogue.inventory;
+package io.github.apocRogue.inventory.gameinventory;
 
 import io.github.apocRogue.weapons.Weapon;
 

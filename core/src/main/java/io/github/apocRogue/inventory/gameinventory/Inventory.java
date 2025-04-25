@@ -1,4 +1,4 @@
-package io.github.apocRogue.inventory;
+package io.github.apocRogue.inventory.gameinventory;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
