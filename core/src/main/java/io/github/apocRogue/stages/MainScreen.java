@@ -41,6 +41,16 @@ public class MainScreen extends ScreenAdapter {
         });
         window.add(buttonOpen).row();
 
+        TextButton invBtn = new TextButton("Inventory", skin);
+        invBtn.pad(8f);
+        invBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new InventoryScreen(game));
+            }
+        });
+        window.add(invBtn).row();
+
         TextButton shopBtn = new TextButton("Shop", skin);
         shopBtn.pad(8f);
         shopBtn.addListener(new ChangeListener() {
@@ -51,15 +61,7 @@ public class MainScreen extends ScreenAdapter {
         });
         window.add(shopBtn).row();
 
-        TextButton invBtn = new TextButton("Inventory", skin);
-        invBtn.pad(8f);
-        invBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new InventoryScreen(game));
-            }
-        });
-        window.add(invBtn).row();
+
 
         window.pack();
         window.setPosition(
