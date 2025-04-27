@@ -27,4 +27,6 @@ public class FiniteStateMachine<T> {
     public State<T> getCurrentState() {
         return currentState;
     }
+
+
 }

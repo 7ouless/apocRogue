@@ -8,26 +8,25 @@ import io.github.apocRogue.actorAi.FiniteStateMachine.State;
 import io.github.apocRogue.actorAi.samuraiAI.RoamingState;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
+import io.github.apocRogue.globals.getters.ObstacleGetters;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import io.github.apocRogue.globals.stats.StatsComponent;
 
 public class MiniSamuraiActor extends EnemyActor {
-    // The FSM that manages our states
     private FiniteStateMachine<MiniSamuraiActor> fsm;
-    // A target for roaming movement
+    // Roam target is now only an X target (Y remains constant).
     private Vector2 roamTarget;
-    // Variables used for dash (attack) movement.
     private boolean dashing;
     private Vector2 dashDirection;
-    private float dashSpeed = 500f; // units per second during dash
-    private float normalSpeed;     // from stats (set in constructor)
+    private float dashSpeed = 500f;
+    private float normalSpeed;
 
     public MiniSamuraiActor(Texture texture, float x, float y) {
-        // Note: Here we raise the speed stat to make movement visible.
-        super(texture, x, y, new StatsComponent(250, 250, 100, 0, 400, 0, 1, 300, 8));
-        // Initialize the FSM with RoamingState as the starting state.
+        // Increase speed for visibility.
+        super(texture, x, y, new StatsComponent(250, 250, 100, 0, 400, 0, 1, 1000, 8));
+        // Use a PlatformRoamState instead of the generic RoamingState if desired.
         fsm = new FiniteStateMachine<>(this, new RoamingState());
-        // For roaming, we set an initial roam target.
+        // Initialize roam target with the current X and fixed Y.
         roamTarget = new Vector2(x, y);
         dashing = false;
         dashDirection = new Vector2(0, 0);
@@ -37,131 +36,121 @@ public class MiniSamuraiActor extends EnemyActor {
     @Override
     public void act(float delta) {
         super.act(delta);
-        GravitySystem.applyGravityAndPhysics(this, delta, 1f);  // Then physics
-        fsm.update(delta);                      // AI (and roam) update first
-
+        GravitySystem.applyGravityAndPhysics(this, delta, 1f);
+        fsm.update(delta);
     }
-
 
     public void changeState(State<MiniSamuraiActor> newState) {
         fsm.changeState(newState);
     }
-
     public FiniteStateMachine<MiniSamuraiActor> getStateMachine() {
         return fsm;
     }
 
-    // --- Reusable movement methods ---
-
     /**
-     * Roams toward a roam target. If within a small threshold,
-     * picks a new random target nearby.
+     * Roams only horizontally.
      */
     public void roam(float delta) {
         Vector2 pos = new Vector2(getX(), getY());
         float distance = pos.dst(roamTarget);
         System.out.println("Roaming: current pos = " + pos + ", roamTarget = " + roamTarget + ", distance = " + distance);
-        if (distance < 5f) { // Target reached; pick a new roam target.
+        if (distance < 5f) {
             roamTarget = getRandomRoamTarget();
             System.out.println("New roam target set: " + roamTarget);
         } else {
             Vector2 direction = roamTarget.cpy().sub(pos).nor();
+            // Ensure only horizontal movement.
+            direction.y = 0;
             System.out.println("Moving in direction: " + direction);
-            moveBy(direction.x * normalSpeed * delta, direction.y * normalSpeed * delta);
+            moveBy(direction.x * normalSpeed * delta, 0);
         }
     }
 
+    /**
+     * Generates a random roam target along the X axis within platform bounds.
+     */
     private Vector2 getRandomRoamTarget() {
-        // Generate a random offset for X within, for example, ±400 units.
-        float offsetX = (float)(Math.random() * 10000 - 400);
-        // Do not randomize Y; keep the actor's current Y.
-        float rx = getX() + offsetX;
-        float ry = getY();  // Keep the current y (remains on the platform)
-        System.out.println("Random offsets: offsetX=" + offsetX + "; New roam target: (" + rx + "," + ry + ")");
-        return new Vector2(rx, ry);
+        Vector2 bounds = getCurrentPlatformBounds();
+        float newX = bounds.x + (float)Math.random() * (bounds.y - bounds.x);
+        return new Vector2(newX, getY());
     }
 
+    /**
+     * Computes the horizontal bounds of the platform.
+     * (For now, we assume the platform is one contiguous tile; replace with
+     * your actual platform calculation if needed.)
+     */
+    public Vector2 getCurrentPlatformBounds() {
+        float tileSize = ObstacleGetters.getStandardTileSize();
+        // Get the tile in which the center lies.
+        float centerX = getX() + getWidth() / 2;
+        int tileColumn = (int)(centerX / tileSize);
+        // Assume the platform spans, say, 3 tiles for a wider roaming area.
+        float minX = (tileColumn - 1) * tileSize;
+        float maxX = (tileColumn + 2) * tileSize;
+        return new Vector2(minX, maxX);
+    }
 
     /**
-     * Detects if the player is close enough to trigger a state change.
-     * (Replace this with your actual line-of-sight or proximity test.)
+     * Detection: returns true if the player is laterally on this platform.
      */
     public boolean detectPlayer() {
         PlayerActor player = findPlayer();
         if (player != null) {
-            float dx = (player.getX() + player.getWidth() / 2) - (getX() + getWidth() / 2);
-            float dy = (player.getY() + player.getHeight() / 2) - (getY() + getHeight() / 2);
-            return Math.sqrt(dx * dx + dy * dy) < 100;
+            float dx = (player.getX() + player.getWidth()/2) - (getX() + getWidth()/2);
+            // Consider detection range (adjust the threshold as needed)
+            double distance = Math.abs(dx);
+            Vector2 bounds = getCurrentPlatformBounds();
+            float playerCenterX = player.getX() + player.getWidth()/2;
+            return (distance < 100 && playerCenterX >= bounds.x && playerCenterX <= bounds.y);
         }
         return false;
     }
 
-    private PlayerActor findPlayer() {
-        if (getStage() == null)
-            return null;
-        for (Actor actor : getStage().getActors()) {
-            if (actor instanceof PlayerActor)
-                return (PlayerActor) actor;
-        }
-        return null;
-    }
-
     public void startRoaming() {
-        // When entering roaming, pick a random target.
         roamTarget = getRandomRoamTarget();
     }
-
     public void stopRoaming() {
-        // Set roam target to current position so no roaming occurs.
         roamTarget.set(getX(), getY());
     }
-
-    /**
-     * Immediately stops any movement.
-     */
     public void stopMovement() {
         velocityX = 0;
         velocityY = 0;
     }
-
     public void playReadyAnimation() {
-        // This is where you’d trigger an animation. For now, we print to console.
         System.out.println("Samurai: Ready Up!");
     }
-
     public void playSlashAnimation() {
         System.out.println("Samurai: SLASH!");
     }
-
     /**
-     * Called when beginning the dash/slash attack. Determines the dash direction.
+     * When dashing, calculate dash direction toward the player,
+     * then force dash to be horizontal.
      */
     public void startDash() {
-        // Use the player's current position as the target if available.
         PlayerActor player = findPlayer();
         if (player != null) {
             Vector2 pos = new Vector2(getX(), getY());
             Vector2 target = new Vector2(player.getX(), player.getY());
             dashDirection = target.sub(pos).nor();
         } else {
-            // Default dash direction (to the right).
             dashDirection.set(1, 0);
         }
+        dashDirection.y = 0;
+        dashDirection.nor();
         dashing = true;
     }
-
     /**
-     * Moves the samurai quickly in the determined dash direction.
+     * Dashes horizontally. Clamp the new X within platform bounds.
      */
     public void dashTowardsTarget(float delta) {
         if (dashing) {
-            moveBy(dashDirection.x * dashSpeed * delta, dashDirection.y * dashSpeed * delta);
+            float newX = getX() + dashDirection.x * dashSpeed * delta;
+            Vector2 bounds = getCurrentPlatformBounds();
+            newX = Math.max(bounds.x, Math.min(newX, bounds.y));
+            setX(newX);
         }
     }
-
-    /**
-     * Ends the dash, resetting the dashing flag.
-     */
     public void endDash() {
         dashing = false;
     }

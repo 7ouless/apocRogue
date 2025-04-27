@@ -6,23 +6,21 @@ import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 public class RoamingState implements State<MiniSamuraiActor> {
     @Override
     public void enter(MiniSamuraiActor samurai) {
-        // Optionally set an idle animation.
+        samurai.startRoaming();
     }
 
     @Override
     public void update(MiniSamuraiActor samurai, float delta) {
-        // Do roaming logic (e.g. random movement, patrolling)
         samurai.roam(delta);
-
-        // Check if the player is within detection range using line-of-sight or distance.
         if (samurai.detectPlayer()) {
-            // Transition to the ready-up state.
-            samurai.changeState(new ReadyUpState());
+            if (samurai.isPlayerInCameraView()) {
+                samurai.changeState(new ReadyUpState());
+            } else {
+                samurai.changeState(new MoveToViewState());
+            }
         }
     }
 
     @Override
-    public void exit(MiniSamuraiActor samurai) {
-        // Cleanup if needed.
-    }
+    public void exit(MiniSamuraiActor samurai) { }
 }
