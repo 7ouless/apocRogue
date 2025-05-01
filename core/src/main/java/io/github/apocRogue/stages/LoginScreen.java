@@ -2,10 +2,10 @@ package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.apocRogue.database.DBManager;
@@ -21,63 +21,71 @@ public class LoginScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        stage = new Stage(new FitViewport(1080,720));
+        stage = new Stage(new FitViewport(400, 280));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        Window win = new Window("Login", skin);
-        win.defaults().pad(8);
+        Table table = new Table(skin);
+        table.setFillParent(true);
+        table.pad(15);
 
-        final TextField userField = new TextField("", skin);
-        final TextField passField = new TextField("", skin);
+        // Title
+        Label title = new Label("Welcome to APOC Rogue", skin);
+        title.setFontScale(1.3f);
+        table.add(title).colspan(2).padBottom(15f).row();
+
+        // Username label + field
+        table.add(new Label("Username:", skin)).left().padBottom(8f);
+        TextField userField = new TextField("", skin);
+        userField.getStyle().background =
+            skin.newDrawable("textfield", 0.9f, 0.9f, 0.9f, 1f);
+        userField.setAlignment(Align.center);
+        table.add(userField).width(180f).padBottom(8f).row();
+
+        // Password label + field
+        table.add(new Label("Password:", skin)).left().padBottom(8f);
+        TextField passField = new TextField("", skin);
         passField.setPasswordMode(true);
         passField.setPasswordCharacter('*');
-        final Label feedback = new Label("", skin);
+        passField.getStyle().background =
+            skin.newDrawable("textfield", 0.9f, 0.9f, 0.9f, 1f);
+        passField.setAlignment(Align.center);
+        table.add(passField).width(180f).padBottom(10f).row();
 
-        win.add("Username:").row();
-        win.add(userField).row();
-        win.add("Password:").row();
-        win.add(passField).row();
-        win.add(feedback).row();
+        // Feedback
+        Label feedback = new Label("", skin);
+        table.add(feedback).colspan(2).padBottom(10f).row();
 
-        TextButton loginBtn = new TextButton("Login", skin);
+        // Buttons
+        TextButton loginBtn    = new TextButton("Login",        skin);
+        TextButton registerBtn = new TextButton("Create Account", skin);
+        loginBtn.pad(6f,12f,6f,12f);
+        registerBtn.pad(6f,12f,6f,12f);
+
         loginBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                try {
-                    boolean ok = DBManager.authenticate(userField.getText(), passField.getText());
-                    if (ok) {
-                        game.setScreen(new MainScreen(game));
-                    } else {
-                        feedback.setText("Invalid credentials");
-                    }
-                } catch (Exception e) {
-                    feedback.setText("DB error");
-                    e.printStackTrace();
+            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+                if (DBManager.authenticate(userField.getText(), passField.getText())) {
+                    game.setScreen(new MainScreen(game));
+                } else {
+                    feedback.setText("Please enter both username and password");
                 }
             }
         });
-        TextButton registerBtn = new TextButton("Create Account", skin);
         registerBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
+            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
                 game.setScreen(new RegisterScreen(game));
             }
         });
 
-        win.add(loginBtn).padTop(16);
-        win.add(registerBtn).padTop(16);
-        win.pack();
-        win.setPosition(
-            stage.getWidth()/2 - win.getWidth()/2,
-            stage.getHeight()/2 - win.getHeight()/2
-        );
-        stage.addActor(win);
+        table.add(loginBtn).width(100f).padRight(8f);
+        table.add(registerBtn).width(100f).row();
+
+        stage.addActor(table);
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
-        ScreenUtils.clear(0,0,0,1);
+        ScreenUtils.clear(0.1f,0.1f,0.1f,1f);
         stage.act(delta);
         stage.draw();
     }

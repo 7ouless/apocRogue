@@ -55,12 +55,19 @@ public class MainScreen extends ScreenAdapter {
         shopBtn.pad(8f);
         shopBtn.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                // Switch to shop screen
                 game.setScreen(new ShopScreen(game));
             }
         });
         window.add(shopBtn).row();
 
+        TextButton logoutBtn = new TextButton("Logout", skin);
+        logoutBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new LoginScreen(game));
+            }
+        });
+        window.add(logoutBtn).row();
 
 
         window.pack();
