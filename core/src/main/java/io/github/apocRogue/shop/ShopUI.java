@@ -12,7 +12,6 @@ import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.inventory.general.ItemManager;
-import io.github.apocRogue.inventory.general.InventoryModel;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 
 import java.util.List;

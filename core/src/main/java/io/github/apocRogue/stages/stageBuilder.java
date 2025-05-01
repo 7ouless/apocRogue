@@ -1,11 +1,12 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import io.github.apocRogue.database.DBManager;
 
 public class stageBuilder extends Game {
     @Override
     public void create() {
-        // Initialize resources common to all screens if needed
-        setScreen(new MainScreen(this));
+        setScreen(new LoginScreen(this));
     }
 }
