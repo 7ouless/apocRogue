@@ -18,7 +18,14 @@ public class Weapon {
     private String ammoTexture;
     private int animationSpeed;
     private int noiseLevel;
-    public Weapon(String name, int damage, Texture texture, boolean projectileType, int projectileValue, String ammoTexture, int animationSpeed, int noiseLevel) {
+    private float dashSpeed;
+    private float dashDuration;
+    private float dashCooldown;
+
+    public Weapon(String name, int damage, Texture texture,
+                  boolean projectileType, int projectileValue,
+                  String ammoTexture, int animationSpeed, int noiseLevel,
+                  float dashSpeed, float dashDuration, float dashCooldown) {
         this.name = name;
         this.damage = damage;
         this.texture = texture;
@@ -27,6 +34,9 @@ public class Weapon {
         this.ammoTexture = ammoTexture;
         this.animationSpeed = animationSpeed;
         this.noiseLevel = noiseLevel;
+        this.dashSpeed       = dashSpeed;
+        this.dashDuration    = dashDuration;
+        this.dashCooldown    = dashCooldown;
 
     }
 
@@ -52,13 +62,33 @@ public class Weapon {
         return ammoTexture;
     }
 
+    public float getDashSpeed()    { return dashSpeed; }
+    public float getDashDuration() { return dashDuration; }
+    public float getDashCooldown() { return dashCooldown; }
+
+
     public void use(PlayerActor player, Stage stage) {
         int wepDamage = getDamage(); // e.g. 10
         Vector2 target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
 
         Vector2 direction = new Vector2(target.x - player.getX(), target.y - player.getY()).nor();
 
-        if (projectileType) {
+        if ("Katana".equals(name)) {
+            // 1) spawn the dash-attack actor
+            DashAttackActor dash = new DashAttackActor(
+                getTexture(),
+                player,
+                getDamage(),
+                stage,
+                getDashSpeed(),
+                getDashDuration()
+            );
+            stage.addActor(dash);
+            return;
+        }
+
+
+        else if (projectileType) {
             // Ranged: create arrow
             Texture arrowTexture = new Texture(getAmmoTexture());
             target = stage.screenToStageCoordinates(new Vector2(Gdx.input.getX(), Gdx.input.getY()));

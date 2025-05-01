@@ -30,7 +30,10 @@ public class ItemManager {
                 data.projectileValue,
                 data.ammoTexture,
                 data.animationSpeed,
-                data.noiseLevel
+                data.noiseLevel,
+                data.dashSpeed,
+                data.dashDuration,
+                data.dashCooldown
             );
             loadedWeapons.add(w);
         }

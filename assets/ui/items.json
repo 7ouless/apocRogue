@@ -28,5 +28,18 @@
     "ammoTexture": "ui/arrow.png",
     "animationSpeed": 1,
     "noiseLevel": 10
+  },
+  {
+    "name": "Katana",
+    "damage": 15,
+    "texturePath": "ui/katana.png",
+    "projectileType": false,
+    "projectileValue": 0,
+    "ammoTexture": "ui/katana_slash.png",
+    "animationSpeed": 5,
+    "noiseLevel": 2,
+    "dashSpeed": 1500.0,
+    "dashDuration": 0.2,
+    "dashCooldown": 4.0
   }
 ]

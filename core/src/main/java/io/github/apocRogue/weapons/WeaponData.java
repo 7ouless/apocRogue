@@ -9,5 +9,8 @@ public class WeaponData {
     public String ammoTexture;
     public int animationSpeed;
     public int noiseLevel;
+    public float dashSpeed;
+    public float dashDuration;
+    public float dashCooldown;
     // If you have more fields, add them here
 }

@@ -16,6 +16,7 @@ import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.map.*;
 import io.github.apocRogue.globals.physics.GravitySystem;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import io.github.apocRogue.weapons.Weapon;
 // ... other imports
 
 public class PlayerActor extends PhysicalActor {
@@ -35,6 +36,9 @@ public class PlayerActor extends PhysicalActor {
     private Inventory inventory;  // store a reference to the player's Inventory
     // For double-tap detection
     private float timeCounter = 0f;
+
+    private float katanaCooldownTimer = 0f;
+    private boolean isWeaponDashing = false;
 
     // The Player's Stats
     // Example Stats
@@ -59,6 +63,35 @@ public class PlayerActor extends PhysicalActor {
     public void act(float delta) {
         super.act(delta);
 
+        // tick down cooldown
+        if (katanaCooldownTimer > 0f) {
+            katanaCooldownTimer -= delta;
+        }
+
+
+
+        if (Gdx.input.isKeyJustPressed(Input.Buttons.LEFT)) {
+            Weapon w = inventory.getSelectedWeapon();
+            if ("Katana".equals(w.getName())) {
+                // Only fire if not already dashing and cooldown expired
+                if (!isWeaponDashing && katanaCooldownTimer <= 0f) {
+                    w.use(this, getStage());
+                    katanaCooldownTimer = 2f;        // lock out for 2 seconds
+                }
+            } else {
+                w.use(this, getStage());
+            }
+        }
+
+        if (isWeaponDashing) {
+            // nothing here—velocityX is driven by DashAttackActor
+        } else {
+            // your normal friction + double-tap dash + horizontal movement
+            if (!isDashing) velocityX *= friction;
+            handleHorizontalMovement(delta);
+            handleDash(delta);
+        }
+
         // Apply physics via GravitySystem with factor=1f for normal gravity:
         GravitySystem.applyGravityAndPhysics(this, delta, 1f);
         timeCounter += delta;
@@ -67,7 +100,7 @@ public class PlayerActor extends PhysicalActor {
         handleChestInteraction();
         handleItemPickups();
         // Apply friction if not dashing:
-        if (!isDashing) {
+        if (!isDashing && !isWeaponDashing) {
             velocityX *= friction;
         }
 
@@ -84,8 +117,14 @@ public class PlayerActor extends PhysicalActor {
         // Move horizontally (GravitySystem handled vertical in applyGravityAndPhysics)
         setX(getX() + velocityX * delta);
 
+        if (katanaCooldownTimer > 0f) {
+            katanaCooldownTimer -= delta;
+        }
+
 
     }
+
+
 
     private void handleHorizontalMovement(float delta) {
         boolean movingLeft  = Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT);
@@ -139,6 +178,11 @@ public class PlayerActor extends PhysicalActor {
             isOnGround = false;
         }
     }
+
+
+    public void setWeaponDashing(boolean d) { this.isWeaponDashing = d; }
+    public boolean isWeaponDashing()        { return isWeaponDashing; }
+
 
     private boolean overlapsHorizontally(TileActor tile) {
         float playerLeft = getX();
