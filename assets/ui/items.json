@@ -35,7 +35,7 @@
     "texturePath": "ui/katana.png",
     "projectileType": false,
     "projectileValue": 0,
-    "ammoTexture": "ui/katana_slash.png",
+    "ammoTexture": "ui/katana.png",
     "animationSpeed": 5,
     "noiseLevel": 2,
     "dashSpeed": 1500.0,
