@@ -69,20 +69,6 @@ public class PlayerActor extends PhysicalActor {
         }
 
 
-
-        if (Gdx.input.isKeyJustPressed(Input.Buttons.LEFT)) {
-            Weapon w = inventory.getSelectedWeapon();
-            if ("Katana".equals(w.getName())) {
-                // Only fire if not already dashing and cooldown expired
-                if (!isWeaponDashing && katanaCooldownTimer <= 0f) {
-                    w.use(this, getStage());
-                    katanaCooldownTimer = 2f;        // lock out for 2 seconds
-                }
-            } else {
-                w.use(this, getStage());
-            }
-        }
-
         if (isWeaponDashing) {
             // nothing here—velocityX is driven by DashAttackActor
         } else {
