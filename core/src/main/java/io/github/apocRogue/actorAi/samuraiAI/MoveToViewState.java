@@ -1,4 +1,8 @@
+package io.github.apocRogue.actorAi.samuraiAI;
+
 import io.github.apocRogue.actorAi.FiniteStateMachine.State;
+import io.github.apocRogue.actorAi.samuraiAI.ReadyUpState;
+import io.github.apocRogue.actorAi.samuraiAI.RoamingState;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 

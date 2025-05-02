@@ -1,8 +1,11 @@
 package io.github.apocRogue.actors.mobs;
 
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actorAi.FiniteStateMachine.FiniteStateMachine;
 import io.github.apocRogue.actorAi.FiniteStateMachine.State;
 import io.github.apocRogue.actorAi.samuraiAI.RoamingState;
@@ -153,5 +156,34 @@ public class MiniSamuraiActor extends EnemyActor {
     }
     public void endDash() {
         dashing = false;
+    }
+    public boolean isPlayerInCameraView() {
+        PlayerActor player = findPlayer();
+        if (player == null) return false;
+
+        Stage stage = getStage();
+        if (stage == null) return false;
+
+        Camera cam = stage.getCamera();
+        if (!(cam instanceof OrthographicCamera)) {
+            // if you ever use a different camera type, handle it here
+            return false;
+        }
+        OrthographicCamera ocam = (OrthographicCamera)cam;
+
+        // world-units half-width/height of what the camera sees
+        float halfW = (ocam.viewportWidth * ocam.zoom) / 2f;
+        float halfH = (ocam.viewportHeight * ocam.zoom) / 2f;
+
+        // camera center in world-coords
+        float camX = ocam.position.x;
+        float camY = ocam.position.y;
+
+        // player center in world-coords
+        float pX = player.getX() + player.getWidth()  / 2f;
+        float pY = player.getY() + player.getHeight() / 2f;
+
+        return (pX >= camX - halfW && pX <= camX + halfW)
+            && (pY >= camY - halfH && pY <= camY + halfH);
     }
 }
