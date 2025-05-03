@@ -46,6 +46,7 @@ public class GameWorld {
     private Texture chestTexture;
     private Texture flyingCreatureTexture;
     private Texture samuraiTexture;
+
     public GameWorld(Stage stage) {
         // We receive the stage from outside so that GameScreen still “owns”
         // the actual rendering environment, but the logic class can manipulate it

@@ -1,0 +1,26 @@
+{
+  "01": {
+    "name": "Sword",
+    "texturePath": "ui/sword.png",
+    "ammoTexture": "ui/slash.png",
+    "projectileType": false
+  },
+  "02": {
+    "name": "Bow",
+    "texturePath": "ui/bow.png",
+    "ammoTexture": "ui/arrow.png",
+    "projectileType": true
+  },
+  "03": {
+    "name": "HandGun",
+    "texturePath": "ui/bow.png",
+    "ammoTexture": "ui/arrow.png",
+    "projectileType": true
+  },
+  "04": {
+    "name": "Katana",
+    "texturePath": "ui/katana.png",
+    "ammoTexture": "ui/katana.png",
+    "projectileType": false
+  }
+}

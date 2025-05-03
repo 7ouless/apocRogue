@@ -1,41 +1,42 @@
 [
   {
     "name": "Sword",
+    "typeID": "01",
     "damage": 10,
-    "texturePath": "ui/sword.png",
-    "projectileType": false,
     "projectileValue": 0,
-    "ammoTexture": "ui/slash.png",
     "animationSpeed": 5,
-    "noiseLevel": 1
+    "noiseLevel": 1,
+    "dashSpeed": 0.0,
+    "dashDuration": 0.0,
+    "dashCooldown": 0.0
   },
   {
     "name": "Bow",
+    "typeID": "02",
     "damage": 5,
-    "texturePath": "ui/bow.png",
-    "projectileType": true,
     "projectileValue": 2,
-    "ammoTexture": "ui/arrow.png",
     "animationSpeed": 1,
-    "noiseLevel": 4
+    "noiseLevel": 4,
+    "dashSpeed": 0.0,
+    "dashDuration": 0.0,
+    "dashCooldown": 0.0
   },
   {
     "name": "HandGun",
+    "typeID": "03",
     "damage": 10,
-    "texturePath": "ui/bow.png",
-    "projectileType": true,
     "projectileValue": 10,
-    "ammoTexture": "ui/arrow.png",
     "animationSpeed": 1,
-    "noiseLevel": 10
+    "noiseLevel": 10,
+    "dashSpeed": 0.0,
+    "dashDuration": 0.0,
+    "dashCooldown": 0.0
   },
   {
     "name": "Katana",
+    "typeID": "04",
     "damage": 15,
-    "texturePath": "ui/katana.png",
-    "projectileType": false,
     "projectileValue": 0,
-    "ammoTexture": "ui/katana.png",
     "animationSpeed": 5,
     "noiseLevel": 2,
     "dashSpeed": 1500.0,
