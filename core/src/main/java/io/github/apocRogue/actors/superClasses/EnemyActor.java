@@ -149,7 +149,7 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         }
     }
 
-    private PlayerActor findPlayer() {
+    public PlayerActor findPlayer() {
         if (getStage() == null) return null;
         for (Actor actor : getStage().getActors()) {
             if (actor instanceof PlayerActor) {

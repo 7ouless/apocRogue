@@ -11,6 +11,7 @@ import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
+import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.map.GenerationSettings;
 import io.github.apocRogue.map.MapManager;
@@ -21,6 +22,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import io.github.apocRogue.globals.physics.SoundPhysics;
+
+import java.util.List;
 
 public class GameWorld {
 
@@ -88,7 +91,15 @@ public class GameWorld {
         itemManager = new ItemManager();
         itemManager.loadFromFile("items.json");
         Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
-
+        List<String> saved = InventoryPreferences.load();
+        for (String itemName : saved) {
+            for (Weapon w : allWeapons) {
+                if (w.getName().equals(itemName)) {
+                    inventory.addItem(w);
+                    break;
+                }
+            }
+        }
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         enemyCount = 0;

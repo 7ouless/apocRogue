@@ -2,13 +2,16 @@ package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.apocRogue.database.DBManager;
+import io.github.apocRogue.database.JsonCallback;
 
 public class RegisterScreen extends ScreenAdapter {
     private final stageBuilder game;
@@ -71,20 +74,44 @@ public class RegisterScreen extends ScreenAdapter {
         createBtn.pad(6f,12f,6f,12f);
         backBtn.pad(6f,12f,6f,12f);
 
+// inside your createBtn listener:
         createBtn.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
-                String u = userField.getText();
-                String p = passField.getText();
-                String pc= passConfirm.getText();
+            @Override public void changed(ChangeEvent event, Actor actor) {
+                String u = userField.getText().trim();
+                String p = passField.getText().trim();
+                String pc = passConfirm.getText().trim();
+
                 if (!p.equals(pc)) {
                     feedback.setText("Passwords do not match");
                     return;
                 }
-                if (DBManager.register(u, p)) {
-                    game.setScreen(new MainScreen(game));
-                } else {
-                    feedback.setText("Username taken");
-                }
+                feedback.setText("…creating account…");
+
+                DBManager.get().register(u, p, new JsonCallback() {
+                    @Override
+                    public void onSuccess(String json) {
+                    }
+
+                    @Override
+                    public void onSuccess(JsonValue data) {
+                        System.out.println("SUCCESS");
+                        boolean registered = data.getBoolean("registered", false);
+                        Gdx.app.postRunnable(() -> {
+                            if (registered) {
+                                game.setScreen(new MainScreen(game));
+                            } else {
+                                feedback.setText("Username already taken");
+                            }
+                        });
+                    }
+                    @Override
+                    public void onError(Throwable t) {
+                        Gdx.app.postRunnable(() -> {
+                            feedback.setText("Network error");
+                            System.out.println("NETWORK ERROR");
+                        });
+                    }
+                });
             }
         });
         backBtn.addListener(new ChangeListener() {
