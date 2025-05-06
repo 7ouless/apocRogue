@@ -8,6 +8,7 @@ public class GenerationSettings {
     public int dummy1;
     public int dummy2;
     public int tileWidth;
+    public int tileHeight;
     public int octaves;
     public int groundMax;
     public int groundMin;
@@ -34,6 +35,7 @@ public class GenerationSettings {
         int dummy1,
         int dummy2,
         int tileWidth,
+        int tileHeight,
         int octaves,
         int groundMax,
         int groundMin
@@ -43,6 +45,7 @@ public class GenerationSettings {
         this.dummy1 = dummy1;
         this.dummy2 = dummy2;
         this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
         this.octaves = octaves;
         this.groundMax = groundMax;
         this.groundMin = groundMin;
