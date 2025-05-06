@@ -21,6 +21,7 @@ public class MapManager {
     private float islandCurrentY;
 
     private int tileWidth = settings.tileWidth;
+    private int tileHeight = settings.tileHeight;
 
     private float lastTileY = 0; //!!!when created should be assigned to the entrance's floor height!!!//
 
@@ -63,22 +64,22 @@ public class MapManager {
     private void createBorders(List<TileInfo> tiles) {
         int i = 0;
         while (i < settings.roomWidth/settings.tileWidth) { //horizontal tiles
-            tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, settings.tileWidth, settings.tileWidth, TileType.BORDER));
-            tiles.add(new TileInfo(i*settings.tileWidth, 0, settings.tileWidth, settings.tileWidth, TileType.BORDER));
+            tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, tileHeight, tileHeight, TileType.BORDER));
+            tiles.add(new TileInfo(i*settings.tileWidth, 0, tileWidth, tileHeight, TileType.BORDER));
             i++;
         }
         i = 0;
-        while (i <= settings.roomHeight/ settings.tileWidth) { //vertical tiles
-            tiles.add(new TileInfo(-settings.tileWidth, i*settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.BORDER));
-            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileWidth, settings.tileWidth, settings.tileWidth, TileType.BORDER));
+        while (i <= settings.roomHeight/ settings.tileHeight) { //vertical tiles
+            tiles.add(new TileInfo(-tileHeight, i*settings.tileHeight, tileHeight, tileHeight, TileType.BORDER));
+            tiles.add(new TileInfo(settings.roomWidth, i* settings.tileHeight, tileHeight, tileHeight, TileType.BORDER));
             i++;
         }
     }
 
     private void createIslandStrip(int xStart, float yLevel) {
-        platformTiles.add(new TileInfo(xStart, yLevel + 400, tileWidth, tileWidth, TileType.PLATFORM)); //placing standeable platform
+        platformTiles.add(new TileInfo(xStart, yLevel + 500, tileWidth, tileHeight, TileType.PLATFORM)); //placing standeable platform
         for (int y = 1; y < 3; y++) {
-            dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileWidth * y) + 400, tileWidth, tileWidth, TileType.DIRT)); //placing blocks below main platform for aesthetics
+            dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileHeight * y) + 500, tileWidth, tileHeight, TileType.DIRT)); //placing blocks below main platform for aesthetics
         }
     }
 
@@ -99,9 +100,9 @@ public class MapManager {
                 frequency *= 1.15f;  // Double the frequency for each octave
             }
 
-            noiseValue += pg.noise(i * 0.02f); //Scale input to smoothen noise
-            int yPosition = (int) ((noiseValue + 1) / 2 * ((settings.groundMax - (settings.groundMin)) - settings.groundMin) + settings.groundMin);
-            yPos = ProcGen.fitGrid(yPosition, tileWidth);
+            noiseValue += pg.noise(i * 0.2f); //Scale input to smoothen noise
+            int yPosition = (int) ((noiseValue + 1) / 2 * ((settings.groundMax/2 - (settings.groundMin)) - settings.groundMin) + settings.groundMin);
+            yPos = ProcGen.fitGrid(yPosition, tileHeight);
 //            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
 //                int x = 1;
 //                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
@@ -117,7 +118,7 @@ public class MapManager {
 //            }
             fillGround(i);
 
-            platformTiles.add(new TileInfo(tileWidth * i, yPos, tileWidth, tileWidth, TileType.PLATFORM));
+            platformTiles.add(new TileInfo(tileWidth * i, yPos, tileWidth, tileHeight, TileType.PLATFORM));
 
             if (canCreateIsland) {
                 int var = random.nextInt(15);
@@ -158,9 +159,9 @@ public class MapManager {
 
     private void fillGround(int i) {
         int j = 0;
-        while (yPos - (tileWidth * j) >= settings.groundMin
+        while (yPos - (tileHeight * j) >= settings.groundMin
         ) { //filling in the below tiles
-            dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileWidth * j), tileWidth, tileWidth, TileType.DIRT));
+            dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileHeight * j), tileWidth, tileHeight, TileType.DIRT));
             j++;
         }
         lastTileY = yPos;
