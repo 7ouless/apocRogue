@@ -35,6 +35,7 @@ public class MapManager {
     private List<TileInfo> platformTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
     private List<TileInfo> borderTiles = new ArrayList<>();
+    private List<TileInfo> edgeTiles = new ArrayList<>();
 
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
@@ -50,6 +51,10 @@ public class MapManager {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
+        for (TileInfo info : edgeTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
@@ -83,79 +88,125 @@ public class MapManager {
         }
     }
 
-    private void createGround() { //used to join the long platforms using procedurally generated terrain
+    private void createGround() { // used to join the long platforms using procedurally generated terrain
         int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
 
-        float persistence = .5f; //Amplitude "decay" for each octave
-        float frequency = 0.5f; //Frequency for the first octave
-        float noiseValue = 0;
-        float amplitude = 0.9f;
-
         for (int i = 0; i < settings.roomWidth / tileWidth; i++) {
-            noiseValue = 0;
+            // ─────────── 1) Per-column noise ───────────
+            float persistence = 0.5f;
+            float frequency   = 0.5f;
+            float amplitude   = 0.9f;
+            float noiseValue  = 0f;
+
             for (int octave = 0; octave < octaves; octave++) {
                 noiseValue += pg.noise(i * frequency) * amplitude;
-                amplitude *= persistence;  // Reduce amplitude for each octave
-                frequency *= 1.15f;  // Double the frequency for each octave
+                amplitude *= persistence;
+                frequency *= 1.15f;
+            }
+            noiseValue += pg.noise(i * 0.2f);
+
+            // ─────────── 2) Snap to grid ───────────
+            int yRaw = (int)((noiseValue + 1f) / 2f
+                * ((settings.groundMax / 2 - settings.groundMin) - settings.groundMin)
+                + settings.groundMin);
+            float unclampedY = ProcGen.fitGrid(yRaw, tileHeight);
+
+            // ─────────── 3) Clamp steep jumps to ±1 tile ───────────
+            if (i > 0) {
+                float delta = unclampedY - lastTileY;
+                if (delta > tileHeight) {
+                    yPos = lastTileY + tileHeight;
+                } else if (delta < -tileHeight) {
+                    yPos = lastTileY - tileHeight;
+                } else {
+                    yPos = unclampedY;
+                }
+            } else {
+                // first column just use computed value
+                yPos = unclampedY;
             }
 
-            noiseValue += pg.noise(i * 0.2f); //Scale input to smoothen noise
-            int yPosition = (int) ((noiseValue + 1) / 2 * ((settings.groundMax/2 - (settings.groundMin)) - settings.groundMin) + settings.groundMin);
-            yPos = ProcGen.fitGrid(yPosition, tileHeight);
-//            if (lastTileY + tileWidth < yPos) { //if the tile is more than one tile spaces higher than the last tile
-//                int x = 1;
-//                while (lastTileY + (tileWidth * x) <= yPos - tileWidth) {
-//                    dirtTiles.add(new TileInfo((i * tileWidth), lastTileY + (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
-//                    x++;
-//                }
-//            } else if (lastTileY - tileWidth > yPos) { //if the tile is more than one tile spaces lower than the last tile
-//                int x = 1;
-//                while (lastTileY - (tileWidth * x) > yPos) {
-//                    dirtTiles.add(new TileInfo((i * tileWidth - tileWidth), lastTileY - (tileWidth * x), tileWidth, tileWidth, TileType.DIRT));
-//                    x++;
-//                }
-//            }
+            // ─────────── 4) Height-step check ───────────
+            boolean heightChanged = (i > 0)
+                && Math.abs(yPos - lastTileY) == tileHeight;
+
+            // ─────────── 5) Draw the floor tile (20% taller) ───────────
+            float floorW = tileWidth;
+            float floorH = tileHeight * 1.2f;
+            platformTiles.add(new TileInfo(
+                i * tileWidth,
+                yPos,
+                floorW,
+                floorH,
+                TileType.PLATFORM
+            ));
+
+            // ─────────── 6) Place the edge-square on the lower tile ───────────
+            if (heightChanged) {
+                // determine which tile is lower
+                boolean rising = yPos > lastTileY;
+                int lowerIdx = rising ? (i - 1) : i;
+                float lowerY = Math.min(yPos, lastTileY);
+                float lowerX = lowerIdx * tileWidth;
+
+                float edgeSize = floorH * 0.835f;  // square side == floor height
+                float squareX = rising
+                    // step up: flush right of lower tile
+                    ? lowerX + floorW - edgeSize
+                    // step down: flush left of lower tile
+                    : lowerX;
+                float squareY = lowerY + floorH; // sits on top of lower floor
+
+                edgeTiles.add(new TileInfo(
+                    squareX,
+                    squareY,
+                    edgeSize,
+                    edgeSize,
+                    TileType.EDGE
+                ));
+            }
+
+            // ─────────── 7) Fill in the dirt beneath this column ───────────
             fillGround(i);
 
-            platformTiles.add(new TileInfo(tileWidth * i, yPos, tileWidth, tileHeight, TileType.PLATFORM));
+            // ─────────── 8) Update lastTileY for next iteration ───────────
+            lastTileY = yPos;
 
+            // ─────────── 9) Island-creation logic (unchanged) ───────────
             if (canCreateIsland) {
                 int var = random.nextInt(15);
-                if (var > 12) { //this is the only condition where an island will be created
-                    islandGoalLength = random.nextInt(8, 15); // creating an island of a width between 5 and 15 (islands can be near continuous after each other so no point in making it too big
+                if (var > 12) {
+                    islandGoalLength    = random.nextInt(8, 15);
                     islandCurrentLength = 1;
-                    islandCurrentY = yPos;
-                    creatingIsland = true;
-                    canCreateIsland = false;
+                    islandCurrentY      = yPos;
+                    creatingIsland      = true;
+                    canCreateIsland     = false;
                 }
-            }
-            else if (!creatingIsland) { //
+            } else if (!creatingIsland) {
                 if (canCreateIslandCount >= 2) {
                     canCreateIsland = true;
-                }
-                else {
+                } else {
                     canCreateIslandCount++;
                 }
             }
             if (creatingIsland) {
-                //keep track of island max and current length
                 if (islandCurrentLength <= islandGoalLength) {
                     if (yPos < islandCurrentY - tileWidth) {
                         islandCurrentY -= tileWidth;
-                    }
-                    else if (yPos > islandCurrentY + tileWidth) {
+                    } else if (yPos > islandCurrentY + tileWidth) {
                         islandCurrentY += tileWidth;
                     }
                     createIslandStrip(i * tileWidth, islandCurrentY);
                     islandCurrentLength++;
-                }
-                else {
+                } else {
                     creatingIsland = false;
                 }
             }
         }
     }
+
+
 
     private void fillGround(int i) {
         int j = 0;
@@ -164,7 +215,6 @@ public class MapManager {
             dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileHeight * j), tileWidth, tileHeight, TileType.DIRT));
             j++;
         }
-        lastTileY = yPos;
     }
 
     private Actor createTileActor(TileInfo info) {
@@ -177,6 +227,9 @@ public class MapManager {
                 return new DirtTile(info.x, info.y, info.width, info.height);
             case BORDER:
                 return new BorderTile(info.x, info.y, info.width, info.height);
+            case EDGE:
+                return new EdgeTile(info.x, info.y, info.width);
+
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
