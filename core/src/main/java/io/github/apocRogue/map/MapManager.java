@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-/**
- * Builds either a procedural or predefined set of tiles (including the floor).
- */
+
 public class MapManager {
 
     public static GenerationSettings settings = GenerationType.PLAINS.settings;
@@ -29,6 +27,9 @@ public class MapManager {
     private float yPos = 300;
 
     private boolean platform = false;
+    private final float minPlatformY = settings.tileHeight * 5;    //start 5 tiles up
+    private final float maxPlatformY = settings.roomHeight - 100;  //100px below ceiling
+    private float currentIslandPlatY;
 
     private int octaves = settings.octaves;  //#of octaves
 
@@ -81,19 +82,32 @@ public class MapManager {
         }
     }
 
-    private void createIslandStrip(int xStart, float yLevel) {
-        platformTiles.add(new TileInfo(xStart, yLevel + 500, tileWidth, tileHeight, TileType.PLATFORM)); //placing standeable platform
-        for (int y = 1; y < 3; y++) {
-            dirtTiles.add(new TileInfo(xStart, (yLevel) - (tileHeight * y) + 500, tileWidth, tileHeight, TileType.DIRT)); //placing blocks below main platform for aesthetics
+    private void createIslandStrip(int xStart, float baseY) {
+
+        if (islandCurrentLength == 1) {
+            float centerY = baseY + 600;
+            float jitter  = tileHeight * 6;  // ±1 tile
+            float rawY    = centerY + (random.nextFloat()*2*jitter - jitter);
+            currentIslandPlatY = Math.max(minPlatformY,
+                Math.min(maxPlatformY, rawY));
         }
+
+        platformTiles.add(new TileInfo(
+            xStart,
+            currentIslandPlatY,
+            tileWidth,
+            tileHeight,
+            TileType.PLATFORM
+        ));
     }
+
 
     private void createGround() { // used to join the long platforms using procedurally generated terrain
         int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
 
         for (int i = 0; i < settings.roomWidth / tileWidth; i++) {
-            // ─────────── 1) Per-column noise ───────────
+            //Per-column noise
             float persistence = 0.5f;
             float frequency   = 0.5f;
             float amplitude   = 0.9f;
@@ -106,13 +120,13 @@ public class MapManager {
             }
             noiseValue += pg.noise(i * 0.2f);
 
-            // ─────────── 2) Snap to grid ───────────
+            //Snap to grid
             int yRaw = (int)((noiseValue + 1f) / 2f
                 * ((settings.groundMax / 2 - settings.groundMin) - settings.groundMin)
                 + settings.groundMin);
             float unclampedY = ProcGen.fitGrid(yRaw, tileHeight);
 
-            // ─────────── 3) Clamp steep jumps to ±1 tile ───────────
+            //Clamp steep jumps to ±1 tile
             if (i > 0) {
                 float delta = unclampedY - lastTileY;
                 if (delta > tileHeight) {
@@ -123,26 +137,25 @@ public class MapManager {
                     yPos = unclampedY;
                 }
             } else {
-                // first column just use computed value
                 yPos = unclampedY;
             }
 
-            // ─────────── 4) Height-step check ───────────
+            // Height-step check
             boolean heightChanged = (i > 0)
                 && Math.abs(yPos - lastTileY) == tileHeight;
 
-            // ─────────── 5) Draw the floor tile (20% taller) ───────────
+            //Draw the floor tile (20% taller)
             float floorW = tileWidth;
             float floorH = tileHeight * 1.2f;
             platformTiles.add(new TileInfo(
                 i * tileWidth,
                 yPos,
-                floorW,
-                floorH,
+                tileWidth,
+                tileHeight,
                 TileType.PLATFORM
             ));
 
-            // ─────────── 6) Place the edge-square on the lower tile ───────────
+            //Place the edge-square on the lower tile
             if (heightChanged) {
                 // determine which tile is lower
                 boolean rising = yPos > lastTileY;
@@ -150,13 +163,11 @@ public class MapManager {
                 float lowerY = Math.min(yPos, lastTileY);
                 float lowerX = lowerIdx * tileWidth;
 
-                float edgeSize = floorH * 0.835f;  // square side == floor height
+                float edgeSize = floorH * 0.835f;  // edge size
                 float squareX = rising
-                    // step up: flush right of lower tile
                     ? lowerX + floorW - edgeSize
-                    // step down: flush left of lower tile
                     : lowerX;
-                float squareY = lowerY + floorH; // sits on top of lower floor
+                float squareY = lowerY + tileHeight; // sits on top of lower floor
 
                 edgeTiles.add(new TileInfo(
                     squareX,
@@ -167,17 +178,17 @@ public class MapManager {
                 ));
             }
 
-            // ─────────── 7) Fill in the dirt beneath this column ───────────
+            //Fill in the dirt beneath this column
             fillGround(i);
 
-            // ─────────── 8) Update lastTileY for next iteration ───────────
+            //Update lastTileY for next iteration
             lastTileY = yPos;
 
-            // ─────────── 9) Island-creation logic (unchanged) ───────────
+            //Island-creation logic
             if (canCreateIsland) {
                 int var = random.nextInt(15);
-                if (var > 12) {
-                    islandGoalLength    = random.nextInt(8, 15);
+                if (var > 4) {
+                    islandGoalLength    = random.nextInt(1, 4);
                     islandCurrentLength = 1;
                     islandCurrentY      = yPos;
                     creatingIsland      = true;
