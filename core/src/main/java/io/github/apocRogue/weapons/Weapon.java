@@ -55,7 +55,7 @@ public class Weapon {
         this.dashDuration = dashDuration;
         this.dashCooldown = dashCooldown;
 
-        // Populate stats map for tooltips, save data, etc.
+
         stats.put("damage", damage);
         stats.put("projectileValue", projectileValue);
         stats.put("animationSpeed", animationSpeed);
@@ -65,17 +65,17 @@ public class Weapon {
         stats.put("dashCooldown", Math.round(dashCooldown * 10));
     }
 
-    /** The compact pseudo-hex string that encodes this exact roll. */
+
     public String getID() {
         return id;
     }
 
-    /** All rolled stats, keyed by StatKeys.ALL order. */
+
     public Map<String,Integer> getStats() {
         return stats;
     }
 
-    // ─── your original getters ─────────────────────────────────
+    //your original getters
 
     public String getName()              { return name; }
     public int    getDamage()            { return damage; }
@@ -89,7 +89,7 @@ public class Weapon {
     public float  getDashDuration()      { return dashDuration; }
     public float  getDashCooldown()      { return dashCooldown; }
 
-    // ─── noise‐helper methods ────────────────────────────────
+    // noise‐helper methods
 
     public float getMuzzleNoiseIntensity()  { return noiseLevel * 1.0f; }
     public float getMuzzleNoiseRadius()     { return noiseLevel * 30f; }
@@ -100,10 +100,7 @@ public class Weapon {
     public float getMeleeNoiseIntensity()   { return noiseLevel * 1.0f; }
     public float getMeleeNoiseRadius()      { return noiseLevel * 50f; }
 
-    /**
-     * Fires this weapon: either a ranged ArrowActor or a melee SlashActor,
-     * emitting sound based on the weapon’s noise stats.
-     */
+
     public void use(PlayerActor player, Stage stage) {
         int wepDamage = getDamage();
         Vector2 target = stage.screenToStageCoordinates(
@@ -141,10 +138,10 @@ public class Weapon {
                 name.equalsIgnoreCase("Katana")   // by name
                     || id.startsWith("04");              // by ID prefix
 
-            // MELEE branch – katana
+
             if (isKatana) {
-                if (player.isWeaponDashing())              //  <<< ADD THIS
-                    return;                                //      (prevents stacking)
+                if (player.isWeaponDashing())
+                    return;
 
                 DashAttackActor dash = new DashAttackActor(
                     new Texture(getAmmoTexture()),
@@ -155,7 +152,7 @@ public class Weapon {
                     getDashDuration()
                 );
                 stage.addActor(dash);
-                return;                                    //  <<< keep the early-return
+                return;
             }
             else {
                 Texture slashTex = new Texture(getAmmoTexture());

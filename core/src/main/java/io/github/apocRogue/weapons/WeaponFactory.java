@@ -13,7 +13,7 @@ public class WeaponFactory {
         int skullLevel,
         int skullSub
     ) {
-        // difficultyScale = skullLevel*5 + skullSub  (or any formula you choose)
+        // difficultyScale = skullLevel*5 + skullSub
         int diffScore = skullLevel * 5 + skullSub;
 
         Map<String,Integer> rolled = new HashMap<>();

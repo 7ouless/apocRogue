@@ -5,15 +5,15 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Align;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 
-/** Katana dash: pushes the player for <duration> seconds and deals contact damage. */
+
 public class DashAttackActor extends BaseAttackActor {
 
     private final PlayerActor player;
     private final boolean     facingRight;
-    private final float       dashVel;        // signed X velocity
-    private float             timer;          // seconds left
+    private final float       dashVel;
+    private float             timer;
 
-    private static final float SCALE = 0.3f; // 5 % size
+    private static final float SCALE = 0.3f;
 
     public DashAttackActor(Texture tex,
                            PlayerActor player,
@@ -35,16 +35,16 @@ public class DashAttackActor extends BaseAttackActor {
         setOrigin(Align.center);
         setScaleX(SCALE * (facingRight ? 1f : -1f));
         setScaleY(SCALE);
-        layout();                               // fixes width/height after scale
+        layout();
 
-        player.setWeaponDashing(true);          // disable normal dash logic
+        player.setWeaponDashing(true);
     }
 
     @Override
     public void act(float delta) {
-        super.act(delta);                       // damage handling
+        super.act(delta);
 
-        /* finish dash? */
+
         timer -= delta;
         if (timer <= 0f) {
             player.velocityX = 0f;
@@ -53,7 +53,7 @@ public class DashAttackActor extends BaseAttackActor {
             return;
         }
 
-        /* push player & glue sprite */
+        //Broken, doesnt go to player
         float dx = dashVel * delta;
         player.moveBy(dx, 0f);
         player.velocityX = dashVel;

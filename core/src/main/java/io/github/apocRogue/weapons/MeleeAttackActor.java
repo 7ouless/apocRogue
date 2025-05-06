@@ -4,10 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 
-/**
- * A base class for short-lived melee attacks that appear near the player
- * (like a sword slash). It has a lifetime and optionally moves forward a bit.
- */
+
 public abstract class MeleeAttackActor extends BaseAttackActor {
 
     private float timeAlive = 0f;

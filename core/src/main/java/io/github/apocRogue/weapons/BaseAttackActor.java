@@ -8,10 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.superClasses.DamageableActor;
 
-/**
- * A common parent for any attack actor (melee slash, arrow, fireball, etc.).
- * It checks collisions with DamageableActor and applies damage.
- */
+
 public abstract class BaseAttackActor extends Image {
     protected int damage;
     protected Stage stage;

@@ -58,7 +58,7 @@ public class GameWorld {
     }
 
     public void initialize() {
-        // ─── Map & UI setup ────────────────────────────────────────
+        // Map & UI setup
         generationSettings = new GenerationSettings();
         generationSettings.roomWidth = 3000;
         generationSettings.platformDensity = 5;
@@ -68,14 +68,14 @@ public class GameWorld {
         mapManager = new MapManager();
         mapManager.generateMap(stage);
 
-        // ─── Load textures ─────────────────────────────────────────
+        //Load textures
         playerTexture         = new Texture("ui/sprite.png");
         dummyTexture          = new Texture("ui/dummy.png");
         chestTexture          = new Texture("ui/chest.png");
         samuraiTexture        = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
-        // ─── Player & Inventory ───────────────────────────────────
+        // Player & Inventory
         player = new PlayerActor(playerTexture);
         float spawnY = mapManager.settings.groundMax + 10;
         player.setPosition(50, spawnY);
@@ -84,7 +84,7 @@ public class GameWorld {
         inventory = new Inventory(skin);
         player.setInventory(inventory);
 
-        // ─── ID system: load base‐stat table and static metadata ───
+        //ID system: load base‐stat table and static metadata
         itemManager = new ItemManager();
         itemManager.loadBaseData("ui/items.json");            // base stats + typeID
 
@@ -93,7 +93,7 @@ public class GameWorld {
 
         Array<String> allTypeIDs = itemManager.getAllTypeIDs();
 
-        // ─── Rehydrate saved weapons (stash) ──────────────────────
+        //Rehydrate saved weapons (stash)
         List<String> savedNames = InventoryPreferences.load();
         for (String name : savedNames) {
             for (String typeID : allTypeIDs) {
@@ -125,7 +125,7 @@ public class GameWorld {
             }
         }
 
-        // ─── Spawn enemies ─────────────────────────────────────────
+        // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         // (zeroed out or adjust as you like)
         for (int i = 0; i < enemyCount; i++) {
@@ -137,16 +137,16 @@ public class GameWorld {
             enemies.add(d);
             stage.addActor(d);
         }
-        // similarly for flyingEnemies & samuraiActorArray…
 
-        // ─── Spawn chests (will roll & spawn on open) ─────────────
+
+        // Spawn chests
         int chestCount = DifficultyLevelGen.getChestCount();
         for (int i = 0; i < chestCount; i++) {
             float[] pos = getRandomSpawnPosition();
             float x = pos!=null?pos[0]:500;
             float y = pos!=null?pos[1]:mapManager.settings.groundMax+10;
 
-            // New ChestActor ctor (we’ll update ChestActor next):
+            // New ChestActor ctor
             ChestActor chest = new ChestActor(
                 chestTexture,
                 x, y,

@@ -13,10 +13,7 @@ import io.github.apocRogue.map.FloorTile;
 import io.github.apocRogue.map.PlatformTile;
 import io.github.apocRogue.map.TileActor;
 
-/**
- * A base class for ranged attacks (projectiles), e.g. arrows, fireballs.
- * It has velocity, gravity, and breaks on tile collision by default.
- */
+
 public abstract class RangedAttackActor extends BaseAttackActor {
     protected Vector2 velocity = new Vector2(0, 0);
     protected float gravity = -300f; // downward acceleration
