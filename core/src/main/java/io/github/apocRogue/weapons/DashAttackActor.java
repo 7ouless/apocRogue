@@ -4,67 +4,64 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Align;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
-import io.github.apocRogue.weapons.BaseAttackActor;
 
+/** Katana dash: pushes the player for <duration> seconds and deals contact damage. */
 public class DashAttackActor extends BaseAttackActor {
+
     private final PlayerActor player;
-    private final boolean    facingRight;
-    private final float      offsetX, offsetY;
-    private float            timer;
+    private final boolean     facingRight;
+    private final float       dashVel;        // signed X velocity
+    private float             timer;          // seconds left
 
+    private static final float SCALE = 0.3f; // 5 % size
 
-    public DashAttackActor(Texture texture,
+    public DashAttackActor(Texture tex,
                            PlayerActor player,
                            int damage,
                            Stage stage,
                            float rawSpeed,
                            float rawDuration) {
-        super(texture, damage, stage);
+        super(tex, damage, stage);
+
         this.player      = player;
-        // bump both by 20%
-        float speed     = rawSpeed    * 1.2f;
-        this.timer      = rawDuration * 1.2f;
         this.facingRight = player.isFacingRight();
 
-        // center origin so scale/flip are stable
+        float speed    = rawSpeed    > 0 ? rawSpeed    : player.dashSpeed;
+        float duration = rawDuration > 0 ? rawDuration : player.dashDuration;
+
+        dashVel = speed * (facingRight ? 1f : -1f);
+        timer   = duration;
+
         setOrigin(Align.center);
+        setScaleX(SCALE * (facingRight ? 1f : -1f));
+        setScaleY(SCALE);
+        layout();                               // fixes width/height after scale
 
-        // half-size sprite, flip horizontally if needed
-        float baseScale = 0.5f;
-        setScaleX(baseScale * (facingRight ?  1f : -1f));
-        setScaleY(baseScale);
-
-        // compute offset using the *scaled* dimensions
-        float scaledW = getWidth()  * Math.abs(getScaleX());
-        float scaledH = getHeight() * Math.abs(getScaleY());
-        offsetX = facingRight
-            ? player.getWidth()        // flush-right
-            : -scaledW;                 // flush-left
-        offsetY = (player.getHeight() - scaledH) * 0.5f;
-
-        // initial placement
-        setPosition(player.getX() + offsetX,
-            player.getY() + offsetY);
-
-        // lock controls & launch
-        player.setWeaponDashing(true);
-        player.velocityX = speed * (facingRight ? 1 : -1);
+        player.setWeaponDashing(true);          // disable normal dash logic
     }
 
     @Override
     public void act(float delta) {
-        super.act(delta);  // collision → damage
+        super.act(delta);                       // damage handling
 
+        /* finish dash? */
         timer -= delta;
         if (timer <= 0f) {
-            // end dash
-            player.velocityX      = 0f;
+            player.velocityX = 0f;
             player.setWeaponDashing(false);
             remove();
-        } else {
-            // keep it glued right at the edge
-            setPosition(player.getX() + offsetX,
-                player.getY() + offsetY);
+            return;
         }
+
+        /* push player & glue sprite */
+        float dx = dashVel * delta;
+        player.moveBy(dx, 0f);
+        player.velocityX = dashVel;
+
+        float w = getWidth()  * Math.abs(getScaleX());
+        float h = getHeight() * Math.abs(getScaleY());
+        float offX = facingRight ? player.getWidth() : -w;
+        float offY = (player.getHeight() - h) * .5f;
+        setPosition(player.getX() + offX, player.getY() + offY);
     }
 }

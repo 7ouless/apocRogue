@@ -1,166 +1,172 @@
 package io.github.apocRogue.actors.mapEntities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
+import io.github.apocRogue.inventory.general.ItemManager;
+import io.github.apocRogue.weapons.WeaponFactory;
+import io.github.apocRogue.weapons.WeaponIDDecoder;
+import io.github.apocRogue.weapons.WeaponIDDecoder.Decoded;
+import io.github.apocRogue.weapons.WeaponTypeInfo;
+import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.weapons.Weapon;
+import java.util.Map;
 
+/**
+ * A chest that, when opened (or destroyed), rolls and spawns two weapons
+ * using your pseudo-hex ID system.
+ */
 public class ChestActor extends Image {
     private boolean opened = false;
-    private int health = 1; // how many hits before it opens
-    private Array<Weapon> possibleDrops;
-    private Label pressELabel;     // The floating text
-    private Skin uiSkin;           // We need a Skin to create the label
-    private float interactRange = 80f; // distance within which we show "Press E to open"
-    private Texture chestTexture;
+    private int health = 1;
+    private final Array<String> possibleTypeIDs;
+    private final ItemManager itemManager;
+    private final WeaponTypeRegistry typeRegistry;
+    private Label pressRLabel;
+    private final Skin uiSkin;
+    private final float interactRange = 80f;
 
-    public ChestActor(Texture texture, float x, float y, Array<Weapon> possibleDrops, Skin uiSkin) {
+    public ChestActor(Texture texture,
+                      float x, float y,
+                      Array<String> possibleTypeIDs,
+                      Skin uiSkin,
+                      ItemManager itemManager,
+                      WeaponTypeRegistry typeRegistry)
+    {
         super(texture);
         setPosition(x, y);
         setSize(texture.getWidth(), texture.getHeight());
-
-        this.possibleDrops = possibleDrops;
-        this.uiSkin = uiSkin;
+        this.possibleTypeIDs = possibleTypeIDs;
+        this.uiSkin          = uiSkin;
+        this.itemManager     = itemManager;
+        this.typeRegistry    = typeRegistry;
     }
 
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
-        // Optionally draw a different sprite if opened = true
-    }
-
-    // Called when the chest is "hit" by a slash or arrow
-    public void takeDamage(int amount) {
-        if (!opened) {
-            health -= amount;
-            if (health <= 0) {
-                openChest();
-            }
-        }
-    }
-
-    // Called when the player interacts with E while near
-    public void openByInteraction() {
-        if (!opened) {
-            openChest();
-        }
-    }
-
-    private void openChest() {
-        opened = true;
-        // Hide the label
-        if (pressELabel != null) {
-            pressELabel.setVisible(false);
-        }
-        // Spawn random items on the floor
-        if (getStage() == null) return;
-
-        // For example, spawn 2 items
-        int itemsToSpawn = 2;
-        for (int i = 0; i < itemsToSpawn; i++) {
-            spawnRandomItem();
-        }
-        // Optionally remove the chest or switch to an "open chest" texture
-        // remove()
-        Texture openChest = new Texture("ui/openChest.jpg");
-        // Update this Image actor to use the new texture
-        setDrawable(new TextureRegionDrawable(new TextureRegion(openChest)));
-    }
-
-    private void spawnRandomItem() {
-        if (possibleDrops.size == 0) return;
-        int index = MathUtils.random(possibleDrops.size - 1);
-        Weapon randomWeapon = possibleDrops.get(index);
-
-        ItemActor item = new ItemActor(randomWeapon, getX(), getY());
-        float vx = MathUtils.random(-100f, 100f);
-        float vy = MathUtils.random(100f, 200f);
-        item.setVelocity(vx, vy);
-
-        getStage().addActor(item);
-    }
-
-    // For collision checks with slashes/arrows
-    public Rectangle getBounds() {
-        return new Rectangle(getX(), getY(), getWidth(), getHeight());
-    }
-
-    public boolean isOpened() {
-        return opened;
-    }
-
-    // This method is called automatically when the actor is added to a stage.
-    // We can create and add the label here so it's in the same stage as the chest.
     @Override
     protected void setStage(Stage stage) {
         super.setStage(stage);
-        if (stage != null && pressELabel == null) {
-            // Create the label with the provided skin
-            pressELabel = new Label("Press R to open", uiSkin);
-            pressELabel.setVisible(false);
-            // Add it to the stage
-            stage.addActor(pressELabel);
+        if (stage != null && pressRLabel == null) {
+            pressRLabel = new Label("Press R to open", uiSkin);
+            pressRLabel.setVisible(false);
+            stage.addActor(pressRLabel);
         }
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
-
-        // If the chest is already opened or we have no stage, hide the label
-        if (opened || getStage() == null || pressELabel == null) {
-            if (pressELabel != null) pressELabel.setVisible(false);
+        if (opened || getStage() == null || pressRLabel == null) {
+            if (pressRLabel != null) pressRLabel.setVisible(false);
             return;
         }
-
-        // Find the player
         PlayerActor player = findPlayer();
         if (player == null) {
-            pressELabel.setVisible(false);
+            pressRLabel.setVisible(false);
             return;
         }
-
-        // Distance check: if close, show the label; otherwise hide it
-        float centerX = getX() + getWidth() / 2f;
-        float centerY = getY() + getHeight() / 2f;
-        float playerCenterX = player.getX() + player.getWidth() / 2f;
-        float playerCenterY = player.getY() + player.getHeight() / 2f;
-
-        float dx = centerX - playerCenterX;
-        float dy = centerY - playerCenterY;
-        float dist2 = dx * dx + dy * dy;
-
-        if (dist2 < interactRange * interactRange) {
-            // Show the label
-            pressELabel.setVisible(true);
-            // Position it slightly above the chest
-            pressELabel.setPosition(
-                centerX - pressELabel.getWidth() / 2f,
+        float dx = (getX()+getWidth()/2f)  - (player.getX()+player.getWidth()/2f);
+        float dy = (getY()+getHeight()/2f) - (player.getY()+player.getHeight()/2f);
+        if (dx*dx + dy*dy < interactRange*interactRange) {
+            pressRLabel.setVisible(true);
+            pressRLabel.setPosition(
+                getX() + getWidth()/2f - pressRLabel.getWidth()/2f,
                 getY() + getHeight() + 10f
             );
         } else {
-            pressELabel.setVisible(false);
+            pressRLabel.setVisible(false);
         }
     }
 
+    /** Called by your “E/R” listener */
+    public void openByInteraction() {
+        if (!opened) openChest();
+    }
+
+    /** Called when the chest is attacked */
+    public void takeDamage(int amount) {
+        if (!opened && (health -= amount) <= 0) {
+            openChest();
+        }
+    }
+
+    private void openChest() {
+        opened = true;
+        if (pressRLabel != null) pressRLabel.setVisible(false);
+        if (getStage() == null) return;
+
+        // spawn two items
+        for (int i = 0; i < 2; i++) spawnRandomItem();
+
+        // show “open” texture
+        Texture openTex = new Texture("ui/openChest.jpg");
+        setDrawable(new TextureRegionDrawable(new TextureRegion(openTex)));
+    }
+
+    private void spawnRandomItem() {
+        if (possibleTypeIDs.size == 0) return;
+
+        // 1) pick a random weapon type
+        String typeID = possibleTypeIDs.random();
+
+        // 2) roll & encode with skullLevel=1, skullSub=1
+        Map<String,Integer> base = itemManager.getBaseStats(typeID);
+        String id = WeaponFactory.rollAndEncode(typeID, base, 1, 1);
+
+        // 3) decode back to exact stats
+        Decoded d = WeaponIDDecoder.decode(id);
+
+        // 4) lookup static info
+        WeaponTypeInfo info = typeRegistry.get(d.typeID);
+
+        // 5) build the Weapon instance
+        Weapon w = new Weapon(
+            id,
+            info.getName(),
+            d.stats.get("damage"),
+            new Texture(Gdx.files.internal(info.getTexturePath())),
+            info.isProjectileType(),
+            d.stats.get("projectileValue"),
+            info.getAmmoTexture(),
+            d.stats.get("animationSpeed"),
+            d.stats.get("noiseLevel"),
+            d.stats.get("dashSpeed"),
+            d.stats.get("dashDuration"),
+            d.stats.get("dashCooldown")
+        );
+
+        // 6) drop it into the world
+        ItemActor drop = new ItemActor(w, getX(), getY());
+        drop.setVelocity(
+            MathUtils.random(-100f,100f),
+            MathUtils.random(100f,200f)
+        );
+        getStage().addActor(drop);
+    }
+
     private PlayerActor findPlayer() {
-        // Loop through stage actors to find a PlayerActor
         for (Actor a : getStage().getActors()) {
-            if (a instanceof PlayerActor) {
-                return (PlayerActor) a;
-            }
+            if (a instanceof PlayerActor) return (PlayerActor)a;
         }
         return null;
+    }
+
+    public Rectangle getBounds() {
+        return new Rectangle(getX(), getY(), getWidth(), getHeight());
+    }
+
+    public boolean isOpened() {
+        return opened;
     }
 }

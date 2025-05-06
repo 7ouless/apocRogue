@@ -2,65 +2,83 @@ package io.github.apocRogue.inventory.gameinventory;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
 
+/**
+ * A single inventory slot that displays a Weapon’s icon,
+ * and on hover shows a tooltip with its ID and stats.
+ */
 public class InventorySlot extends Table {
-    private Skin skin;
-    private boolean highlighted = false;
-    private Image itemImage;
-    private Weapon weapon; // Store the weapon in this slot
+    private final Skin skin;
+    private final Image itemImage;
+    private Weapon weapon;
+
+    // Tooltip for ID + stats
+    private final Tooltip<Label> tooltip;
 
     public InventorySlot(Skin skin) {
         super(skin);
         this.skin = skin;
-        // Use the "white" drawable tinted to dark gray as the default background.
-        Drawable bg = skin.newDrawable(skin.getDrawable("white"), Color.DARK_GRAY);
+
+        // Slot background
+        Drawable bg = skin.newDrawable("white", Color.DARK_GRAY);
         setBackground(bg);
+
+        // Image placeholder
         itemImage = new Image();
         add(itemImage).expand().fill();
+
+        // Tooltip setup
+        TooltipManager manager = TooltipManager.getInstance();
+        manager.initialTime = 0.3f;
+
+        Label tipLabel = new Label("", skin);
+        tooltip = new Tooltip<>(tipLabel, manager);
+        addListener(tooltip);
     }
 
-    // Set a weapon in the slot.
+    /** Updates the slot’s weapon, its icon, and tooltip text. */
     public void setItem(Weapon weapon) {
         this.weapon = weapon;
+
         if (weapon != null) {
-            itemImage.setDrawable(new TextureRegionDrawable(new TextureRegion(weapon.getTexture())));
+            // Show icon
+            itemImage.setDrawable(new TextureRegionDrawable(
+                new TextureRegion(weapon.getTexture())
+            ));
+
+            // Build tooltip
+            StringBuilder sb = new StringBuilder();
+            sb.append("ID: ").append(weapon.getID()).append("\n");
+            for (String key : StatKeys.ALL) {
+                sb.append(key)
+                    .append(": ")
+                    .append(weapon.getStats().get(key))
+                    .append("\n");
+            }
+            ((Label)tooltip.getActor()).setText(sb.toString());
+
         } else {
             itemImage.setDrawable(null);
+            ((Label)tooltip.getActor()).setText("");
         }
     }
 
-    // Retrieve the weapon in this slot.
-    public Weapon getWeapon() {
-        return weapon;
-    }
-
-    // Get the current item's drawable (for drag-and-drop).
-    public Drawable getItemDrawable() {
-        return itemImage.getDrawable();
-    }
-
-    public boolean isEmpty() {
-        return weapon == null;
-    }
-
-    // Clear the weapon from this slot.
+    public Weapon getWeapon() { return weapon; }
+    public Drawable getItemDrawable() { return itemImage.getDrawable(); }
+    public boolean isEmpty() { return weapon == null; }
     public void clearItem() {
         weapon = null;
         itemImage.setDrawable(null);
     }
 
-    // Highlight the slot (change its background) to indicate selection.
+    /** Optional: highlight selection. */
     public void setHighlighted(boolean highlighted) {
-        this.highlighted = highlighted;
-        if (highlighted)
-            setBackground(skin.newDrawable(skin.getDrawable("white"), Color.YELLOW));
-        else
-            setBackground(skin.newDrawable(skin.getDrawable("white"), Color.DARK_GRAY));
+        Color tint = highlighted ? Color.YELLOW : Color.DARK_GRAY;
+        setBackground(skin.newDrawable("white", tint));
     }
 }

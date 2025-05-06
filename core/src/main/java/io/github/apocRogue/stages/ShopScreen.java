@@ -6,11 +6,13 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.shop.ShopKeeper;
 import io.github.apocRogue.shop.ShopUI;
 import io.github.apocRogue.shop.ShopInventory;
+import io.github.apocRogue.stages.stageBuilder;
 
 import java.util.List;
 
@@ -26,44 +28,46 @@ public class ShopScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        // Separate stage just for the shop
+        // Set up the stage & skin
         stage = new Stage(new FitViewport(1080, 720));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Load the shopkeepers
+        // Load your shopkeepers
         List<ShopKeeper> shopkeepers = ShopInventory.loadShopkeepers();
 
-        // Initialise our ShopUI, passing in game
+        // Initialise ItemManager with your new loadBaseData()
         ItemManager mgr = new ItemManager();
-        mgr.loadFromFile("ui/items.json");    // now mgr.loadedWeapons contains Sword,Bow,HandGun
+        mgr.loadBaseData("ui/items.json");
 
-        Inventory inv = new Inventory(skin);   // your game‐inventory UI
-        inv.draw(stage);                       // or however you show it
+        // Initialise & draw the player inventory UI
+        Inventory inv = new Inventory(skin);
+        inv.draw(stage);
 
-        shopUI = new ShopUI(stage,
+        // Build the ShopUI
+        shopUI = new ShopUI(
+            stage,
             skin,
             shopkeepers,
             game,
             mgr,
-            inv);
+            inv
+        );
+
+        // Set input to this stage
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
-
-        // Update the shop UI logic (including typing effect)
         shopUI.update(delta);
-
         stage.act(delta);
         stage.draw();
     }
 
-
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height);
+        stage.getViewport().update(width, height, true);
     }
 
     @Override

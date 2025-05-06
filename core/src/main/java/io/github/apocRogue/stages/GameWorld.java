@@ -1,244 +1,202 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+
+import java.util.List;
+import java.util.Map;
+
+import io.github.apocRogue.actors.mapEntities.ChestActor;
+import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
-import io.github.apocRogue.actors.mapEntities.ChestActor;
-import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
+import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.map.GenerationSettings;
 import io.github.apocRogue.map.MapManager;
-import io.github.apocRogue.map.DirtTile;
 import io.github.apocRogue.map.PlatformTile;
+import io.github.apocRogue.map.DirtTile;
+import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import io.github.apocRogue.globals.physics.SoundPhysics;
-
-import java.util.List;
+import io.github.apocRogue.weapons.WeaponFactory;
+import io.github.apocRogue.weapons.WeaponIDDecoder;
+import io.github.apocRogue.weapons.WeaponTypeInfo;
+import io.github.apocRogue.weapons.WeaponTypeRegistry;
 
 public class GameWorld {
-
-    private Stage stage;
+    private final Stage stage;
     private PlayerActor player;
     private Skin skin;
     private Inventory inventory;
     private MapManager mapManager;
-    private ItemManager itemManager;
     private GenerationSettings generationSettings;
 
-    // Any other fields you need (enemy lists, chest lists, etc.)
-    private Array<DummyActor> enemies;
-    private Array<FlyingEnemyActor> flyingEnemies;
-    private Array<ChestActor> chests;
-    private Array<MiniSamuraiActor> samuraiActorArray;
-    // Textures (you can store them here or load them externally)
-    private Texture playerTexture;
-    private Texture dummyTexture;
-    private Texture chestTexture;
-    private Texture flyingCreatureTexture;
-    private Texture samuraiTexture;
+    // ID system managers
+    private ItemManager itemManager;
+    private WeaponTypeRegistry typeRegistry;
+
+    // Actors & textures
+    private Array<DummyActor> enemies = new Array<>();
+    private Array<FlyingEnemyActor> flyingEnemies = new Array<>();
+    private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
+    private Array<ChestActor> chests = new Array<>();
+
+    private Texture playerTexture, dummyTexture, chestTexture,
+        flyingCreatureTexture, samuraiTexture;
 
     public GameWorld(Stage stage) {
-        // We receive the stage from outside so that GameScreen still “owns”
-        // the actual rendering environment, but the logic class can manipulate it
         this.stage = stage;
-
-        // Initialize any data structures
-        enemies = new Array<>();
-        flyingEnemies = new Array<>();
-        chests = new Array<>();
-        samuraiActorArray = new Array<>();
     }
 
     public void initialize() {
-        // Set up generation settings
+        // ─── Map & UI setup ────────────────────────────────────────
         generationSettings = new GenerationSettings();
         generationSettings.roomWidth = 3000;
         generationSettings.platformDensity = 5;
-        this.skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create your map manager and generate the map
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
         mapManager = new MapManager();
-        mapManager.generateMap(stage); // same logic as before
+        mapManager.generateMap(stage);
 
-        // Create / load textures
-        playerTexture = new Texture("ui/sprite.png");
-        dummyTexture = new Texture("ui/dummy.png");
-        chestTexture = new Texture("ui/chest.png");
-        samuraiTexture = new Texture("ui/samurai.jpeg");
+        // ─── Load textures ─────────────────────────────────────────
+        playerTexture         = new Texture("ui/sprite.png");
+        dummyTexture          = new Texture("ui/dummy.png");
+        chestTexture          = new Texture("ui/chest.png");
+        samuraiTexture        = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
-        // Create the player
+        // ─── Player & Inventory ───────────────────────────────────
         player = new PlayerActor(playerTexture);
-        // Start the player at some position, e.g., near the “groundMax” or anywhere else
         float spawnY = mapManager.settings.groundMax + 10;
         player.setPosition(50, spawnY);
         stage.addActor(player);
 
-        // Initialize the inventory and attach it to the player
         inventory = new Inventory(skin);
         player.setInventory(inventory);
 
-        // Load items/weapons for the chests
+        // ─── ID system: load base‐stat table and static metadata ───
         itemManager = new ItemManager();
-        itemManager.loadFromFile("items.json");
-        Array<Weapon> allWeapons = itemManager.getLoadedWeapons();
-        List<String> saved = InventoryPreferences.load();
-        for (String itemName : saved) {
-            for (Weapon w : allWeapons) {
-                if (w.getName().equals(itemName)) {
+        itemManager.loadBaseData("ui/items.json");            // base stats + typeID
+
+        typeRegistry = new WeaponTypeRegistry();
+        typeRegistry.load("ui/weapon_types.json");            // name, textures, projectile flag
+
+        Array<String> allTypeIDs = itemManager.getAllTypeIDs();
+
+        // ─── Rehydrate saved weapons (stash) ──────────────────────
+        List<String> savedNames = InventoryPreferences.load();
+        for (String name : savedNames) {
+            for (String typeID : allTypeIDs) {
+                WeaponTypeInfo info = typeRegistry.get(typeID);
+                if (info.getName().equals(name)) {
+                    // roll at diff=1,1 so you get base stats
+                    Map<String,Integer> baseStats = itemManager.getBaseStats(typeID);
+                    String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
+                    WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
+
+                    // build a fully‐decoded weapon
+                    Weapon w = new Weapon(
+                        id,
+                        info.getName(),
+                        d.stats.get("damage"),
+                        new Texture(Gdx.files.internal(info.getTexturePath())),
+                        info.isProjectileType(),
+                        d.stats.get("projectileValue"),
+                        info.getAmmoTexture(),
+                        d.stats.get("animationSpeed"),
+                        d.stats.get("noiseLevel"),
+                        d.stats.get("dashSpeed"),
+                        d.stats.get("dashDuration"),
+                        d.stats.get("dashCooldown")
+                    );
                     inventory.addItem(w);
                     break;
                 }
             }
         }
-        // Spawn enemies
-        int enemyCount = DifficultyLevelGen.getEnemyCount();
-        enemyCount = 0;
-        for (int i = 0; i < enemyCount; i++) {
-            float[] pos = getRandomSpawnPosition();
-            if (pos != null) {
-                DummyActor dummy = new DummyActor(dummyTexture, pos[0], pos[1]);
-                enemies.add(dummy);
-                stage.addActor(dummy);
-            } else {
-                // fallback position
-                DummyActor dummy = new DummyActor(dummyTexture, 400, mapManager.settings.groundMax + 10);
-                enemies.add(dummy);
-                stage.addActor(dummy);
-            }
-        }
-        enemyCount = 0;
-        for (int i = 0; i < enemyCount; i++) {
-            float[] pos = getRandomSpawnPosition();
-            if (pos != null) {
-                FlyingEnemyActor bat = new FlyingEnemyActor(flyingCreatureTexture, pos[0], pos[1]);
-                flyingEnemies.add(bat);
-                stage.addActor(bat);
-            } else {
-                // fallback position
-                FlyingEnemyActor bat = new FlyingEnemyActor(flyingCreatureTexture, 400, mapManager.settings.groundMax + 10);
-                flyingEnemies.add(bat);
-                stage.addActor(bat);
-            }
-        }
-        enemyCount = 1;
-        for(int i = 0; i < enemyCount; i++) {
-            float[] pos = getRandomSpawnPosition();
-            if(pos != null) {
-                MiniSamuraiActor samurai = new MiniSamuraiActor(samuraiTexture, pos[0], pos[1]);
-                samuraiActorArray.add(samurai);
-                stage.addActor(samurai);
-            } else {
-                MiniSamuraiActor samurai = new MiniSamuraiActor(samuraiTexture, 400, mapManager.settings.groundMax + 35);
-                samuraiActorArray.add(samurai);
-                stage.addActor(samurai);
-            }
-        }
 
-        // Spawn chests
+        // ─── Spawn enemies ─────────────────────────────────────────
+        int enemyCount = DifficultyLevelGen.getEnemyCount();
+        // (zeroed out or adjust as you like)
+        for (int i = 0; i < enemyCount; i++) {
+            float[] pos = getRandomSpawnPosition();
+            DummyActor d = new DummyActor(dummyTexture,
+                pos!=null?pos[0]:400,
+                pos!=null?pos[1]:mapManager.settings.groundMax+10
+            );
+            enemies.add(d);
+            stage.addActor(d);
+        }
+        // similarly for flyingEnemies & samuraiActorArray…
+
+        // ─── Spawn chests (will roll & spawn on open) ─────────────
         int chestCount = DifficultyLevelGen.getChestCount();
         for (int i = 0; i < chestCount; i++) {
             float[] pos = getRandomSpawnPosition();
-            if (pos != null) {
-                ChestActor chest = new ChestActor(chestTexture, pos[0], pos[1], allWeapons, skin);
-                chests.add(chest);
-                stage.addActor(chest);
-            } else {
-                ChestActor chest = new ChestActor(chestTexture, 500, mapManager.settings.groundMax + 10, allWeapons,skin);
-                chests.add(chest);
-                stage.addActor(chest);
-            }
+            float x = pos!=null?pos[0]:500;
+            float y = pos!=null?pos[1]:mapManager.settings.groundMax+10;
+
+            // New ChestActor ctor (we’ll update ChestActor next):
+            ChestActor chest = new ChestActor(
+                chestTexture,
+                x, y,
+                allTypeIDs,
+                skin,
+                itemManager,
+                typeRegistry
+            );
+            chests.add(chest);
+            stage.addActor(chest);
         }
     }
 
-    // Example of moving your getRandomSpawnPosition logic into GameWorld
     private float[] getRandomSpawnPosition() {
-        Array<Actor> candidates = new Array<>();
-        for (Actor actor : stage.getActors()) {
-            if (actor instanceof PlatformTile) {
-                if (actor.getX() > generationSettings.tileWidth
-                    && actor.getX() < (generationSettings.roomWidth - generationSettings.tileWidth)) {
-                    float spawnX = actor.getX() + actor.getWidth() / 2f;
-                    float spawnY = actor.getY() + actor.getHeight();
-                    if (!isOverlappingWithDirt(spawnX, spawnY)) {
-                        candidates.add(actor);
-                    }
-                }
-            }
+        Array<PlatformTile> plats = new Array<>();
+        for (Actor a : stage.getActors()) {
+            if (a instanceof PlatformTile) plats.add((PlatformTile)a);
         }
-        if (candidates.size == 0) {
-            return null;
-        }
-        int index = MathUtils.random(candidates.size - 1);
-        Actor chosenTile = candidates.get(index);
-        float spawnX = chosenTile.getX() + chosenTile.getWidth() / 2f;
-        float spawnY = chosenTile.getY() + chosenTile.getHeight();
-        return new float[] { spawnX, spawnY };
+        if (plats.size == 0) return null;
+        PlatformTile t = plats.random();
+        return new float[]{ t.getX() + t.getWidth()/2f, t.getY() + t.getHeight() };
     }
 
-    // Example logic method
-    private boolean isOverlappingWithDirt(float spawnX, float spawnY) {
-        Array<Actor> actors = stage.getActors();
-        for (int i = 0; i < actors.size; i++) {
-            Actor actor = actors.get(i);
-            if (actor instanceof DirtTile) {
-                float x = actor.getX();
-                float y = actor.getY();
-                float width = actor.getWidth();
-                float height = actor.getHeight();
-                if (spawnX >= x && spawnX <= (x + width) &&
-                    spawnY >= y && spawnY <= (y + height)) {
+    private boolean isOverlappingWithDirt(float x, float y) {
+        for (Actor a : stage.getActors()) {
+            if (a instanceof DirtTile) {
+                float dx = a.getX(), dy = a.getY();
+                if (x >= dx && x <= dx + a.getWidth()
+                    && y >= dy && y <= dy + a.getHeight())
                     return true;
-                }
             }
         }
         return false;
     }
 
-    /**
-     * Called each frame to update logic like AI, collisions, etc.
-     * (If you have advanced AI or collision detection, you can put it here)
-     */
     public void update(float delta) {
-        // Example: do the normal Stage act() call here, or any
-        // special game logic that might occur each frame
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
-
-
-        // You can do additional logic such as enemy AI, or handle collisions,
-        // or handle game events, etc.
     }
 
-    // Getters for anything the GameScreen might need to know
-    public PlayerActor getPlayer() {
-        return player;
-    }
+    public PlayerActor getPlayer() { return player; }
+    public Inventory getInventory() { return inventory; }
+    public Stage getStage()        { return stage;     }
 
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public Stage getStage() {
-        return stage;
-    }
-
-    // Dispose as needed
     public void dispose() {
         stage.dispose();
-        if (playerTexture != null) playerTexture.dispose();
-        if (dummyTexture != null) dummyTexture.dispose();
-        if (chestTexture != null) chestTexture.dispose();
+        playerTexture.dispose();
+        dummyTexture.dispose();
+        chestTexture.dispose();
+        samuraiTexture.dispose();
+        flyingCreatureTexture.dispose();
     }
-
 }

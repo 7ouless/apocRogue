@@ -7,24 +7,21 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
-import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
-
 import com.badlogic.gdx.utils.Scaling;
 import io.github.apocRogue.inventory.gameinventory.DragData;
 import io.github.apocRogue.inventory.gameinventory.InventorySlot;
-import io.github.apocRogue.stages.MainScreen;
-import io.github.apocRogue.stages.stageBuilder;
-import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.inventory.general.ItemManager;
-
-
+import io.github.apocRogue.stages.MainScreen;
+import io.github.apocRogue.stages.stageBuilder;
+import io.github.apocRogue.weapons.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class InventoryUI {
     private final Stage stage;
@@ -32,9 +29,14 @@ public class InventoryUI {
     private final stageBuilder game;
 
     private Table root;
-    private List<InventorySlot> stashSlots = new ArrayList<>();
-    private List<InventorySlot> equipSlots = new ArrayList<>();
-    private DragAndDrop dragAndDrop;
+    private final List<InventorySlot> stashSlots = new ArrayList<>();
+    private final List<InventorySlot> equipSlots = new ArrayList<>();
+    private final DragAndDrop dragAndDrop;
+
+    // ID‐system managers & cache
+    private final ItemManager itemManager;
+    private final WeaponTypeRegistry typeRegistry;
+    private final List<Weapon> loadedWeapons = new ArrayList<>();
 
     public InventoryUI(Stage stage, Skin skin, stageBuilder game) {
         this.stage = stage;
@@ -43,20 +45,45 @@ public class InventoryUI {
 
         dragAndDrop = new DragAndDrop();
         buildLayout();
-        // Loads shit
-        ItemManager mgr = new ItemManager();
-        mgr.loadFromFile("ui/items.json");
 
-        // Pulls the saved list of names
+        // ─── Load base statistics and static metadata ───────────
+        itemManager = new ItemManager();
+        itemManager.loadBaseData("ui/items.json");
+
+        typeRegistry = new WeaponTypeRegistry();
+        typeRegistry.load("ui/weapon_types.json");
+
+        // Build a list of “base” weapons (skull=1,sub=1) for name lookup
+        for (String typeID : itemManager.getAllTypeIDs()) {
+            Map<String,Integer> baseStats = itemManager.getBaseStats(typeID);
+            String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
+            WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
+            WeaponTypeInfo info = typeRegistry.get(typeID);
+
+            Weapon w = new Weapon(
+                id,
+                info.getName(),
+                d.stats.get("damage"),
+                new Texture(Gdx.files.internal(info.getTexturePath())),
+                info.isProjectileType(),
+                d.stats.get("projectileValue"),
+                info.getAmmoTexture(),
+                d.stats.get("animationSpeed"),
+                d.stats.get("noiseLevel"),
+                d.stats.get("dashSpeed"),
+                d.stats.get("dashDuration"),
+                d.stats.get("dashCooldown")
+            );
+            loadedWeapons.add(w);
+        }
+
+        // ─── Populate stash from saved names ────────────────────
         List<String> saved = InventoryPreferences.load();
-
-        // Fills stash slots in order
         for (int i = 0; i < stashSlots.size(); i++) {
             InventorySlot slot = stashSlots.get(i);
             if (i < saved.size()) {
                 String name = saved.get(i);
-                // find the matching Weapon by name
-                for (Weapon w : mgr.getLoadedWeapons()) {
+                for (Weapon w : loadedWeapons) {
                     if (w.getName().equals(name)) {
                         slot.setItem(w);
                         break;
@@ -75,7 +102,7 @@ public class InventoryUI {
         root.setFillParent(true);
         stage.addActor(root);
 
-        // Header row
+        // Back button
         TextButton back = new TextButton("Back", skin);
         back.addListener(new ChangeListener() {
             @Override
@@ -86,16 +113,14 @@ public class InventoryUI {
         root.add(back).left().pad(10);
         root.row();
 
-
-        // Main content: two columns
+        // Main content
         Table content = new Table(skin);
         root.add(content).expand().fill().pad(10);
         root.row();
 
-        // Left: shit you have grid
+        // Stash
         Table stashTable = new Table(skin);
-        stashTable.defaults().size(64, 64).pad(5);
-
+        stashTable.defaults().size(64,64).pad(5);
         int cols = 6, rows = 3;
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -105,51 +130,44 @@ public class InventoryUI {
             }
             stashTable.row();
         }
-
         ScrollPane stashPane = new ScrollPane(stashTable, skin);
         content.add(stashPane).expand().fill().padRight(10);
 
-        // Right side: Character + equip slots
+        // Equip
         Table rightCol = new Table(skin);
         rightCol.defaults().pad(5);
-
-        // 1) Portrait area on top
+        // Portrait
         Image portrait = new Image(new Texture(Gdx.files.internal("ui/character-portrait.png")));
         portrait.setScaling(Scaling.fit);
         Table portraitTable = new Table(skin);
-        portraitTable.setBackground(skin.newDrawable("white", 0.2f, 0.2f, 0.2f, 1f));
-        portraitTable.add(portrait).size(200, 200);
+        portraitTable.setBackground(skin.newDrawable("white", 0.2f,0.2f,0.2f,1f));
+        portraitTable.add(portrait).size(200,200);
         rightCol.add(portraitTable).row();
-
-        // 2) Equip area below
+        // Equip slots
         Table equipTable = new Table(skin);
-        equipTable.defaults().size(64, 64).pad(5);
+        equipTable.defaults().size(64,64).pad(5);
         for (int i = 0; i < 5; i++) {
             InventorySlot slot = new InventorySlot(skin);
             equipSlots.add(slot);
             equipTable.add(slot);
         }
         rightCol.add(equipTable);
-
         content.add(rightCol).width(300).expandY().fillY();
-
     }
 
     private void setupDragAndDrop() {
-        for (final InventorySlot slot : iterateAllSlots()) {
-
+        for (InventorySlot slot : iterateAllSlots()) {
             dragAndDrop.addSource(new Source(slot) {
                 @Override
                 public Payload dragStart(InputEvent event, float x, float y, int pointer) {
                     if (slot.isEmpty()) return null;
+                    DragData dd = new DragData(slot, slot.getWeapon());
                     Payload p = new Payload();
-                    p.setObject(new DragData(slot, slot.getWeapon()));
-                    Image dragImg = new Image(slot.getItemDrawable());
-                    p.setDragActor(dragImg);
+                    p.setObject(dd);
+                    p.setDragActor(new Image(slot.getItemDrawable()));
                     slot.clearItem();
                     return p;
                 }
-
                 @Override
                 public void dragStop(InputEvent event, float x, float y, int pointer, Payload payload, Target target) {
                     if (target == null) {
@@ -159,17 +177,14 @@ public class InventoryUI {
                 }
             });
 
-
             dragAndDrop.addTarget(new Target(slot) {
                 @Override
                 public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
                     return true;
                 }
-
                 @Override
                 public void drop(Source source, Payload payload, float x, float y, int pointer) {
                     DragData dd = (DragData)payload.getObject();
-                    if (dd == null) return;
                     Weapon incoming = dd.weapon;
                     Weapon existing = slot.getWeapon();
                     slot.setItem(incoming);

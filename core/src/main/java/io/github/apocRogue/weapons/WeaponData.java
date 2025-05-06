@@ -1,6 +1,8 @@
 package io.github.apocRogue.weapons;
 
 public class WeaponData {
+    public String typeID;
+
     public String name;
     public int damage;
     public String texturePath;
@@ -12,5 +14,4 @@ public class WeaponData {
     public float dashSpeed;
     public float dashDuration;
     public float dashCooldown;
-    // If you have more fields, add them here
 }
