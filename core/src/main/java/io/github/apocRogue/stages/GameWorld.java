@@ -69,7 +69,7 @@ public class GameWorld {
         mapManager.generateMap(stage);
 
         //Load textures
-        playerTexture         = new Texture("ui/sprite.png");
+        playerTexture         = new Texture("ui/main-character.png");
         dummyTexture          = new Texture("ui/dummy.png");
         chestTexture          = new Texture("ui/chest.png");
         samuraiTexture        = new Texture("ui/samurai.jpeg");

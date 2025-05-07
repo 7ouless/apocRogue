@@ -147,12 +147,14 @@ public class MapManager {
             //Draw the floor tile (20% taller)
             float floorW = tileWidth;
             float floorH = tileHeight * 1.2f;
+            float floorY = yPos + tileHeight;
+
             platformTiles.add(new TileInfo(
                 i * tileWidth,
-                yPos,
+                floorY,
                 tileWidth,
                 tileHeight,
-                TileType.PLATFORM
+                TileType.GROUND
             ));
 
             //Place the edge-square on the lower tile
@@ -162,24 +164,26 @@ public class MapManager {
                 int lowerIdx = rising ? (i - 1) : i;
                 float lowerY = Math.min(yPos, lastTileY);
                 float lowerX = lowerIdx * tileWidth;
+                boolean flipX = rising;
 
                 float edgeSize = floorH * 0.835f;  // edge size
                 float squareX = rising
                     ? lowerX + floorW - edgeSize
                     : lowerX;
-                float squareY = lowerY + tileHeight; // sits on top of lower floor
+                float squareY = lowerY + tileHeight * 2; // sits on top of lower floor
 
                 edgeTiles.add(new TileInfo(
                     squareX,
                     squareY,
                     edgeSize,
                     edgeSize,
-                    TileType.EDGE
+                    TileType.EDGE,
+                    flipX
                 ));
             }
 
             //Fill in the dirt beneath this column
-            fillGround(i);
+            fillGround(i, yPos);
 
             //Update lastTileY for next iteration
             lastTileY = yPos;
@@ -219,14 +223,20 @@ public class MapManager {
 
 
 
-    private void fillGround(int i) {
+    private void fillGround(int i, float topY) {
         int j = 0;
-        while (yPos - (tileHeight * j) >= settings.groundMin
-        ) { //filling in the below tiles
-            dirtTiles.add(new TileInfo(i * tileWidth, yPos - (tileHeight * j), tileWidth, tileHeight, TileType.DIRT));
+        while (topY - (tileHeight * j) >= settings.groundMin) {
+            dirtTiles.add(new TileInfo(
+                i * tileWidth,
+                topY - (tileHeight * j),
+                tileWidth,
+                tileHeight,
+                TileType.DIRT
+            ));
             j++;
         }
     }
+
 
     private Actor createTileActor(TileInfo info) {
         switch (info.type) {
@@ -239,7 +249,7 @@ public class MapManager {
             case BORDER:
                 return new BorderTile(info.x, info.y, info.width, info.height);
             case EDGE:
-                return new EdgeTile(info.x, info.y, info.width);
+                return new EdgeTile(info.x, info.y, info.width, info.flipX);
 
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);

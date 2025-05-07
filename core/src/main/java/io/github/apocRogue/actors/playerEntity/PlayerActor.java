@@ -44,7 +44,8 @@ public class PlayerActor extends PhysicalActor {
     public PlayerActor(Texture texture) {
         super(texture);
         this.texture = texture;
-        setSize(texture.getWidth(), texture.getHeight());
+        float scale = 0.055f;
+        setSize(texture.getWidth() * scale, texture.getHeight() * scale);
         stats = new StatsComponent(100, 100, 10, 2, 1200, 2, 2, 10, 0);
     }
 
@@ -120,8 +121,19 @@ public class PlayerActor extends PhysicalActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.draw(texture, getX(), getY(), getWidth(), getHeight());
+        float drawX = getX();
+        float drawY = getY();
+        float drawW = getWidth();
+        float drawH = getHeight();
+
+        if (!facingRight) {
+            drawX = getX() + getWidth();
+            drawW = -getWidth();
+        }
+
+        batch.draw(texture, drawX, drawY, drawW, drawH);
     }
+
 
     private void handleItemPickups() {
         if (getStage() == null) return;

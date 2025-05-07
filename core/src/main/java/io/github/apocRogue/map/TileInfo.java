@@ -3,6 +3,7 @@ package io.github.apocRogue.map;
 public class TileInfo {
     public float x, y, width, height;
     public TileType type;
+    public boolean flipX = false;  // default to false for all tiles
 
     public TileInfo(float x, float y, float width, float height, TileType type) {
         this.x = x;
@@ -11,7 +12,11 @@ public class TileInfo {
         this.height = height;
         this.type = type;
     }
-    // If you want to keep a 4-argument constructor, that’s fine,
-    // but your code references the 5-argument one, so that must exist.
 
+    // Overloaded constructor with flip support (for edge tiles)
+    public TileInfo(float x, float y, float width, float height, TileType type, boolean flipX) {
+        this(x, y, width, height, type);
+        this.flipX = flipX;
+    }
 }
+
