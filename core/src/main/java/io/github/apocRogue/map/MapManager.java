@@ -164,7 +164,9 @@ public class MapManager {
                 int lowerIdx = rising ? (i - 1) : i;
                 float lowerY = Math.min(yPos, lastTileY);
                 float lowerX = lowerIdx * tileWidth;
+
                 boolean flipX = rising;
+                boolean useAltTexture = random.nextBoolean();
 
                 float edgeSize = floorH * 0.835f;  // edge size
                 float squareX = rising
@@ -178,7 +180,8 @@ public class MapManager {
                     edgeSize,
                     edgeSize,
                     TileType.EDGE,
-                    flipX
+                    flipX,
+                    useAltTexture
                 ));
             }
 
@@ -249,7 +252,7 @@ public class MapManager {
             case BORDER:
                 return new BorderTile(info.x, info.y, info.width, info.height);
             case EDGE:
-                return new EdgeTile(info.x, info.y, info.width, info.flipX);
+                return new EdgeTile(info.x, info.y, info.width, info.flipX, info.useAltTexture);
 
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);

@@ -4,6 +4,8 @@ public class TileInfo {
     public float x, y, width, height;
     public TileType type;
     public boolean flipX = false;  // default to false for all tiles
+    public boolean useAltTexture = false;
+
 
     public TileInfo(float x, float y, float width, float height, TileType type) {
         this.x = x;
@@ -13,10 +15,10 @@ public class TileInfo {
         this.type = type;
     }
 
-    // Overloaded constructor with flip support (for edge tiles)
-    public TileInfo(float x, float y, float width, float height, TileType type, boolean flipX) {
+    public TileInfo(float x, float y, float width, float height, TileType type, boolean flipX, boolean useAltTexture) {
         this(x, y, width, height, type);
         this.flipX = flipX;
+        this.useAltTexture = useAltTexture;
     }
 }
 

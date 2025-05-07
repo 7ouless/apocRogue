@@ -5,12 +5,16 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 public class EdgeTile extends TileActor {
-    private static final Texture tex = new Texture("ui/edge.png");
-    private boolean flipX;
+    private static final Texture tex1 = new Texture("ui/edge.png");
+    private static final Texture tex2 = new Texture("ui/edge2.png");
 
-    public EdgeTile(float x, float y, float size, boolean flipX) {
+    private final boolean flipX;
+    private final Texture texture;
+
+    public EdgeTile(float x, float y, float size, boolean flipX, boolean useAltTexture) {
         super(x, y, size, size, Color.PURPLE);
         this.flipX = flipX;
+        this.texture = useAltTexture ? tex2 : tex1;
         setSize(size, size);
     }
 
@@ -20,10 +24,11 @@ public class EdgeTile extends TileActor {
         float drawW = getWidth();
 
         if (flipX) {
-            drawX += getWidth();    // draw from the right
-            drawW = -drawW;         // flip horizontally
+            drawX += getWidth();
+            drawW = -drawW;
         }
 
-        batch.draw(tex, drawX, getY(), drawW, getHeight());
+        batch.draw(texture, drawX, getY(), drawW, getHeight());
     }
 }
+
