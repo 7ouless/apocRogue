@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import java.util.List;
+import java.util.ArrayList;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -16,10 +18,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.weapons.Weapon;
 
 
 import io.github.apocRogue.globals.physics.SoundPhysics;
+
+import java.util.ArrayList;
 
 public class GameScreen extends ScreenAdapter {
 
@@ -76,6 +81,15 @@ public class GameScreen extends ScreenAdapter {
         gameWorld.initialize();
         gameWorld.getInventory().draw(uiStage);
 
+        // ─── move *all* grass into the overlay stage ───
+        List<Actor> grassActors = new ArrayList<>();
+        for (Actor a : stage.getActors()) {
+            if (a instanceof GrassOverlayTile) grassActors.add(a);
+        }
+        for (Actor grass : grassActors) {
+            grass.remove();
+            overlayStage.addActor(grass);
+        }
 
         // Create normal UI or HUD elements here (if any)...
 

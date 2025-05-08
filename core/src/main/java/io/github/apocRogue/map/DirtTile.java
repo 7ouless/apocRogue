@@ -3,24 +3,36 @@ package io.github.apocRogue.map;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.MathUtils;
+
 
 public class DirtTile extends TileActor {
     private static final Texture tex = new Texture("ui/floor.png");
+    private final boolean flipX;     // ← new!
 
     public DirtTile(float x, float y, float width, float height) {
         super(x, y, width, height, Color.BROWN);
+        this.flipX = MathUtils.randomBoolean();  // random flip
+        setSize(width, height);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        float pad = 0.01f; // tiny inset to prevent bleeding
+        float pad = 0.01f; // prevent bleeding
+        float drawX = getX();
+        float drawW = getWidth();
+        if (flipX) {
+            drawX += drawW;
+            drawW = -drawW;
+        }
+        // flipped negative-width still respects UV pad parameters
         batch.draw(
             tex,
-            getX(), getY(), getWidth(), getHeight(),
+            drawX, getY(), drawW, getHeight(),
             pad, pad, 1 - pad, 1 - pad
         );
     }
-
 }
+
 
 
