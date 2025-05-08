@@ -34,6 +34,9 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
 
+    private float cameraOffsetY = 160f;
+
+
     private Stage overlayStage;
     private Texture bgSky, bgMountains;
     private float viewportWidth, viewportHeight;
@@ -263,13 +266,17 @@ public class GameScreen extends ScreenAdapter {
         }
         gameWorld.getInventory().draw(uiStage);
 
-// 2) Center camera on player
+// 2) Center camera on player, but lift it up by cameraOffsetY
+        float playerCenterX = gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth()  / 2f;
+        float playerCenterY = gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f;
+
         camera.position.set(
-            gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth() / 2f,
-            gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f,
-            0
+            playerCenterX,
+            playerCenterY + cameraOffsetY,
+            0f
         );
         camera.update();
+
         stage.getViewport().apply();
 
 // 3) Clear screen
@@ -290,7 +297,7 @@ public class GameScreen extends ScreenAdapter {
             bgMountains,
             left,
             bottom + 40f,   // vertical offset
-            -0.02f,         // parallax factor (–2% camera speed)
+            -0.055f,         // parallax factor
             0.5f);          // scale
 
         // …and more layers here…
