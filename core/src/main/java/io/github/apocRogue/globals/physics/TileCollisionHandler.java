@@ -3,6 +3,8 @@ package io.github.apocRogue.globals.physics;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import io.github.apocRogue.map.TileActor;
+import io.github.apocRogue.map.GrassOverlayTile;
+
 
 public class TileCollisionHandler {
 
@@ -25,8 +27,11 @@ public class TileCollisionHandler {
 
         // Loop through all TileActor objects in the stage.
         for (Actor stageActor : actor.getStage().getActors()) {
+            if (stageActor instanceof io.github.apocRogue.map.GrassOverlayTile) {
+                continue;    // never collide with grass
+            }
             if (stageActor instanceof TileActor) {
-                TileActor tile = (TileActor) stageActor;
+                TileActor tile = (TileActor)stageActor;
                 // Inflate the tile rectangle slightly for extra sensitivity.
                 Rectangle tileRect = new Rectangle(tile.getX() - BUFFER, tile.getY() - BUFFER,
                     tile.getWidth() + 2 * BUFFER, tile.getHeight() + 2 * BUFFER);

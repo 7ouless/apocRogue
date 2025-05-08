@@ -5,7 +5,7 @@ public class TileInfo {
     public TileType type;
     public boolean flipX = false;  // default to false for all tiles
     public boolean useAltTexture = false;
-
+    public String grassType = "";
 
     public TileInfo(float x, float y, float width, float height, TileType type) {
         this.x = x;
@@ -15,10 +15,11 @@ public class TileInfo {
         this.type = type;
     }
 
-    public TileInfo(float x, float y, float width, float height, TileType type, boolean flipX, boolean useAltTexture) {
+    public TileInfo(float x, float y, float width, float height, TileType type, boolean flipX, boolean useAltTexture, String grassType) {
         this(x, y, width, height, type);
         this.flipX = flipX;
         this.useAltTexture = useAltTexture;
+        this.grassType = grassType;
     }
 }
 

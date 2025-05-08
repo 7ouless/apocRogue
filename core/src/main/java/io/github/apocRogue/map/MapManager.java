@@ -18,6 +18,11 @@ public class MapManager {
     private int islandCurrentLength;
     private float islandCurrentY;
 
+    //grass shit
+    private final boolean grassUseEdgeSize     = false;    // if true, grass dims are based on edge
+    private final float   grassWidthMultiplier  =0.12f;
+    private final float   grassHeightMultiplier = 1.0f;
+
     private int tileWidth = settings.tileWidth;
     private int tileHeight = settings.tileHeight;
 
@@ -31,12 +36,15 @@ public class MapManager {
     private final float maxPlatformY = settings.roomHeight - 100;  //100px below ceiling
     private float currentIslandPlatY;
 
+    private static final boolean GRASS_ENABLED = true;
+
     private int octaves = settings.octaves;  //#of octaves
 
     private List<TileInfo> platformTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
     private List<TileInfo> borderTiles = new ArrayList<>();
     private List<TileInfo> edgeTiles = new ArrayList<>();
+    private List<TileInfo> grassTiles = new ArrayList<>();
 
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
@@ -60,6 +68,11 @@ public class MapManager {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
+
+        for (TileInfo info : grassTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
     }
 
     private void createRoom() {
@@ -156,6 +169,15 @@ public class MapManager {
                 tileHeight,
                 TileType.GROUND
             ));
+            if (GRASS_ENABLED) {
+                grassTiles.add(new TileInfo(
+                    i * tileWidth,
+                    floorY + tileHeight * 0.4f,
+                    tileWidth,
+                    tileHeight,
+                    TileType.GRASS
+                ));
+            }
 
             //Place the edge-square on the lower tile
             if (heightChanged) {
@@ -168,21 +190,59 @@ public class MapManager {
                 boolean flipX = rising;
                 boolean useAltTexture = random.nextBoolean();
 
-                float edgeSize = floorH * 0.835f;  // edge size
+                float edgeHeight = tileHeight *0.1f;      // match floor tile's visual height
+                float edgeWidth = tileWidth * 0.06f;        // shrink width to 50%
+
+
                 float squareX = rising
-                    ? lowerX + floorW - edgeSize
+                    ? lowerX + floorW - edgeWidth
                     : lowerX;
-                float squareY = lowerY + tileHeight * 2; // sits on top of lower floor
+                float squareY = lowerY + tileHeight * 2;
 
                 edgeTiles.add(new TileInfo(
                     squareX,
                     squareY,
-                    edgeSize,
-                    edgeSize,
+                    edgeWidth,
+                    edgeHeight,
                     TileType.EDGE,
                     flipX,
-                    useAltTexture
+                    useAltTexture,
+                    ""
                 ));
+
+
+                String edgeType = useAltTexture ? "edge2" : "edge1";
+                if (GRASS_ENABLED) {
+                    float grassXOffset = tileWidth * -0.045f;
+                    float grassYOffset = tileHeight * 0.3f;
+
+                    float grassW = grassUseEdgeSize
+                        ? edgeWidth  * grassWidthMultiplier
+                        : tileWidth  * grassWidthMultiplier;
+                    float grassH = grassUseEdgeSize
+                        ? edgeHeight * grassHeightMultiplier
+                        : tileHeight * grassHeightMultiplier;
+
+                    // anchor at the “inner” side of the edge, then nudge toward the tall side
+                    float baseX = flipX
+                        ? (squareX + edgeWidth)
+                        : squareX;
+                    float grassX = baseX - grassW/2f
+                                         + (flipX ? +grassXOffset : -grassXOffset);
+
+                    grassTiles.add(new TileInfo(
+                        grassX,
+                        squareY + grassYOffset,
+                        grassW,
+                        grassH,
+                        TileType.GRASS,
+                        flipX,
+                        false,
+                        edgeType
+                    ));
+                }
+
+
             }
 
             //Fill in the dirt beneath this column
@@ -252,7 +312,10 @@ public class MapManager {
             case BORDER:
                 return new BorderTile(info.x, info.y, info.width, info.height);
             case EDGE:
-                return new EdgeTile(info.x, info.y, info.width, info.flipX, info.useAltTexture);
+                return new EdgeTile(info.x, info.y, info.width, info.height, info.flipX, info.useAltTexture);
+            case GRASS:
+                return new GrassOverlayTile(info.x, info.y, info.width, info.height, info.flipX, info.grassType);
+
 
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);

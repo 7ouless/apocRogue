@@ -8,7 +8,7 @@ public class FloorTile extends TileActor {
     private static final Texture tex = new Texture("ui/floor.png");
 
     public FloorTile(float x, float y, float width, float height) {
-        super(x, y, width, height, Color.GREEN);   // ← call the TileActor ctor
+        super(x, y, width, height, Color.WHITE);   // ← call the TileActor ctor
         // (we won’t actually use the Color fill, since we override draw below)
         setSize(width, height);
     }

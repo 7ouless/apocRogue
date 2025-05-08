@@ -3,6 +3,7 @@ package io.github.apocRogue.stages;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.weapons.Weapon;
 
+
 import io.github.apocRogue.globals.physics.SoundPhysics;
 
 public class GameScreen extends ScreenAdapter {
@@ -26,6 +28,10 @@ public class GameScreen extends ScreenAdapter {
     private Stage uiStage;     // For HUD / normal UI
     private SpriteBatch batch;
     private OrthographicCamera camera;
+
+    private Stage overlayStage;
+    private Texture bgSky, bgMountains;
+    private float viewportWidth, viewportHeight;
 
     private GameWorld gameWorld;
     private boolean paused = false; // Tracks if the game is paused
@@ -48,6 +54,16 @@ public class GameScreen extends ScreenAdapter {
 
         stage = new Stage(new FitViewport(1920, 1080, camera));
         uiStage = new Stage(new FitViewport(1920, 1080));
+
+        overlayStage = new Stage(new FitViewport(1920, 1080, camera));
+
+
+        viewportWidth  = stage.getViewport().getWorldWidth();
+        viewportHeight = stage.getViewport().getWorldHeight();
+
+
+        bgSky       = new Texture(Gdx.files.internal("ui/sky.png"));
+        bgMountains = new Texture(Gdx.files.internal("ui/mountains.png"));
 
         batch = new SpriteBatch();
 
@@ -225,15 +241,15 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+        // 1) Update logic & stages
         if (!paused) {
             gameWorld.update(delta);
-
-            // ... check player dead logic ...
+            stage.act(delta);
+            overlayStage.act(delta);
         }
-
         gameWorld.getInventory().draw(uiStage);
 
-        // Camera stuff
+// 2) Center camera on player
         camera.position.set(
             gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth() / 2f,
             gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f,
@@ -241,43 +257,81 @@ public class GameScreen extends ScreenAdapter {
         );
         camera.update();
         stage.getViewport().apply();
-        batch.setProjectionMatrix(camera.combined);
 
-        // Clear
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+// 3) Clear screen
+        Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        // Render the stage
+// 4) Parallax pass
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        float left   = camera.position.x - viewportWidth  / 2f;
+        float bottom = camera.position.y - viewportHeight / 2f;
+
+        // Sky (stationary relative to camera)
+        batch.draw(bgSky, left, bottom, viewportWidth, viewportHeight);
+
+        // Mountains (slow scroll)
+        drawTiledLayer(batch,
+            bgMountains,
+            left,
+            bottom + 40f,   // vertical offset
+            -0.02f,         // parallax factor (–2% camera speed)
+            0.5f);          // scale
+
+        // …and more layers here…
+        batch.end();
+
+        // 5) Draw the rest of the world
         stage.draw();
 
+        // 6) Any overlay Stage (e.g. grass)
+        overlayStage.setViewport(stage.getViewport());
+        overlayStage.draw();
+
+        // 7) Your debug‐shape passes
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // 1) Draw your enemy debug
+        // filled‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        // ... your existing logic for enemies ...
+        //   ← draw your filled debug shapes here, e.g.:
+        //   shapeRenderer.circle(enemyX, enemyY, radius);
         shapeRenderer.end();
 
-        // 2) Draw the sound debug rings
+        // line‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         for (SoundPhysics.SoundDebugEvent evt : SoundPhysics.debugEvents) {
-            // fraction of time used up
-            float t = evt.timeAlive / evt.duration;
-            // alpha goes from 1 down to 0
+            float t     = evt.timeAlive / evt.duration;
             float alpha = 1f - t;
-
-            // If you want the ring to fade out, set the color alpha
             shapeRenderer.setColor(evt.color.r, evt.color.g, evt.color.b, alpha);
-
-            // Draw the ring with the currentRadius
             shapeRenderer.circle(evt.center.x, evt.center.y, evt.currentRadius);
         }
         shapeRenderer.end();
 
-        // Finally draw UI
+
+        // 8) Finally the UI
         uiStage.act(delta);
         uiStage.draw();
+
     }
+
+    private void drawTiledLayer(SpriteBatch batch,
+                                Texture tex,
+                                float worldLeft,
+                                float y,
+                                float parallaxFactor,
+                                float scale) {
+        float tileW = tex.getWidth()  * scale;
+        float scroll = (camera.position.x * parallaxFactor) % tileW;
+        if (scroll > 0) scroll -= tileW;
+
+        for (float x = worldLeft + scroll - tileW;
+             x < worldLeft + viewportWidth;
+             x += tileW) {
+            batch.draw(tex, x, y, tileW, tex.getHeight() * scale);
+        }
+    }
+
 
     private PlayerActor findPlayerInStage(Stage stage) {
         for (Actor actor : stage.getActors()) {
@@ -303,6 +357,10 @@ public class GameScreen extends ScreenAdapter {
         skin.dispose();
         batch.dispose();
         shapeRenderer.dispose();
+        overlayStage.dispose();
+        bgSky.dispose();
+        bgMountains.dispose();
+
 
     }
 }
