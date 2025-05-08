@@ -330,7 +330,22 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.end();
 
 
-        // 8) Finally the UI
+        // 8) Simple dark-pink full-screen tint
+        Gdx.gl.glEnable(GL20.GL_BLEND);  // turn on alpha blending
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        // RGBA = (red=0.6, green=0.0, blue=0.2, alpha=0.1) → dark pink at 10% opacity
+        shapeRenderer.setColor(0.4f, 0.0f, 0.2f, 0.12f);
+        // compute the bottom-left corner of the camera’s view in world coords
+        float tintX = camera.position.x - viewportWidth  / 2f;
+        float tintY = camera.position.y - viewportHeight / 2f;
+        // draw a rectangle that exactly covers the screen
+        shapeRenderer.rect(tintX, tintY, viewportWidth, viewportHeight);
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+
+        // 9) Finally the UI
         uiStage.act(delta);
         uiStage.draw();
 

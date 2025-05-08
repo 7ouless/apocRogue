@@ -76,7 +76,7 @@ public class InventorySlot extends Table {
         itemImage.setDrawable(null);
     }
 
-    /** Optional: highlight selection. */
+
     public void setHighlighted(boolean highlighted) {
         Color tint = highlighted ? Color.YELLOW : Color.DARK_GRAY;
         setBackground(skin.newDrawable("white", tint));
