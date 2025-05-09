@@ -38,7 +38,7 @@ public class GameScreen extends ScreenAdapter {
 
 
     private Stage overlayStage;
-    private Texture bgSky, bgMountains;
+    private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds;
     private float viewportWidth, viewportHeight;
 
     private GameWorld gameWorld;
@@ -72,6 +72,10 @@ public class GameScreen extends ScreenAdapter {
 
         bgSky       = new Texture(Gdx.files.internal("ui/sky.png"));
         bgMountains = new Texture(Gdx.files.internal("ui/mountains.png"));
+        bgSun          = new Texture(Gdx.files.internal("ui/sun.png"));
+        bgSideClouds   = new Texture(Gdx.files.internal("ui/side-clouds.png"));
+        bgTopClouds    = new Texture(Gdx.files.internal("ui/top-clouds.png"));
+        bgSmallClouds  = new Texture(Gdx.files.internal("ui/small-clouds.png"));
 
         batch = new SpriteBatch();
 
@@ -289,16 +293,59 @@ public class GameScreen extends ScreenAdapter {
         float left   = camera.position.x - viewportWidth  / 2f;
         float bottom = camera.position.y - viewportHeight / 2f;
 
-        // Sky (stationary relative to camera)
+        // 4.1) Sky (stationary relative to camera)
         batch.draw(bgSky, left, bottom, viewportWidth, viewportHeight);
 
-        // Mountains (slow scroll)
+        // 4.2) Sun (almost stationary; slight horizontal drift if you like)
+        float sunScale = 0.5f; // adjust size
+        float sunW = bgSun.getWidth() * sunScale;
+        float sunH = bgSun.getHeight() * sunScale;
+        // Position it at, say, 20% from left, 70% from bottom of the viewport
+        batch.draw(
+            bgSun,
+                    left + viewportWidth * 0.2f - sunW/2,
+                    bottom + viewportHeight * 0.7f - sunH/2,
+                    sunW,
+                    sunH
+                );
+
+        // 4.3) Side‐clouds (very slow parallax)
+                drawTiledLayer(
+                        batch,
+                        bgSideClouds,
+                        left,
+                       bottom + viewportHeight * 0f,
+                       -0.02f,   // very subtle scroll
+                        0.4f      // scale clouds to 80%
+                        );
+
+        // 4.4) Mountains (slow scroll)
         drawTiledLayer(batch,
             bgMountains,
             left,
             bottom + 40f,   // vertical offset
             -0.055f,         // parallax factor
             0.5f);          // scale
+
+        // 4.5) Top‐clouds (medium parallax)
+               drawTiledLayer(
+                   batch,
+                   bgTopClouds,
+                   left,
+                   bottom + viewportHeight * 0.8f,
+                   -0.08f,
+                   0.6f
+               );
+
+        // 4.6) Small‐clouds (faster parallax, smaller)
+               drawTiledLayer(
+                   batch,
+                   bgSmallClouds,
+                   left,
+                   bottom + viewportHeight * 0.4f,
+                   -0.12f,
+                   0f
+               );
 
         // …and more layers here…
         batch.end();
@@ -396,7 +443,10 @@ public class GameScreen extends ScreenAdapter {
         overlayStage.dispose();
         bgSky.dispose();
         bgMountains.dispose();
-
+        bgSun.dispose();
+        bgSideClouds.dispose();
+        bgTopClouds.dispose();
+        bgSmallClouds.dispose();
 
     }
 }

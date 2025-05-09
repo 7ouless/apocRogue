@@ -31,6 +31,7 @@ import io.github.apocRogue.weapons.WeaponFactory;
 import io.github.apocRogue.weapons.WeaponIDDecoder;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
+import io.github.apocRogue.map.FloorTile;
 
 public class GameWorld {
     private final Stage stage;
