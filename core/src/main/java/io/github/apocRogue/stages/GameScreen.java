@@ -315,7 +315,7 @@ public class GameScreen extends ScreenAdapter {
                         bgSideClouds,
                         left,
                        bottom + viewportHeight * 0f,
-                       -0.02f,   // very subtle scroll
+                       -0.005f,   // very subtle scroll
                         0.4f      // scale clouds to 80%
                         );
 
@@ -324,7 +324,7 @@ public class GameScreen extends ScreenAdapter {
             bgMountains,
             left,
             bottom + 40f,   // vertical offset
-            -0.055f,         // parallax factor
+            -0.025f,         // parallax factor
             0.5f);          // scale
 
         // 4.5) Top‐clouds (medium parallax)
@@ -337,7 +337,7 @@ public class GameScreen extends ScreenAdapter {
                    0.6f
                );
 
-        // 4.6) Small‐clouds (faster parallax, smaller)
+        // 4.6) Small‐clouds (faster parallax, smaller)a
                drawTiledLayer(
                    batch,
                    bgSmallClouds,
