@@ -51,6 +51,8 @@ public class GameWorld {
     private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
     private Array<ChestActor> chests = new Array<>();
 
+    private boolean playerSpawned = false;
+
     private Texture playerTexture, dummyTexture, chestTexture,
         flyingCreatureTexture, samuraiTexture;
 
@@ -77,13 +79,7 @@ public class GameWorld {
         flyingCreatureTexture = new Texture("ui/bat.png");
 
         // Player & Inventory
-        player = new PlayerActor(playerTexture);
-        float spawnY = mapManager.settings.groundMax + 10;
-        player.setPosition(50, spawnY);
-        stage.addActor(player);
-
         inventory = new Inventory(skin);
-        player.setInventory(inventory);
 
         //ID system: load base‐stat table and static metadata
         itemManager = new ItemManager();
@@ -184,9 +180,21 @@ public class GameWorld {
     }
 
     public void update(float delta) {
+        // 1) On first update, spawn the player now that the map (and all its actors) exist
+        if (!playerSpawned) {
+            player = new PlayerActor(playerTexture);
+            float spawnY = mapManager.settings.groundMax + 10;
+            player.setPosition(50, spawnY);
+            stage.addActor(player);
+            player.setInventory(inventory);
+            playerSpawned = true;
+        }
+
+        // 2) Proceed with the usual stage and physics updates
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
     }
+
 
     public PlayerActor getPlayer() { return player; }
     public Inventory getInventory() { return inventory; }
