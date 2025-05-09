@@ -21,17 +21,14 @@ import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.inventory.general.ItemManager;
-import io.github.apocRogue.map.GenerationSettings;
-import io.github.apocRogue.map.MapManager;
-import io.github.apocRogue.map.PlatformTile;
-import io.github.apocRogue.map.DirtTile;
+import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.weapons.WeaponFactory;
 import io.github.apocRogue.weapons.WeaponIDDecoder;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
-import io.github.apocRogue.map.FloorTile;
+
 
 public class GameWorld {
     private final Stage stage;
@@ -52,6 +49,7 @@ public class GameWorld {
     private Array<ChestActor> chests = new Array<>();
 
     private boolean playerSpawned = false;
+    private float spawnOffsetY = 22f;
 
     private Texture playerTexture, dummyTexture, chestTexture,
         flyingCreatureTexture, samuraiTexture;
@@ -182,19 +180,40 @@ public class GameWorld {
     public void update(float delta) {
         // 1) On first update, spawn the player now that the map (and all its actors) exist
         if (!playerSpawned) {
-            player = new PlayerActor(playerTexture);
-            float spawnY = mapManager.settings.groundMax + 10;
-            player.setPosition(50, spawnY);
-            stage.addActor(player);
-            player.setInventory(inventory);
-            playerSpawned = true;
-        }
+                        player = new PlayerActor(playerTexture);
+                        float spawnX   = 30f;
+                        // look up the true top-Y of any FloorTile or PlatformTile under spawnX
+                            float groundY  = getGroundHeightAtX(spawnX);
+                        // place the player's feet 2px above that top, using its own height
+                        float spawnY   = groundY + player.getHeight() + spawnOffsetY;
+                        player.setPosition(spawnX, spawnY);
+                        stage.addActor(player);
+                        player.setInventory(inventory);
+                        playerSpawned = true;
+                    }
 
         // 2) Proceed with the usual stage and physics updates
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
     }
 
+    private float getGroundHeightAtX(float x) {
+        float maxY = 0;
+        for (Actor a : stage.getActors()) {
+                    // now also consider the bottom/top border tiles as “ground”
+                        if (a instanceof PlatformTile
+                         || a instanceof FloorTile
+                         || a instanceof BorderTile) {
+                float tileX  = a.getX();
+                float tileW  = a.getWidth();
+                if (x >= tileX && x <= tileX + tileW) {
+                    float topY = a.getY() + a.getHeight();
+                    if (topY > maxY) maxY = topY;
+                }
+            }
+        }
+        return maxY;
+    }
 
     public PlayerActor getPlayer() { return player; }
     public Inventory getInventory() { return inventory; }
