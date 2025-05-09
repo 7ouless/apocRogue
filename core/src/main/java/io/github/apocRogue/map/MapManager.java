@@ -31,6 +31,8 @@ public class MapManager {
     private float islandYPos = 600;
     private float yPos = 300;
 
+    private final float EDGE_X_OFFSET = settings.tileWidth * 0.05f; //Jimmy is going to kill me
+
     private boolean platform = false;
     private final float minPlatformY = settings.tileHeight * 5;    //start 5 tiles up
     private final float maxPlatformY = settings.roomHeight - 100;  //100px below ceiling
@@ -190,13 +192,14 @@ public class MapManager {
                 boolean flipX = rising;
                 boolean useAltTexture = random.nextBoolean();
 
-                float edgeHeight = tileHeight *0.1f;      // match floor tile's visual height
-                float edgeWidth = tileWidth * 0.06f;        // shrink width to 50%
+                float edgeHeight = tileHeight *0.3f;      // match floor tile's visual height
+                float edgeWidth = tileWidth * 0.1f;        // shrink width to 50%
 
-
-                float squareX = rising
+                // compute a “base” X exactly as before, then apply your offset:
+                float baseX = rising
                     ? lowerX + floorW - edgeWidth
                     : lowerX;
+                float squareX = baseX + (rising ? +EDGE_X_OFFSET : -EDGE_X_OFFSET);
                 float squareY = lowerY + tileHeight * 2;
 
                 edgeTiles.add(new TileInfo(
@@ -213,7 +216,7 @@ public class MapManager {
 
                 String edgeType = useAltTexture ? "edge2" : "edge1";
                 if (GRASS_ENABLED) {
-                    float grassXOffset = tileWidth * -0.03f;
+                    float grassXOffset = tileWidth * -0.08f;
                     float grassYOffset = tileHeight * 0.5f;
 
                     float grassW = grassUseEdgeSize
@@ -224,10 +227,10 @@ public class MapManager {
                         : tileHeight * grassHeightMultiplier;
 
                     // anchor at the “inner” side of the edge, then nudge toward the tall side
-                    float baseX = flipX
+                    float grassBaseX = flipX
                         ? (squareX + edgeWidth)
                         : squareX;
-                    float grassX = baseX - grassW/2f
+                    float grassX = grassBaseX - grassW/2f
                                          + (flipX ? +grassXOffset : -grassXOffset);
 
                     grassTiles.add(new TileInfo(
