@@ -77,7 +77,6 @@ public class PlayerActor extends PhysicalActor {
 
         // gravity & stepping
         GravitySystem.applyGravityAndPhysics(this, delta, 4.2f);
-        StepUpProcessor.attemptStepUp(this);
 
         // interactions
         handleChestInteraction();

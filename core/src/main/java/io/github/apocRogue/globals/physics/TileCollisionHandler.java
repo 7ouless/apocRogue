@@ -4,6 +4,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import io.github.apocRogue.map.TileActor;
 import io.github.apocRogue.map.GrassOverlayTile;
+import io.github.apocRogue.map.EdgeTile;
+import io.github.apocRogue.globals.getters.ObstacleGetters;
+import io.github.apocRogue.map.FloorTile;
+
 
 
 public class TileCollisionHandler {
@@ -49,11 +53,27 @@ public class TileCollisionHandler {
 
                     // Resolve collision along that axis.
                     if (minOverlap == overlapLeft) {
-                        // Push actor left.
-                        actor.setX(tileRect.x - actorRect.width);
+                        if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
+                                       // Auto-step: climb up one standard tile
+                                           float step = ((TileActor)stageActor).getHeight();
+                                       actor.setY(actor.getY() + step);
+                                       actor.velocityY = 0f;
+                                       actor.isOnGround = true;
+                                    } else {
+                                        // Regular wall collision
+                                            actor.setX(tileRect.x - actorRect.width);
+                                    }
                     } else if (minOverlap == overlapRight) {
-                        // Push actor right.
-                        actor.setX(tileRect.x + tileRect.width);
+                        if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
+                                       // Auto-step: climb up one standard tile
+                            float step = ((TileActor)stageActor).getHeight();
+                                       actor.setY(actor.getY() + step);
+                                       actor.velocityY = 0f;
+                                       actor.isOnGround = true;
+                                   } else {
+                                       // Regular wall collision
+                                           actor.setX(tileRect.x + tileRect.width);
+                                   }
                     } else if (minOverlap == overlapBottom) {
                         // Push actor down.
                         actor.setY(tileRect.y - actorRect.height);

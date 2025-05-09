@@ -20,8 +20,8 @@ public class MapManager {
 
     //grass shit
     private final boolean grassUseEdgeSize     = false;    // if true, grass dims are based on edge
-    private final float   grassWidthMultiplier  =0.12f;
-    private final float   grassHeightMultiplier = 1.0f;
+    private final float   grassWidthMultiplier  =0.10f;
+    private final float   grassHeightMultiplier = 0.8f;
 
     private int tileWidth = settings.tileWidth;
     private int tileHeight = settings.tileHeight;
@@ -213,8 +213,8 @@ public class MapManager {
 
                 String edgeType = useAltTexture ? "edge2" : "edge1";
                 if (GRASS_ENABLED) {
-                    float grassXOffset = tileWidth * -0.045f;
-                    float grassYOffset = tileHeight * 0.3f;
+                    float grassXOffset = tileWidth * -0.03f;
+                    float grassYOffset = tileHeight * 0.5f;
 
                     float grassW = grassUseEdgeSize
                         ? edgeWidth  * grassWidthMultiplier
