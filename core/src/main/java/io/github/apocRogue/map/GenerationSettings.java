@@ -13,11 +13,13 @@ public class GenerationSettings {
     public int groundMax;
     public int groundMin;
 
-    public float treeDensity = 0.4f;
+    public float treeDensity = 0.5f;
 
     public float treeWidth   = 300f;
     public float treeHeight  = 400f;
     public float treeYOffset =  20f;
+
+    public int treeGap = 1;
 
     public float platformDensity;
 

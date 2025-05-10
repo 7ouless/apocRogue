@@ -55,6 +55,10 @@ public class MapManager {
     public void generateMap(Stage stage) {
         createRoom();
 
+        for (TileInfo info : treeTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
         for (TileInfo info : dirtTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
@@ -76,9 +80,7 @@ public class MapManager {
             stage.addActor(createTileActor(info));
         }
 
-        for (TileInfo info : treeTiles) {
-            stage.addActor(createTileActor(info));
-        }
+
 
     }
 
@@ -125,6 +127,7 @@ public class MapManager {
     private void createGround() { // used to join the long platforms using procedurally generated terrain
         int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
+        int tilesSinceLastTree = settings.treeGap;
 
         for (int i = 0; i < settings.roomWidth / tileWidth; i++) {
             //Per-column noise
@@ -187,21 +190,15 @@ public class MapManager {
             }
 
             // Tree Spawning
-            if (random.nextFloat() < settings.treeDensity) {
-                // 1) decide size
+            if (tilesSinceLastTree >= settings.treeGap
+                && random.nextFloat() < settings.treeDensity) {
                 float w = settings.treeWidth;
                 float h = settings.treeHeight;
-
-                // 2) pick a random X within the floor‐tile
                 float x = i * tileWidth
                     + random.nextFloat() * (tileWidth - w);
-
-                // 3) sink the tree by treeYOffset
                 float y = floorY + tileHeight - settings.treeYOffset;
-
-                // 4) randomly pick sprite variant and flip flag
-                boolean useAlt = random.nextBoolean();    // tree vs. tree2
-                boolean flip   = random.nextBoolean();    // 50/50 horizontal flip
+                boolean useAlt = random.nextBoolean();
+                boolean flip   = random.nextBoolean();
 
                 treeTiles.add(new TileInfo(
                     x, y, w, h,
@@ -210,6 +207,11 @@ public class MapManager {
                     useAlt,
                     ""
                 ));
+                // reset counter after spawning:
+                tilesSinceLastTree = 0;
+            } else {
+                // increment if we didn’t spawn one here:
+                tilesSinceLastTree++;
             }
 
 
