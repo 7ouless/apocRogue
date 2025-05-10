@@ -23,6 +23,9 @@ import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.map.MapManager;
 import io.github.apocRogue.weapons.Weapon;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import io.github.apocRogue.globals.difficulty.RunManager;
+import io.github.apocRogue.actors.mapEntities.Door;
 
 
 import io.github.apocRogue.globals.physics.SoundPhysics;
@@ -37,6 +40,10 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
 
+    private final RunManager runMgr = new RunManager();
+    private Label skullLabel, worldLabel;
+    private GameWorld gameWorld;
+
     private float cameraOffsetY = 160f;
     private float initialCamY;
     private float maxCameraYOffset = 200f;
@@ -48,7 +55,6 @@ public class GameScreen extends ScreenAdapter {
     private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree,bgMeadow;
     private float viewportWidth, viewportHeight;
 
-    private GameWorld gameWorld;
     private boolean paused = false; // Tracks if the game is paused
 
     // Pause overlay members
@@ -99,10 +105,9 @@ public class GameScreen extends ScreenAdapter {
         // but typically the game screen or the UI system loads the skin:
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // Create the game logic container
-        gameWorld = new GameWorld(stage);
-        gameWorld.initialize();
-        gameWorld.getInventory().draw(uiStage);
+        // 1) Init our run HUD
+        initUI();
+        loadCurrentWorld();
 
         // move all decor into the overlay stage
         List<Actor> decorActors = new ArrayList<>();
@@ -179,6 +184,31 @@ public class GameScreen extends ScreenAdapter {
 // Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
     }
+
+    private void initUI() {
+        Table hud = new Table();
+        hud.setFillParent(true);
+        hud.top().right().padTop(20).padRight(20);
+
+        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
+        skullLabel.setFontScale(1.5f);           // ← bigger
+        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
+        worldLabel.setFontScale(1.2f);           // ← a bit smaller
+
+        hud.add(skullLabel)
+            .padBottom(20)
+            .row();
+        hud.add(worldLabel);
+
+        uiStage.addActor(hud);
+    }
+
+    private void loadCurrentWorld() {
+        if (gameWorld != null) gameWorld.dispose();
+        // now pass only the stage & final‐world flag
+        gameWorld = new GameWorld(stage, runMgr.isFinalWorld());
+        gameWorld.initialize();
+        }
 
     private void createPauseOverlay() {
         // This Table covers the entire screen and darkens the background
@@ -297,6 +327,22 @@ public class GameScreen extends ScreenAdapter {
         }
         gameWorld.getInventory().draw(uiStage);
 
+        //1.5) handle doors -- Im lazy and dont want to change the next numbers hehehe
+
+        Door door = gameWorld.getOverlappingDoor();
+         if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            handleDoor(door);
+            }
+
+
+        // 1.7) if the player isn’t spawned yet, skip camera + rest -- Im lazy and dont want to change the next numbers hehehe
+        if (gameWorld.getPlayer() == null) {
+            // still loading/spawning
+            // draw UI and bail out early:
+            uiStage.act(delta);
+            uiStage.draw();
+            return;
+        }
         // 2) Center camera on player horizontally, but clamp to world borders:
         float playerCenterX = gameWorld.getPlayer().getX()
             + gameWorld.getPlayer().getWidth() / 2f;
@@ -474,6 +520,26 @@ public class GameScreen extends ScreenAdapter {
         uiStage.draw();
 
     }
+
+    private void handleDoor(Door door) {
+        if (door.getType() == Door.Type.EXTRACT) {
+            game.setScreen(new MainScreen(game));
+            } else {
+            // CONTINUE door
+                if (runMgr.isFinalWorld()) {
+                 runMgr.continueRun();
+                } else {
+                runMgr.advanceWorld();
+                }
+                updateHud();
+            loadCurrentWorld();
+             }
+        }
+
+    private void updateHud() {
+        skullLabel.setText("Skull: " + runMgr.getSkullLevel());
+        worldLabel.setText("World: " + runMgr.getWorldLevel());
+        }
 
     private void drawTiledLayer(SpriteBatch batch,
                                 Texture tex,
