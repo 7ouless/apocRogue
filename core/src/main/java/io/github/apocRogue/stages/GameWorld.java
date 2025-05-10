@@ -96,10 +96,9 @@ public class GameWorld {
         samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
-        spawnPlayer();
-
-        //Player & Inventory
+        // Player & Inventory
         inventory = new Inventory(skin);
+        spawnPlayer();
 
         //ID system: load base‐stat table and static metadata
         itemManager = new ItemManager();
