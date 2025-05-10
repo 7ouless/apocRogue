@@ -93,7 +93,7 @@ public class MapManager {
         int i = 0;
         while (i < settings.roomWidth/settings.tileWidth) { //horizontal tiles
             tiles.add(new TileInfo(i*settings.tileWidth, settings.roomHeight, tileHeight, tileHeight, TileType.BORDER));
-            tiles.add(new TileInfo(i*settings.tileWidth, 0, tileWidth, tileHeight, TileType.BORDER));
+
             i++;
         }
         i = 0;

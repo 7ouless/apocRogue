@@ -354,7 +354,7 @@ public class GameScreen extends ScreenAdapter {
                    bgTopClouds,
                    left,
                    bottom + viewportHeight * 0.8f + + cloudYOffset ,
-                   -0.18f,
+                   -0.13f,
                    0.6f
                );
 
@@ -375,7 +375,7 @@ public class GameScreen extends ScreenAdapter {
                     bgBigTree,
                     left,
                     bottom + viewportHeight * 0.1f,
-                    -0.2f,      // parallax factor
+                    -0.15f,      // parallax factor
                     0.7f        // scale so they tile densely
                 );
 
