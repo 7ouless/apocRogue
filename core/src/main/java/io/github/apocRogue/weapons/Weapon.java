@@ -151,7 +151,7 @@ public class Weapon {
                     getDashSpeed(),
                     getDashDuration()
                 );
-                stage.addActor(dash);
+                stage.addActor(dash); 
                 return;
             }
             else {

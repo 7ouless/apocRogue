@@ -97,13 +97,31 @@ public class DBManager {
         Gdx.net.sendHttpRequest(req, new Net.HttpResponseListener() {
             @Override
             public void handleHttpResponse(Net.HttpResponse resp) {
-                try {
-                    JsonValue parsed = new JsonReader()
-                        .parse(resp.getResultAsString());
-                    cb.onSuccess(parsed);           // ← call the JsonValue overload directly
-                } catch (Exception e) {
-                    cb.onError(e);
+                int status = resp.getStatus().getStatusCode();
+                String body = resp.getResultAsString();
+                System.out.println("HTTP " + status + " → " + body);
+
+                // 1) Success path
+                if (status >= 200 && status < 300) {
+                    try {
+                        JsonValue parsed = new JsonReader().parse(body);
+                        cb.onSuccess(parsed);
+                    } catch (Exception e) {
+                        cb.onError(new RuntimeException("Invalid JSON in success response", e));
+                    }
+                    return;
                 }
+
+                // 2) Error path
+                String message;
+                try {
+                    // if you wrap errors as JSON: {"error":"…"}
+                    message = new JsonReader().parse(body).getString("error");
+                } catch (Exception e) {
+                    // fallback to raw body
+                    message = body;
+                }
+                cb.onError(new RuntimeException("HTTP " + status + ": " + message));
             }
 
             @Override

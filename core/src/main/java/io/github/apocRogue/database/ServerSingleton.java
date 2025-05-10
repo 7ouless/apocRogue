@@ -1,5 +1,6 @@
 package io.github.apocRogue.database;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.ai.pfa.Connection;
 import com.badlogic.gdx.net.HttpRequestBuilder;
@@ -9,13 +10,13 @@ import java.sql.SQLException;
 
 public final class ServerSingleton {
     private static ServerSingleton instance;
+    private String authToken;
+    public void setAuthToken(String t) { this.authToken = t; }
 
-    private final HttpRequestBuilder builder;
     private final Json json;
     private final String baseUrl;
 
     private ServerSingleton() {
-        this.builder = new HttpRequestBuilder();
         this.json    = new Json();
         this.baseUrl = "https://roetgeninstitute-48091364328.europe-west2.run.app";
     }
@@ -27,7 +28,18 @@ public final class ServerSingleton {
         }
         return instance;
     }
+    private void attachAuth(Net.HttpRequest req) {
+        if (authToken != null) {
+            req.setHeader("Authorization", "Bearer " + authToken);
+        }
+    }
 
+    public void fetchProfile(JsonCallback cb) {
+        Net.HttpRequest req = new Net.HttpRequest(Net.HttpMethods.GET);
+        req.setUrl(baseUrl + "/profile");
+        attachAuth(req);
+        Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
+    }
     /** Shared response listener that just proxies to your callback */
     private class DefaultListener implements Net.HttpResponseListener {
         private final JsonCallback cb;
