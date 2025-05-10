@@ -272,4 +272,55 @@ public class DBManager {
         req.setContent(json);
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
+    public void fetchInventory(final JsonCallback cb) {
+        String url = baseUrl + "/inventoryPull";
+        Net.HttpRequest req = new HttpRequestBuilder()
+            .newRequest()
+            .method(Net.HttpMethods.POST)
+            .url(url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken())
+            .build();
+
+        // Empty JSON body (no additional filters)
+        req.setContent("{}");
+        req.setTimeOut(10_000);
+
+        Gdx.net.sendHttpRequest(req, new Net.HttpResponseListener() {
+            @Override
+            public void handleHttpResponse(Net.HttpResponse response) {
+                int status = response.getStatus().getStatusCode();
+                String body = response.getResultAsString();
+
+                if (status >= 200 && status < 300) {
+                    try {
+                        JsonValue parsed = new JsonReader().parse(body);
+                        cb.onSuccess(parsed);               // hands you JsonValue array
+                    } catch (Exception e) {
+                        cb.onError(new RuntimeException("Invalid JSON in success response", e));
+                    }
+                } else {
+                    // pull out {"error":"…"} or fallback
+                    String msg;
+                    try {
+                        msg = new JsonReader().parse(body).getString("error");
+                    } catch (Exception e) {
+                        msg = body;
+                    }
+                    cb.onError(new RuntimeException("HTTP " + status + ": " + msg));
+                }
+            }
+
+            @Override
+            public void failed(Throwable t) {
+                cb.onError(t);
+            }
+
+            @Override
+            public void cancelled() {
+                cb.onError(new RuntimeException("Request cancelled"));
+            }
+        });
+    }
+
 }
