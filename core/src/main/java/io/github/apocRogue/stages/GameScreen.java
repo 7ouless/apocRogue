@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
+import io.github.apocRogue.map.MapManager;
 import io.github.apocRogue.weapons.Weapon;
 
 
@@ -41,6 +42,7 @@ public class GameScreen extends ScreenAdapter {
     private float maxCameraYOffset = 120f;
     private float cameraSmoothFactor = 5f;
 
+    private float minCameraX, maxCameraX;
 
     private Stage overlayStage;
     private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree,bgMeadow;
@@ -75,6 +77,10 @@ public class GameScreen extends ScreenAdapter {
 
         viewportWidth  = stage.getViewport().getWorldWidth();
         viewportHeight = stage.getViewport().getWorldHeight();
+
+        float halfVW = viewportWidth * 0.5f;
+        minCameraX = halfVW;
+        maxCameraX = MapManager.settings.roomWidth - halfVW;
 
 
         bgSky       = new Texture(Gdx.files.internal("ui/sky.png"));
@@ -292,11 +298,14 @@ public class GameScreen extends ScreenAdapter {
         }
         gameWorld.getInventory().draw(uiStage);
 
-        // 2) Center camera on player horizontally only (vertical locked)
+        // 2) Center camera on player horizontally, but clamp to world borders:
         float playerCenterX = gameWorld.getPlayer().getX()
             + gameWorld.getPlayer().getWidth() / 2f;
-        // compute how high the player is above the “rest” camera Y
-        // smooth vertical follow: clamp jump peek, then lerp current Y toward it
+
+        // clamp so camera never goes beyond the left/right border
+        float camX = MathUtils.clamp(playerCenterX, minCameraX, maxCameraX);
+
+        // compute vertical (you already have this)
         float playerCenterY = gameWorld.getPlayer().getY()
             + gameWorld.getPlayer().getHeight() / 2f;
         float desiredYOffset = MathUtils.clamp(
@@ -305,11 +314,12 @@ public class GameScreen extends ScreenAdapter {
             maxCameraYOffset
         );
         float targetCamY = initialCamY + desiredYOffset;
-
         float lerpFactor = MathUtils.clamp(delta * cameraSmoothFactor, 0f, 1f);
         float smoothCamY = MathUtils.lerp(camera.position.y, targetCamY, lerpFactor);
-              camera.position.set(playerCenterX, smoothCamY, 0f);
-              camera.update();
+
+        // set and update camera
+        camera.position.set(camX, smoothCamY, 0f);
+        camera.update();
 
 
         stage.getViewport().apply();

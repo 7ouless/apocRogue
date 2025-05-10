@@ -24,6 +24,11 @@ public class PlayerActor extends PhysicalActor {
     private Texture texture;
     private static final float STEP_HEIGHT = 32f;
 
+    private Texture idleTex, attackTex;
+    private boolean  isAttacking = false;
+    private float    attackTimer = 0f;
+    private static final float ATTACK_DURATION = 0.25f;
+
     public float jumpPower     = 1500f;
     public float friction      = 0.95f;
     public boolean facingRight = true;
@@ -42,6 +47,7 @@ public class PlayerActor extends PhysicalActor {
     private StatsComponent stats;
 
     public PlayerActor(Texture texture) {
+
         super(texture);
         this.texture = texture;
         float scale = 0.055f;

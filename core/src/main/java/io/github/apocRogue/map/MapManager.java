@@ -56,14 +56,15 @@ public class MapManager {
     public void generateMap(Stage stage) {
         createRoom();
 
+        for (TileInfo info : treeTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
         }
 
-        for (TileInfo info : treeTiles) {
-            stage.addActor(createTileActor(info));
-        }
 
         for (TileInfo info : decorTiles) {
             stage.addActor(createTileActor(info));
