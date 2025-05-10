@@ -33,6 +33,7 @@ public final class ServerSingleton {
             req.setHeader("Authorization", "Bearer " + authToken);
         }
     }
+    public String getAuthToken() { return authToken; }
 
     public void fetchProfile(JsonCallback cb) {
         Net.HttpRequest req = new Net.HttpRequest(Net.HttpMethods.GET);
