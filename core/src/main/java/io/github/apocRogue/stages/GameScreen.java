@@ -231,21 +231,21 @@ public class GameScreen extends ScreenAdapter {
         // A semi-transparent background (dark overlay)
         pauseOverlay.setBackground(skin.newDrawable("white", 0, 0, 0, 0.7f));
 
-        // Add the table to the uiStage
+        // Add table to the uiStage
         uiStage.addActor(pauseOverlay);
 
-        // Now create an inner table to hold the actual menu buttons
+        // create an inner table to hold the actual menu buttons
         Table menuTable = new Table();
-        // For convenience, we center it
+        //center it
         menuTable.center();
         pauseOverlay.add(menuTable);
 
-        // Example Buttons: Resume, Options, Quit
+
         TextButton resumeButton = new TextButton("Resume", skin);
         TextButton optionsButton = new TextButton("Options", skin);
         TextButton exitButton = new TextButton("Exit to Main Menu", skin);
 
-        // Add them all to menuTable
+        // Add all to menuTable
         menuTable.row();
         menuTable.add(resumeButton).pad(10);
         menuTable.row();
@@ -265,7 +265,7 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public void clicked(InputEvent event, float x, float y) {
 
-                // Hide the pause overlay so it no longer shows
+
                 pauseOverlay.setVisible(false);
 
                 OptionsOverlay myOverlay = new OptionsOverlay(skin);
@@ -273,17 +273,17 @@ public class GameScreen extends ScreenAdapter {
                 myOverlay.setModal(true);
                 myOverlay.setBackground(skin.newDrawable("white", 0, 0, 0, 0.8f));
 
-// Optionally center your internal content
+
                 Table content = new Table();
                 content.center();
                 myOverlay.add(content).expand().fill();
 
-// Then in 'content', add your "Controls" and "Audio" buttons.
+
 
                 myOverlay.setOptionsListener(new OptionsOverlay.OptionsListener() {
                     @Override
                     public void onShowControls() {
-                        // remove the OptionsOverlay and show the ControlsOverlay
+
                         myOverlay.remove();
                         uiStage.addActor(new ControlsOverlay(skin, myOverlay));
                     }
@@ -294,16 +294,14 @@ public class GameScreen extends ScreenAdapter {
                     }
                     @Override
                     public void onCloseOptions() {
-                        // remove the OptionsOverlay
+
                         myOverlay.remove();
-                        // (Optional) If you want to go *back* to the pause overlay, re-show it:
                         pauseOverlay.setVisible(true);
                     }
                 });
                 uiStage.addActor(myOverlay);
 
-// 4) Now it has a Stage, so we can safely center it
-// Now center it on the UI stage
+                // 4) stage
                 float stageWidth = uiStage.getViewport().getWorldWidth();
                 float stageHeight = uiStage.getViewport().getWorldHeight();
                 myOverlay.setPosition((stageWidth - myOverlay.getWidth()) / 2f,
@@ -407,7 +405,7 @@ public class GameScreen extends ScreenAdapter {
         float sunScale = 0.5f; // adjust size
         float sunW = bgSun.getWidth() * sunScale;
         float sunH = bgSun.getHeight() * sunScale;
-        // Position it at, say, 20% from left, 70% from bottom of the viewport
+
 
         // raw parallax offsets
         float rawCloudOffset = deltaY * cloudVFactor;
@@ -425,25 +423,25 @@ public class GameScreen extends ScreenAdapter {
                     sunH
                 );
 
-        // 4.3) Side‐clouds (very slow parallax)
+        // 4.3) Side‐clouds
         drawTiledLayer(
             batch,
             bgSideClouds,
             left,
             bottom + viewportHeight * 0f,
-            -0.005f,   // very subtle scroll
-            0.4f      // scale clouds to 80%
+            -0.005f,
+            0.4f
         );
 
-        // 4.4) Mountains (slow scroll)
+        // 4.4) Mountains
         drawTiledLayer(batch,
             bgMountains,
             left,
-            bottom + 40f,   // vertical offset
-            -0.025f,         // parallax factor
-            0.5f);          // scale
+            bottom + 40f,
+            -0.025f,
+            0.5f);
 
-        // 4.5) Top‐clouds (medium parallax)
+        // 4.5) Top‐clouds
                drawTiledLayer(
                    batch,
                    bgTopClouds,
@@ -453,7 +451,7 @@ public class GameScreen extends ScreenAdapter {
                    0.6f
                );
 
-        // 4.6) Small‐clouds (faster parallax, smaller)a
+        // 4.6) Small‐clouds
                drawTiledLayer(
                    batch,
                    bgSmallClouds,
@@ -463,8 +461,8 @@ public class GameScreen extends ScreenAdapter {
                    0f
                );
 
-        // 4.7) Big‐tree trunks (in front of all background, but still in the parallax pass)
-               //    tweak the Y so they sit higher if you like (e.g. + viewportHeight*0.3f)
+        // 4.7) Big‐tree trunk
+
                 drawTiledLayer(
                     batch,
                     bgBigTree,
@@ -478,15 +476,15 @@ public class GameScreen extends ScreenAdapter {
             batch,
             bgMeadow,
             left,
-            bottom + /* put this at ground‐level, e.g. */ 150f,
-            -0.2f,      // parallaxFactor = 0 so it doesn’t scroll
-            1.8f       // or scale it up/down to taste
+            bottom + 150f,
+            -0.2f,      // parallaxFactor
+            1.8f
         );
 
 
         // …any further parallax layers…
                 batch.end();
-                // 5) Now draw the world (floor, dirt, player, etc.) over the trunks
+                // 5)draw the world
                 stage.draw();
 
         // 6) Any overlay Stage (e.g. grass)

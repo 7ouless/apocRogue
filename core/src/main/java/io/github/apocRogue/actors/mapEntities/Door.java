@@ -56,7 +56,6 @@ public class Door extends Actor {
         return bounds;
     }
 
-    /** Call once at app shutdown to free the static textures. */
     public static void disposeTextures() {
         CONTINUE_TEX.dispose();
         EXTRACT_TEX.dispose();

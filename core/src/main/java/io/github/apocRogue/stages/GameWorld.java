@@ -98,7 +98,7 @@ public class GameWorld {
 
         spawnPlayer();
 
-        // Player & Inventory
+        //Player & Inventory
         inventory = new Inventory(skin);
 
         //ID system: load base‐stat table and static metadata
@@ -144,7 +144,6 @@ public class GameWorld {
 
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
-        // (zeroed out or adjust as you like)
         for (int i = 0; i < enemyCount; i++) {
             float[] pos = getRandomSpawnPosition();
             DummyActor d = new DummyActor(dummyTexture,
@@ -163,7 +162,7 @@ public class GameWorld {
             float x = pos != null ? pos[0] : 500;
             float y = pos != null ? pos[1] : mapManager.settings.groundMax + 10;
 
-            // New ChestActor ctor
+
             ChestActor chest = new ChestActor(
                 chestTexture,
                 x, y,
@@ -211,7 +210,6 @@ public class GameWorld {
     private float getGroundHeightAtX(float x) {
         float maxY = 0;
         for (Actor a : stage.getActors()) {
-            // now also consider the bottom/top border tiles as “ground”
             if (a instanceof PlatformTile
                 || a instanceof FloorTile
                 || a instanceof BorderTile) {
