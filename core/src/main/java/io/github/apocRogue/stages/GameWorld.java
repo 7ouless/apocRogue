@@ -249,15 +249,39 @@ public class GameWorld {
 
     private void spawnDoors() {
         doors.clear();
-        Vector2 pos = findExitPosition();
-        if (!isFinalWorld) {
-            doors.add(new Door(Door.Type.CONTINUE, pos));
-        } else {
-            doors.add(new Door(Door.Type.EXTRACT,  new Vector2(pos.x - 80, pos.y)));
-            doors.add(new Door(Door.Type.CONTINUE, new Vector2(pos.x + 80, pos.y)));
+        // collect every FloorTile
+        List<FloorTile> floors = new ArrayList<>();
+        for (Actor a : stage.getActors()) {
+            if (a instanceof FloorTile) floors.add((FloorTile)a);
         }
+        if (floors.isEmpty()) return;
+
+        // pick the rightmost floor
+        floors.sort((f1, f2) -> Float.compare(f1.getX(), f2.getX()));
+        FloorTile end = floors.get(floors.size() - 1);
+
+        // base world‐position: center atop that tile
+        float borderMargin = 80f;
+        float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
+        float baseY = end.getY() + end.getHeight();
+
+        // separation in world‐units between the two doors
+        float sep = 200f;
+
+        // CONTINUE door always at the end
+        Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
+        doors.add(new Door(Door.Type.CONTINUE, contPos));
+
+        // EXTRACT only on final world, offset the other direction
+        if (isFinalWorld) {
+            Vector2 exitPos = new Vector2(baseX + sep * 0.5f, baseY);
+            doors.add(new Door(Door.Type.EXTRACT, exitPos));
+        }
+
+        // add them to the stage
         doors.forEach(stage::addActor);
     }
+
 
 
 

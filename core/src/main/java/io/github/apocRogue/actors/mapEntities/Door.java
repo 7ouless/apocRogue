@@ -1,6 +1,7 @@
 package io.github.apocRogue.actors.mapEntities;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
@@ -12,7 +13,7 @@ public class Door extends Actor {
 
     private static final float SCALE = 0.08f;
 
-    // load once, like FloorTile.VARIANTS
+
     private static final Texture CONTINUE_TEX =
         new Texture(Gdx.files.internal("ui/continue-door.png"));
     private static final Texture EXTRACT_TEX  =
@@ -32,7 +33,13 @@ public class Door extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        // tint by door type
+        Color tint = (type == Type.CONTINUE)
+            ? Color.RED
+            : Color.BLUE;
+        batch.setColor(tint);
         batch.draw(texture, getX(), getY(), getWidth(), getHeight());
+        batch.setColor(Color.WHITE); // restore
     }
 
     @Override
