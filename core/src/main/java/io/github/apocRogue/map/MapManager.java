@@ -48,6 +48,7 @@ public class MapManager {
     private List<TileInfo> edgeTiles = new ArrayList<>();
     private List<TileInfo> grassTiles = new ArrayList<>();
     private List<TileInfo> treeTiles = new ArrayList<>();
+    private List<TileInfo> decorTiles = new ArrayList<>();
 
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
@@ -55,7 +56,16 @@ public class MapManager {
     public void generateMap(Stage stage) {
         createRoom();
 
+        for (TileInfo info : platformTiles) {
+            Actor tileActor = createTileActor(info);
+            stage.addActor(tileActor);
+        }
+
         for (TileInfo info : treeTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
+        for (TileInfo info : decorTiles) {
             stage.addActor(createTileActor(info));
         }
 
@@ -71,10 +81,6 @@ public class MapManager {
             stage.addActor(createTileActor(info));
         }
 
-        for (TileInfo info : platformTiles) {
-            Actor tileActor = createTileActor(info);
-            stage.addActor(tileActor);
-        }
 
         for (TileInfo info : grassTiles) {
             stage.addActor(createTileActor(info));
@@ -128,6 +134,7 @@ public class MapManager {
         int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
         int tilesSinceLastTree = settings.treeGap;
+        int tilesSinceLastDec = settings.decorGap;
 
         for (int i = 0; i < settings.roomWidth / tileWidth; i++) {
             //Per-column noise
@@ -214,6 +221,51 @@ public class MapManager {
                 tilesSinceLastTree++;
             }
 
+
+            if (tilesSinceLastDec >= settings.decorGap
+                && random.nextFloat() < settings.decorDensity) {
+
+                // pick variant: 0=rock, 1=stone, 2=bush
+                int variant = random.nextInt(3);
+
+                // choose size + per-variant Y-offset
+                float w, h, yOffset;
+                switch (variant) {
+                    case 0: // rock
+                        w       = settings.rockWidth;
+                        h       = settings.rockHeight;
+                        yOffset = settings.rockYOffset;
+                        break;
+                    case 1: // stone
+                        w       = settings.stoneWidth;
+                        h       = settings.stoneHeight;
+                        yOffset = settings.stoneYOffset;
+                        break;
+                    default: // bush
+                        w       = settings.bushWidth;
+                        h       = settings.bushHeight;
+                        yOffset = settings.bushYOffset;
+                        break;
+                }
+
+                // random X within this column
+                float x = i * tileWidth
+                    + random.nextFloat() * (tileWidth - w);
+                // use the per-variant offset above the floor
+                float y = floorY + yOffset;
+                boolean flip = random.nextBoolean();
+
+                decorTiles.add(new TileInfo(
+                    x, y, w, h,
+                    TileType.DECOR,
+                    flip,
+                    false,
+                    String.valueOf(variant)
+                ));
+                tilesSinceLastDec = 0;
+            } else {
+                tilesSinceLastDec++;
+            }
 
             //Place the edge-square on the lower tile
             if (heightChanged) {
@@ -365,7 +417,11 @@ public class MapManager {
                 return new EdgeTile(info.x, info.y, info.width, info.height, info.flipX, info.useAltTexture);
             case GRASS:
                 return new GrassOverlayTile(info.x, info.y, info.width, info.height, info.flipX, info.grassType);
-            case TREE:    return new TreeTile(info.x, info.y, info.width, info.height,info.flipX, info.useAltTexture);
+            case TREE:
+                return new TreeTile(info.x, info.y, info.width, info.height,info.flipX, info.useAltTexture);
+            case DECOR:
+                int idx = Integer.parseInt(info.grassType);
+                return new DecorTile(info.x, info.y, info.width, info.height, info.flipX, idx);
 
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);

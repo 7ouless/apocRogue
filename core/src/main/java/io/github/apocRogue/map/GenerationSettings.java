@@ -13,13 +13,33 @@ public class GenerationSettings {
     public int groundMax;
     public int groundMin;
 
+    //Tree Parameters
     public float treeDensity = 0.5f;
-
     public float treeWidth   = 300f;
     public float treeHeight  = 400f;
     public float treeYOffset =  20f;
-
     public int treeGap = 1;
+
+    public float decorDensity   = 0.75f;
+    public int   decorGap       = 0;
+
+    // default “global” size (fallback)
+    public float decorWidth     = 120f;
+    public float decorHeight    = 100f;
+    public float decorYOffset   = 35f;
+
+    // per-variant overrides:
+    public float rockWidth      = 100f;
+    public float rockHeight     =  70f;
+    public float rockYOffset  =  45f;
+
+    public float stoneWidth     = 70f;
+    public float stoneHeight    =  40f;
+    public float stoneYOffset =   45f;
+
+    public float bushWidth      = 140f;
+    public float bushHeight     = 90f;
+    public float bushYOffset  =  40f;
 
     public float platformDensity;
 

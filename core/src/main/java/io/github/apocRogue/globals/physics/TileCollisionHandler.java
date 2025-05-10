@@ -2,13 +2,8 @@ package io.github.apocRogue.globals.physics;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import io.github.apocRogue.map.TileActor;
-import io.github.apocRogue.map.GrassOverlayTile;
-import io.github.apocRogue.map.EdgeTile;
+import io.github.apocRogue.map.*;
 import io.github.apocRogue.globals.getters.ObstacleGetters;
-import io.github.apocRogue.map.FloorTile;
-import io.github.apocRogue.map.TreeTile;
-
 
 
 public class TileCollisionHandler {
@@ -32,7 +27,7 @@ public class TileCollisionHandler {
 
         // Loop through all TileActor objects in the stage.
         for (Actor stageActor : actor.getStage().getActors()) {
-            if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile) {
+            if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile || stageActor instanceof DecorTile) {
                 continue;
             }
             if (stageActor instanceof TileActor) {
@@ -65,7 +60,7 @@ public class TileCollisionHandler {
                                             actor.setX(tileRect.x - actorRect.width);
                                     }
                     } else if (minOverlap == overlapRight) {
-                        if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
+                        if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile ) {
                                        // Auto-step: climb up one standard tile
                             float step = ((TileActor)stageActor).getHeight();
                                        actor.setY(actor.getY() + step);

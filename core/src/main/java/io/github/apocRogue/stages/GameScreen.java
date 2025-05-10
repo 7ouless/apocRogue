@@ -19,6 +19,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.weapons.Weapon;
 
@@ -97,7 +98,19 @@ public class GameScreen extends ScreenAdapter {
         gameWorld.initialize();
         gameWorld.getInventory().draw(uiStage);
 
-        // ─── move *all* grass into the overlay stage ───
+        // move all decor into the overlay stage
+        List<Actor> decorActors = new ArrayList<>();
+        for (Actor a : stage.getActors()) {
+            if (a instanceof DecorTile) {
+                decorActors.add(a);
+            }
+        }
+        for (Actor d : decorActors) {
+            d.remove();              // detach from main stage
+            overlayStage.addActor(d);
+        }
+
+        // move all grass into the overlay stage
         List<Actor> grassActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
             if (a instanceof GrassOverlayTile) grassActors.add(a);
