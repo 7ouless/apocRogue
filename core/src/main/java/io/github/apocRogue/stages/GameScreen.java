@@ -37,10 +37,12 @@ public class GameScreen extends ScreenAdapter {
 
     private float cameraOffsetY = 160f;
     private float initialCamY;
+    private float maxCameraYOffset = 120f;
+    private float cameraSmoothFactor = 5f;
 
 
     private Stage overlayStage;
-    private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree;
+    private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree,bgMeadow;
     private float viewportWidth, viewportHeight;
 
     private GameWorld gameWorld;
@@ -61,6 +63,8 @@ public class GameScreen extends ScreenAdapter {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 1920, 1080);
+        camera.update();
+        initialCamY = camera.position.y;
 
         stage = new Stage(new FitViewport(1920, 1080, camera));
         uiStage = new Stage(new FitViewport(1920, 1080));
@@ -79,6 +83,8 @@ public class GameScreen extends ScreenAdapter {
         bgTopClouds    = new Texture(Gdx.files.internal("ui/top-clouds.png"));
         bgSmallClouds  = new Texture(Gdx.files.internal("ui/small-clouds.png"));
         bgBigTree      = new Texture(Gdx.files.internal("ui/big-tree.png"));
+        bgMeadow    = new Texture(Gdx.files.internal("ui/meadow.png"));
+
 
         batch = new SpriteBatch();
 
@@ -273,17 +279,25 @@ public class GameScreen extends ScreenAdapter {
         }
         gameWorld.getInventory().draw(uiStage);
 
-// 2) Center camera on player, but lift it up by cameraOffsetY
-        float playerCenterX = gameWorld.getPlayer().getX() + gameWorld.getPlayer().getWidth()  / 2f;
-        float playerCenterY = gameWorld.getPlayer().getY() + gameWorld.getPlayer().getHeight() / 2f;
-
-        camera.position.set(
-            playerCenterX,
-            playerCenterY + cameraOffsetY,
-            0f
+        // 2) Center camera on player horizontally only (vertical locked)
+        float playerCenterX = gameWorld.getPlayer().getX()
+            + gameWorld.getPlayer().getWidth() / 2f;
+        // compute how high the player is above the “rest” camera Y
+        // smooth vertical follow: clamp jump peek, then lerp current Y toward it
+        float playerCenterY = gameWorld.getPlayer().getY()
+            + gameWorld.getPlayer().getHeight() / 2f;
+        float desiredYOffset = MathUtils.clamp(
+            (playerCenterY + cameraOffsetY) - initialCamY,
+            0f,
+            maxCameraYOffset
         );
-        camera.update();
-        initialCamY = camera.position.y;
+        float targetCamY = initialCamY + desiredYOffset;
+
+        float lerpFactor = MathUtils.clamp(delta * cameraSmoothFactor, 0f, 1f);
+        float smoothCamY = MathUtils.lerp(camera.position.y, targetCamY, lerpFactor);
+              camera.position.set(playerCenterX, smoothCamY, 0f);
+              camera.update();
+
 
         stage.getViewport().apply();
 
@@ -378,8 +392,18 @@ public class GameScreen extends ScreenAdapter {
                     -0.15f,      // parallax factor
                     0.7f        // scale so they tile densely
                 );
+        // 4.8) Meadow (front of all background layers)
+        drawTiledLayer(
+            batch,
+            bgMeadow,
+            left,
+            bottom + /* put this at ground‐level, e.g. */ 150f,
+            0.15f,      // parallaxFactor = 0 so it doesn’t scroll
+            1.8f       // or scale it up/down to taste
+        );
 
-                // …any further parallax layers…
+
+        // …any further parallax layers…
                 batch.end();
                 // 5) Now draw the world (floor, dirt, player, etc.) over the trunks
                 stage.draw();
@@ -478,6 +502,8 @@ public class GameScreen extends ScreenAdapter {
         bgSideClouds.dispose();
         bgTopClouds.dispose();
         bgSmallClouds.dispose();
+        bgMeadow.dispose();
+
 
     }
 }
