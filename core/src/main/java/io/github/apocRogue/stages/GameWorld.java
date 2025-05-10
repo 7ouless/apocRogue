@@ -51,7 +51,7 @@ public class GameWorld {
     private boolean playerSpawned = false;
     private float spawnOffsetY = 22f;
 
-    private Texture playerTexture, dummyTexture, chestTexture,
+    private Texture playerTexture,  playerAttackTexture, dummyTexture, chestTexture,
         flyingCreatureTexture, samuraiTexture;
 
     public GameWorld(Stage stage) {
@@ -71,6 +71,7 @@ public class GameWorld {
 
         //Load textures
         playerTexture         = new Texture("ui/main-character.png");
+        playerAttackTexture = new Texture("ui/main-character-attack.png");
         dummyTexture          = new Texture("ui/dummy.png");
         chestTexture          = new Texture("ui/chest.png");
         samuraiTexture        = new Texture("ui/samurai.jpeg");
@@ -180,7 +181,7 @@ public class GameWorld {
     public void update(float delta) {
         // 1) On first update, spawn the player now that the map (and all its actors) exist
         if (!playerSpawned) {
-                        player = new PlayerActor(playerTexture);
+            player = new PlayerActor(playerTexture, playerAttackTexture);
                         float spawnX   = 30f;
                         // look up the true top-Y of any FloorTile or PlatformTile under spawnX
                             float groundY  = getGroundHeightAtX(spawnX);
@@ -222,6 +223,7 @@ public class GameWorld {
     public void dispose() {
         stage.dispose();
         playerTexture.dispose();
+        playerAttackTexture.dispose();
         dummyTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();

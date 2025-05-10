@@ -7,12 +7,19 @@ import com.badlogic.gdx.math.MathUtils;
 
 
 public class DirtTile extends TileActor {
-    private static final Texture tex = new Texture("ui/floor.png");
-    private final boolean flipX;     // ← new!
+    private static final Texture[] VARIANTS = {
+        new Texture("ui/floor.png"),
+        new Texture("ui/floor2.png"),
+        new Texture("ui/floor3.png")
+    };
+    private final boolean flipX;
+    private final Texture tex;
+
 
     public DirtTile(float x, float y, float width, float height) {
         super(x, y, width, height, Color.BROWN);
         this.flipX = MathUtils.randomBoolean();  // random flip
+        this.tex    = VARIANTS[ MathUtils.random(VARIANTS.length - 1) ];
         setSize(width, height);
     }
 

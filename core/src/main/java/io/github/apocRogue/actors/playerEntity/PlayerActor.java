@@ -27,7 +27,7 @@ public class PlayerActor extends PhysicalActor {
     private Texture idleTex, attackTex;
     private boolean  isAttacking = false;
     private float    attackTimer = 0f;
-    private static final float ATTACK_DURATION = 0.25f;
+    private static final float ATTACK_DURATION = 0.7f;
 
     public float jumpPower     = 1500f;
     public float friction      = 0.95f;
@@ -46,10 +46,12 @@ public class PlayerActor extends PhysicalActor {
 
     private StatsComponent stats;
 
-    public PlayerActor(Texture texture) {
+    public PlayerActor(Texture idle, Texture attack) {
 
-        super(texture);
-        this.texture = texture;
+        super(idle);
+        this.idleTex   = idle;
+        this.attackTex = attack;
+        this.texture   = idle;
         float scale = 0.055f;
         setSize(texture.getWidth() * scale, texture.getHeight() * scale);
         stats = new StatsComponent(100, 100, 10, 2, 1200, 2, 2, 10, 0);
@@ -57,6 +59,11 @@ public class PlayerActor extends PhysicalActor {
 
     public StatsComponent getStats() {
         return stats;
+    }
+
+    public void startAttack() {
+        isAttacking = true;
+        attackTimer = ATTACK_DURATION;
     }
 
     @Override
@@ -68,6 +75,13 @@ public class PlayerActor extends PhysicalActor {
     @Override
     public void act(float delta) {
         super.act(delta);
+
+        if (isAttacking) {
+            attackTimer -= delta;
+            if (attackTimer <= 0f) {
+                isAttacking = false;
+            }
+        }
 
         // tick down katana cooldown (start)
         if (katanaCooldownTimer > 0f) {
@@ -126,17 +140,17 @@ public class PlayerActor extends PhysicalActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        float drawX = getX();
-        float drawY = getY();
-        float drawW = getWidth();
-        float drawH = getHeight();
+        Texture current = isAttacking ? attackTex : idleTex;
+
+        float drawX = getX(), drawY = getY(),
+            drawW = getWidth(), drawH = getHeight();
 
         if (!facingRight) {
-            drawX = getX() + getWidth();
+            drawX += getWidth();
             drawW = -getWidth();
         }
 
-        batch.draw(texture, drawX, drawY, drawW, drawH);
+        batch.draw(current, drawX, drawY, drawW, drawH);
     }
 
 

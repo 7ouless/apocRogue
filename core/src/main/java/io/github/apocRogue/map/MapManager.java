@@ -345,7 +345,7 @@ public class MapManager {
             if (canCreateIsland) {
                 int var = random.nextInt(15);
                 if (var > 4) {
-                    islandGoalLength    = random.nextInt(1, 4);
+                    islandGoalLength    = random.nextInt(2, 4);
                     islandCurrentLength = 1;
                     islandCurrentY      = yPos;
                     creatingIsland      = true;

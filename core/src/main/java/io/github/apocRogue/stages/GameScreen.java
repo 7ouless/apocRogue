@@ -39,7 +39,7 @@ public class GameScreen extends ScreenAdapter {
 
     private float cameraOffsetY = 160f;
     private float initialCamY;
-    private float maxCameraYOffset = 120f;
+    private float maxCameraYOffset = 200f;
     private float cameraSmoothFactor = 5f;
 
     private float minCameraX, maxCameraX;
@@ -166,11 +166,10 @@ public class GameScreen extends ScreenAdapter {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 if (button == Input.Buttons.LEFT) {
-                    Weapon w = gameWorld.getInventory().getSelectedWeapon();
-                    if (w != null) {
-                        w.use(gameWorld.getPlayer(), stage);
-                    }
-                    // Return true if you want to consume the event
+                    PlayerActor p = gameWorld.getPlayer();
+                    Weapon w       = gameWorld.getInventory().getSelectedWeapon();
+                    p.startAttack();             // flip to attack sprite
+                    if (w != null) w.use(p, stage);
                     return true;
                 }
                 return false;
@@ -421,7 +420,7 @@ public class GameScreen extends ScreenAdapter {
             bgMeadow,
             left,
             bottom + /* put this at ground‐level, e.g. */ 150f,
-            0.15f,      // parallaxFactor = 0 so it doesn’t scroll
+            -0.2f,      // parallaxFactor = 0 so it doesn’t scroll
             1.8f       // or scale it up/down to taste
         );
 
