@@ -324,6 +324,7 @@ public class MapManager {
 
 
     private void fillGround(int i, float topY) {
+        // 1) Fill normally down to groundMin
         int j = 0;
         while (topY - (tileHeight * j) >= settings.groundMin) {
             dirtTiles.add(new TileInfo(
@@ -334,6 +335,18 @@ public class MapManager {
                 TileType.DIRT
             ));
             j++;
+        }
+
+        // 2) Add 5 extra dirt layers below that
+        for (int extra = 1; extra <= 5; extra++) {
+            dirtTiles.add(new TileInfo(
+                i * tileWidth,
+                // continue stacking downwards
+                topY - (tileHeight * (j + extra - 1)),
+                tileWidth,
+                tileHeight,
+                TileType.DIRT
+            ));
         }
     }
 
