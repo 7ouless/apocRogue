@@ -13,7 +13,12 @@ public class GenerationSettings {
     public int groundMax;
     public int groundMin;
 
-    // If you need platformDensity, add it:
+    public float treeDensity = 0.4f;
+
+    public float treeWidth   = 300f;
+    public float treeHeight  = 400f;
+    public float treeYOffset =  20f;
+
     public float platformDensity;
 
     // 1) A default constructor (no arguments)
@@ -25,7 +30,7 @@ public class GenerationSettings {
         this.octaves = 2000;
         this.groundMax = 750;
         this.groundMin = 50;
-        this.platformDensity = 5;  // If you plan to use it
+        this.platformDensity = 5;
     }
 
     // 2) The existing 9-arg constructor

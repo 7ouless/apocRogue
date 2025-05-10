@@ -47,6 +47,7 @@ public class MapManager {
     private List<TileInfo> borderTiles = new ArrayList<>();
     private List<TileInfo> edgeTiles = new ArrayList<>();
     private List<TileInfo> grassTiles = new ArrayList<>();
+    private List<TileInfo> treeTiles = new ArrayList<>();
 
     private final ProcGen pg = new ProcGen();
     private final Random random = new Random();
@@ -72,6 +73,10 @@ public class MapManager {
         }
 
         for (TileInfo info : grassTiles) {
+            stage.addActor(createTileActor(info));
+        }
+
+        for (TileInfo info : treeTiles) {
             stage.addActor(createTileActor(info));
         }
 
@@ -180,6 +185,33 @@ public class MapManager {
                     TileType.GRASS
                 ));
             }
+
+            // Tree Spawning
+            if (random.nextFloat() < settings.treeDensity) {
+                // 1) decide size
+                float w = settings.treeWidth;
+                float h = settings.treeHeight;
+
+                // 2) pick a random X within the floor‐tile
+                float x = i * tileWidth
+                    + random.nextFloat() * (tileWidth - w);
+
+                // 3) sink the tree by treeYOffset
+                float y = floorY + tileHeight - settings.treeYOffset;
+
+                // 4) randomly pick sprite variant and flip flag
+                boolean useAlt = random.nextBoolean();    // tree vs. tree2
+                boolean flip   = random.nextBoolean();    // 50/50 horizontal flip
+
+                treeTiles.add(new TileInfo(
+                    x, y, w, h,
+                    TileType.TREE,
+                    flip,
+                    useAlt,
+                    ""
+                ));
+            }
+
 
             //Place the edge-square on the lower tile
             if (heightChanged) {
@@ -318,7 +350,7 @@ public class MapManager {
                 return new EdgeTile(info.x, info.y, info.width, info.height, info.flipX, info.useAltTexture);
             case GRASS:
                 return new GrassOverlayTile(info.x, info.y, info.width, info.height, info.flipX, info.grassType);
-
+            case TREE:    return new TreeTile(info.x, info.y, info.width, info.height,info.flipX, info.useAltTexture);
 
             default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);

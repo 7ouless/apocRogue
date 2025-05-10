@@ -7,5 +7,6 @@ public enum TileType {
     DIRT,
     BORDER,
     EDGE,
-    GRASS
+    GRASS,
+    TREE
 }

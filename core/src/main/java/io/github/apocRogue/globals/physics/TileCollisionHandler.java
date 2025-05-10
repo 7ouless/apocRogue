@@ -7,6 +7,7 @@ import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.map.EdgeTile;
 import io.github.apocRogue.globals.getters.ObstacleGetters;
 import io.github.apocRogue.map.FloorTile;
+import io.github.apocRogue.map.TreeTile;
 
 
 
@@ -31,8 +32,8 @@ public class TileCollisionHandler {
 
         // Loop through all TileActor objects in the stage.
         for (Actor stageActor : actor.getStage().getActors()) {
-            if (stageActor instanceof io.github.apocRogue.map.GrassOverlayTile) {
-                continue;    // never collide with grass
+            if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile) {
+                continue;
             }
             if (stageActor instanceof TileActor) {
                 TileActor tile = (TileActor)stageActor;
