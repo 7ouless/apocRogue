@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -35,10 +36,11 @@ public class GameScreen extends ScreenAdapter {
     private OrthographicCamera camera;
 
     private float cameraOffsetY = 160f;
+    private float initialCamY;
 
 
     private Stage overlayStage;
-    private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds;
+    private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree;
     private float viewportWidth, viewportHeight;
 
     private GameWorld gameWorld;
@@ -76,6 +78,7 @@ public class GameScreen extends ScreenAdapter {
         bgSideClouds   = new Texture(Gdx.files.internal("ui/side-clouds.png"));
         bgTopClouds    = new Texture(Gdx.files.internal("ui/top-clouds.png"));
         bgSmallClouds  = new Texture(Gdx.files.internal("ui/small-clouds.png"));
+        bgBigTree      = new Texture(Gdx.files.internal("ui/big-tree.png"));
 
         batch = new SpriteBatch();
 
@@ -280,6 +283,7 @@ public class GameScreen extends ScreenAdapter {
             0f
         );
         camera.update();
+        initialCamY = camera.position.y;
 
         stage.getViewport().apply();
 
@@ -293,6 +297,14 @@ public class GameScreen extends ScreenAdapter {
         float left   = camera.position.x - viewportWidth  / 2f;
         float bottom = camera.position.y - viewportHeight / 2f;
 
+        float cloudVFactor  = 0.1f;
+        float trunkVFactor  = 0.2f;
+        // maximum pixels up/down we ever allow
+        float maxVOffset = 50f;
+
+// how far we’ve moved from rest
+        float deltaY     = camera.position.y - initialCamY;
+
         // 4.1) Sky (stationary relative to camera)
         batch.draw(bgSky, left, bottom, viewportWidth, viewportHeight);
 
@@ -301,6 +313,15 @@ public class GameScreen extends ScreenAdapter {
         float sunW = bgSun.getWidth() * sunScale;
         float sunH = bgSun.getHeight() * sunScale;
         // Position it at, say, 20% from left, 70% from bottom of the viewport
+
+        // raw parallax offsets
+        float rawCloudOffset = deltaY * cloudVFactor;
+        float rawTrunkOffset = deltaY * trunkVFactor;
+
+// clamp so |offset| ≤ maxVOffset
+        float cloudYOffset = MathUtils.clamp(rawCloudOffset, -maxVOffset, maxVOffset);
+        float trunkYOffset = MathUtils.clamp(rawTrunkOffset, -maxVOffset, maxVOffset);
+
         batch.draw(
             bgSun,
                     left + viewportWidth * 0.2f - sunW/2,
@@ -310,14 +331,14 @@ public class GameScreen extends ScreenAdapter {
                 );
 
         // 4.3) Side‐clouds (very slow parallax)
-                drawTiledLayer(
-                        batch,
-                        bgSideClouds,
-                        left,
-                       bottom + viewportHeight * 0f,
-                       -0.005f,   // very subtle scroll
-                        0.4f      // scale clouds to 80%
-                        );
+        drawTiledLayer(
+            batch,
+            bgSideClouds,
+            left,
+            bottom + viewportHeight * 0f,
+            -0.005f,   // very subtle scroll
+            0.4f      // scale clouds to 80%
+        );
 
         // 4.4) Mountains (slow scroll)
         drawTiledLayer(batch,
@@ -332,8 +353,8 @@ public class GameScreen extends ScreenAdapter {
                    batch,
                    bgTopClouds,
                    left,
-                   bottom + viewportHeight * 0.8f,
-                   -0.08f,
+                   bottom + viewportHeight * 0.8f + + cloudYOffset ,
+                   -0.18f,
                    0.6f
                );
 
@@ -342,16 +363,26 @@ public class GameScreen extends ScreenAdapter {
                    batch,
                    bgSmallClouds,
                    left,
-                   bottom + viewportHeight * 0.4f,
+                   bottom + viewportHeight * 0.4f + trunkYOffset ,
                    -0.12f,
                    0f
                );
 
-        // …and more layers here…
-        batch.end();
+        // 4.7) Big‐tree trunks (in front of all background, but still in the parallax pass)
+               //    tweak the Y so they sit higher if you like (e.g. + viewportHeight*0.3f)
+                drawTiledLayer(
+                    batch,
+                    bgBigTree,
+                    left,
+                    bottom + viewportHeight * 0.1f,
+                    -0.2f,      // parallax factor
+                    0.7f        // scale so they tile densely
+                );
 
-        // 5) Draw the rest of the world
-        stage.draw();
+                // …any further parallax layers…
+                batch.end();
+                // 5) Now draw the world (floor, dirt, player, etc.) over the trunks
+                stage.draw();
 
         // 6) Any overlay Stage (e.g. grass)
         overlayStage.setViewport(stage.getViewport());
