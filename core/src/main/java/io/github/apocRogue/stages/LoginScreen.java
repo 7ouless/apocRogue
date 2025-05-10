@@ -13,8 +13,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.apocRogue.database.DBManager;
 import io.github.apocRogue.database.JsonCallback;
-
-import static com.badlogic.gdx.scenes.scene2d.ui.Table.Debug.actor;
+import io.github.apocRogue.database.ServerSingleton;
 
 public class LoginScreen extends ScreenAdapter {
     private final stageBuilder game;
@@ -39,7 +38,7 @@ public class LoginScreen extends ScreenAdapter {
         title.setFontScale(1.3f);
         table.add(title).colspan(2).padBottom(15f).row();
 
-        // Username label + field
+        // Username
         table.add(new Label("Username:", skin)).left().padBottom(8f);
         TextField userField = new TextField("", skin);
         userField.getStyle().background =
@@ -47,7 +46,7 @@ public class LoginScreen extends ScreenAdapter {
         userField.setAlignment(Align.center);
         table.add(userField).width(180f).padBottom(8f).row();
 
-        // Password label + field
+        // Password
         table.add(new Label("Password:", skin)).left().padBottom(8f);
         TextField passField = new TextField("", skin);
         passField.setPasswordMode(true);
@@ -62,29 +61,11 @@ public class LoginScreen extends ScreenAdapter {
         table.add(feedback).colspan(2).padBottom(10f).row();
 
         // Buttons
-        TextButton loginBtn    = new TextButton("Login",        skin);
+        TextButton loginBtn    = new TextButton("Login",         skin);
         TextButton registerBtn = new TextButton("Create Account", skin);
         loginBtn.pad(6f,12f,6f,12f);
         registerBtn.pad(6f,12f,6f,12f);
 
-        DBManager.get().healthCheck(new JsonCallback() {
-            @Override
-            public void onSuccess(String json) {
-                // parse the raw JSON string into a JsonValue and forward
-                JsonValue data = new JsonReader().parse(json);
-                onSuccess(data);
-            }
-
-            @Override
-            public void onSuccess(JsonValue data) {
-                Gdx.app.postRunnable(() -> System.out.println("✅ Connected!"));
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                Gdx.app.postRunnable(() -> System.out.println("❌ Cannot reach server"));
-            }
-        });
         loginBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, Actor actor) {
                 String user = userField.getText().trim();
@@ -92,37 +73,33 @@ public class LoginScreen extends ScreenAdapter {
                 feedback.setText("…loading…");
 
                 DBManager.get().login(user, pass, new JsonCallback() {
-                    @Override
-                    public void onSuccess(String json) {
-                        // parse the raw JSON and delegate
+                    @Override public void onSuccess(String json) {
                         JsonValue data = new JsonReader().parse(json);
                         onSuccess(data);
                     }
 
-                    @Override
-                    public void onSuccess(JsonValue data) {
-
+                    @Override public void onSuccess(JsonValue data) {
                         boolean ok = data.getBoolean("authenticated", false);
-                        Gdx.app.postRunnable(() -> {
-                            if (ok) {
-                                game.setScreen(new MainScreen(game));
-                            } else {
-                                feedback.setText("Bad username or password");
-                            }
-                        });
+                        if (!ok) {
+                            Gdx.app.postRunnable(() -> feedback.setText("Bad username or password"));
+                            return;
+                        }
+                        // Extract and store the token
+                        String token = data.getString("token");
+                        ServerSingleton.getInstance().setAuthToken(token);
+                        // Proceed to main screen
+                        Gdx.app.postRunnable(() -> game.setScreen(new MainScreen(game)));
                     }
-                    @Override
-                    public void onError(Throwable t) {
-                        Gdx.app.postRunnable(() -> {
-                            feedback.setText("Network error");
-                        });
+
+                    @Override public void onError(Throwable t) {
+                        Gdx.app.postRunnable(() -> feedback.setText("Network error: " + t.getMessage()));
                     }
                 });
             }
         });
 
         registerBtn.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
+            @Override public void changed(ChangeEvent event, Actor actor) {
                 game.setScreen(new RegisterScreen(game));
             }
         });

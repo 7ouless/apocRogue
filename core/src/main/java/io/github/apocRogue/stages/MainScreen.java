@@ -59,7 +59,14 @@ public class MainScreen extends ScreenAdapter {
             }
         });
         window.add(shopBtn).row();
-
+        TextButton marketBtn = new TextButton("Market", skin);
+        shopBtn.pad(8f);
+        marketBtn.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                game.setScreen(new OnlineMarketScreen(game));
+            }
+        });
+        window.add(marketBtn).row();
         TextButton logoutBtn = new TextButton("Logout", skin);
         logoutBtn.addListener(new ChangeListener() {
             @Override
