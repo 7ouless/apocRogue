@@ -204,11 +204,24 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void loadCurrentWorld() {
-        if (gameWorld != null) gameWorld.dispose();
-        // now pass only the stage & final‐world flag
+        if (gameWorld != null) {
+            gameWorld.dispose();        // clears main stage
+            overlayStage.clear();       // also wipe the old decor/grass
+            }
         gameWorld = new GameWorld(stage, runMgr.isFinalWorld());
         gameWorld.initialize();
+
+        Actor[] actors = stage.getActors().toArray(Actor.class);
+        for (Actor a : actors) {
+            if (a instanceof DecorTile || a instanceof GrassOverlayTile) {
+                // detach from the main stage
+                a.remove();
+                // add into the overlay stage
+                overlayStage.addActor(a);
+            }
         }
+
+    }
 
     private void createPauseOverlay() {
         // This Table covers the entire screen and darkens the background

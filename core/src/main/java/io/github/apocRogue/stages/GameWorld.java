@@ -253,8 +253,8 @@ public class GameWorld {
         if (!isFinalWorld) {
             doors.add(new Door(Door.Type.CONTINUE, pos));
         } else {
-            doors.add(new Door(Door.Type.EXTRACT,  new Vector2(pos.x - 32, pos.y)));
-            doors.add(new Door(Door.Type.CONTINUE, new Vector2(pos.x + 32, pos.y)));
+            doors.add(new Door(Door.Type.EXTRACT,  new Vector2(pos.x - 80, pos.y)));
+            doors.add(new Door(Door.Type.CONTINUE, new Vector2(pos.x + 80, pos.y)));
         }
         doors.forEach(stage::addActor);
     }
