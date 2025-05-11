@@ -109,6 +109,11 @@ public class OnlineMarketScreen extends ScreenAdapter {
                                             buyBtn.setDisabled(false);
                                         });
                                     }
+
+                                    @Override
+                                    public void onFailure(String error) {
+
+                                    }
                                 });
                             }
                         });
@@ -127,6 +132,11 @@ public class OnlineMarketScreen extends ScreenAdapter {
                     d.button("OK");
                     d.show(stage);
                 });
+            }
+
+            @Override
+            public void onFailure(String error) {
+
             }
         });
 

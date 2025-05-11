@@ -53,11 +53,11 @@ public class InventorySlot extends Table {
 
             // Build tooltip
             StringBuilder sb = new StringBuilder();
-            sb.append("ID: ").append(weapon.getID()).append("\n");
+            sb.append("ID: ").append(weapon.getItemCode()).append("\n");      // ← was getID()
             for (String key : StatKeys.ALL) {
                 sb.append(key)
                     .append(": ")
-                    .append(weapon.getStats().get(key))
+                    .append(weapon.getStat(key))                               // ← was getStats().get(key)
                     .append("\n");
             }
             ((Label)tooltip.getActor()).setText(sb.toString());

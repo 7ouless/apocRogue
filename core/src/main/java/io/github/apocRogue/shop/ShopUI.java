@@ -7,6 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.JsonValue;
+import io.github.apocRogue.database.DBManager;
+import io.github.apocRogue.database.JsonCallback;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
 import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
@@ -159,17 +162,19 @@ public class ShopUI {
                     return;
                 }
 
+                // 1) Perform the purchase locally
                 currentTrader.buyItem(itemRef);
                 updateSpentLabel();
                 rebuildItemGrid();
+                showDialog(
+                    itemRef.getStock() == 0
+                        ? currentTrader.getSoldOutLine()
+                        : currentTrader.getThankYouLine(),
+                    false,
+                    itemRef.getStock() > 0
+                );
 
-                if (itemRef.getStock() <= 0) {
-                    showDialog(currentTrader.getSoldOutLine(), false, false);
-                } else {
-                    showDialog(currentTrader.getThankYouLine(), false, true);
-                }
-
-                // --- OLD: itemManager.getLoadedWeapons() → NEW: loadedWeapons
+                // 2) Add the weapon to the in‐memory inventory as before
                 Weapon purchased = null;
                 for (Weapon w : loadedWeapons) {
                     if (w.getName().equals(itemRef.getName())) {
@@ -179,8 +184,33 @@ public class ShopUI {
                 }
                 if (purchased != null) {
                     playerInventory.addItem(purchased);
-                    InventoryPreferences.add(itemRef.getName());
                 }
+
+                // 3) Push to the server via your DBManager
+                //    build a Map<itemCode,count> – here always count=1 for a single buy
+                Map<String,Integer> payload = Map.of(
+                    purchased.getItemCode(), 1
+                );
+                DBManager.get().pushInventory(payload, new JsonCallback() {
+                    @Override
+                    public void onSuccess(String json) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(JsonValue result) {
+                        Gdx.app.log("ShopUI", "Server inventory updated: " + result);
+                    }
+                    @Override
+                    public void onError(Throwable t) {
+                        Gdx.app.error("ShopUI", "Error pushing inventory", t);
+                        // optionally roll back UI/in‐memory if you want...
+                    }
+                    @Override
+                    public void onFailure(String error) {
+                        Gdx.app.error("ShopUI", "Failed to push inventory: " + error);
+                    }
+                });
             }
         });
         dialogContainer.add(buyButton).size(110,50).pad(10).row();
@@ -214,25 +244,33 @@ public class ShopUI {
         typeRegistry = new WeaponTypeRegistry();
         typeRegistry.load("ui/weapon_types.json");
 
+
         for (String typeID : itemManager.getAllTypeIDs()) {
+            // base stats from your ItemManager
             Map<String,Integer> baseStats = itemManager.getBaseStats(typeID);
+
+            // roll & encode on backend via ItemManager? Or keep client roll
             String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
+
+            // decode on backend in InventoryPull, but here we only need to reconstruct
             WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
+
+            // lookup static metadata
             WeaponTypeInfo info = typeRegistry.get(typeID);
+
+            // instantiate textures
+            Texture weapTex = new Texture(Gdx.files.internal(info.getTexturePath()));
+            Texture ammoTex = new Texture(Gdx.files.internal(info.getAmmoTexture()));
+
+            // build the Weapon with new constructor
             Weapon w = new Weapon(
                 id,
-                info.getName(),
-                d.stats.get("damage"),
-                new Texture(Gdx.files.internal(info.getTexturePath())),
-                info.isProjectileType(),
-                d.stats.get("projectileValue"),
-                info.getAmmoTexture(),
-                d.stats.get("animationSpeed"),
-                d.stats.get("noiseLevel"),
-                d.stats.get("dashSpeed"),
-                d.stats.get("dashDuration"),
-                d.stats.get("dashCooldown")
+                info,
+                d.stats,
+                weapTex,
+                ammoTex
             );
+
             loadedWeapons.add(w);
         }
 

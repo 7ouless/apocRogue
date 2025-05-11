@@ -10,4 +10,6 @@ public interface JsonCallback {
 
     /** invoked on network or parsing errors */
     void onError(Throwable t);
+
+    void onFailure(String error);
 }

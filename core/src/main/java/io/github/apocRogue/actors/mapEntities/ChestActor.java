@@ -129,23 +129,20 @@ public class ChestActor extends Image {
 
         // 4) lookup static info
         WeaponTypeInfo info = typeRegistry.get(d.typeID);
+        Texture weapTex = new Texture(Gdx.files.internal(info.getTexturePath()));
+        Texture ammoTex = new Texture(Gdx.files.internal(info.getAmmoTexture()));
 
+// You can reuse the decoded stats map directly:
+        Map<String,Integer> stats = d.stats;
         // 5) build the Weapon instance
+
         Weapon w = new Weapon(
             id,
-            info.getName(),
-            d.stats.get("damage"),
-            new Texture(Gdx.files.internal(info.getTexturePath())),
-            info.isProjectileType(),
-            d.stats.get("projectileValue"),
-            info.getAmmoTexture(),
-            d.stats.get("animationSpeed"),
-            d.stats.get("noiseLevel"),
-            d.stats.get("dashSpeed"),
-            d.stats.get("dashDuration"),
-            d.stats.get("dashCooldown")
+            info,
+            stats,
+            weapTex,
+            ammoTex
         );
-
         // 6) drop it into the world
         ItemActor drop = new ItemActor(w, getX(), getY());
         drop.setVelocity(

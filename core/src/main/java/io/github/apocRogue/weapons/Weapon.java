@@ -1,3 +1,4 @@
+// Weapon.java
 package io.github.apocRogue.weapons;
 
 import com.badlogic.gdx.Gdx;
@@ -5,146 +6,102 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
-import io.github.apocRogue.actors.attackEntity.SlashActor;
-import io.github.apocRogue.actors.attackEntity.ArrowActor;
+import io.github.apocRogue.actors.attackEntity.*;
 import io.github.apocRogue.globals.physics.SoundPhysics;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import io.github.apocRogue.weapons.DashAttackActor;
+import java.util.*;
 
+/**
+ * A fully-realized in-game weapon, constructed from
+ *   1) its encoded ID
+ *   2) static WeaponTypeInfo (name/textures/projectile-flag)
+ *   3) a backend-provided stats map
+ */
 public class Weapon {
-    private final String id;
-    private final Map<String,Integer> stats = new LinkedHashMap<>();
-
-    private String name;
-    private int damage;
-    private Texture texture;
-    private boolean projectileType;
-    private int projectileValue;
-    private String ammoTexture;
-    private int animationSpeed;
-    private int noiseLevel;
-    private float dashSpeed;
-    private float dashDuration;
-    private float dashCooldown;
+    private final String itemCode;
+    private final WeaponTypeInfo typeInfo;
+    private final Map<String,Integer> stats;
+    private final Texture weaponTexture;
+    private final Texture ammoTexture;
 
     public Weapon(
-        String id,
-        String name,
-        int damage,
-        Texture texture,
-        boolean projectileType,
-        int projectileValue,
-        String ammoTexture,
-        int animationSpeed,
-        int noiseLevel,
-        float dashSpeed,
-        float dashDuration,
-        float dashCooldown
+        String itemCode,
+        WeaponTypeInfo typeInfo,
+        Map<String,Integer> stats,
+        Texture weaponTexture,
+        Texture ammoTexture
     ) {
-        this.id = id;
-        this.name = name;
-        this.damage = damage;
-        this.texture = texture;
-        this.projectileType = projectileType;
-        this.projectileValue = projectileValue;
-        this.ammoTexture = ammoTexture;
-        this.animationSpeed = animationSpeed;
-        this.noiseLevel = noiseLevel;
-        this.dashSpeed = dashSpeed;
-        this.dashDuration = dashDuration;
-        this.dashCooldown = dashCooldown;
+        this.itemCode      = itemCode;
+        this.typeInfo      = typeInfo;
+        this.weaponTexture = weaponTexture;
+        this.ammoTexture   = ammoTexture;
 
-
-        stats.put("damage", damage);
-        stats.put("projectileValue", projectileValue);
-        stats.put("animationSpeed", animationSpeed);
-        stats.put("noiseLevel", noiseLevel);
-        stats.put("dashSpeed",    Math.round(dashSpeed));
-        stats.put("dashDuration", Math.round(dashDuration * 100));
-        stats.put("dashCooldown", Math.round(dashCooldown * 10));
+        // Populate in fixed order using your StatKeys.ALL
+        this.stats = new LinkedHashMap<>();
+        for (String key : StatKeys.ALL) {
+            this.stats.put(key, stats.getOrDefault(key, 0));
+        }
     }
 
+    // Basic getters
+    public String getItemCode()             { return itemCode; }
+    public String getName()                 { return typeInfo.getName(); }
+    public Texture getTexture()             { return weaponTexture; }
+    public boolean isProjectileType()       { return typeInfo.isProjectileType(); }
+    public int    getStat(String key)       { return stats.getOrDefault(key, 0); }
+    public int    getDamage()               { return getStat("damage"); }
+    public int    getProjectileValue()      { return getStat("projectileValue"); }
+    public int    getAnimationSpeed()       { return getStat("animationSpeed"); }
+    public int    getNoiseLevel()           { return getStat("noiseLevel"); }
+    public float  getDashSpeed()            { return getStat("dashSpeed"); }
+    public float  getDashDuration()         { return getStat("dashDuration")  / 100f; }
+    public float  getDashCooldown()         { return getStat("dashCooldown")  / 10f; }
 
-    public String getID() {
-        return id;
+    // Noise multipliers
+    private float noise(int level, float factor) {
+        return level * factor;
     }
+    public float getMuzzleNoiseRadius()     { return noise(getNoiseLevel(), 30f); }
+    public float getMuzzleNoiseIntensity()  { return noise(getNoiseLevel(), 1f); }
+    public float getFlightNoiseRadius()     { return noise(getNoiseLevel(), 20f); }
+    public float getFlightNoiseIntensity()  { return noise(getNoiseLevel(), 0.1f); }
+    public float getImpactNoiseRadius()     { return noise(getNoiseLevel(), 100f); }
+    public float getImpactNoiseIntensity()  { return noise(getNoiseLevel(), 1000f); }
+    public float getMeleeNoiseRadius()      { return noise(getNoiseLevel(), 50f); }
+    public float getMeleeNoiseIntensity()   { return noise(getNoiseLevel(), 1f); }
 
-
-    public Map<String,Integer> getStats() {
-        return stats;
-    }
-
-    //your original getters
-
-    public String getName()              { return name; }
-    public int    getDamage()            { return damage; }
-    public Texture getTexture()          { return texture; }
-    public boolean isProjectileType()    { return projectileType; }
-    public int    getProjectileValue()   { return projectileValue; }
-    public String getAmmoTexture()       { return ammoTexture; }
-    public int    getAnimationSpeed()    { return animationSpeed; }
-    public int    getNoiseLevel()        { return noiseLevel; }
-    public float  getDashSpeed()         { return dashSpeed; }
-    public float  getDashDuration()      { return dashDuration; }
-    public float  getDashCooldown()      { return dashCooldown; }
-
-    // noise‐helper methods
-
-    public float getMuzzleNoiseIntensity()  { return noiseLevel * 1.0f; }
-    public float getMuzzleNoiseRadius()     { return noiseLevel * 30f; }
-    public float getFlightNoiseIntensity()  { return noiseLevel * 0.1f; }
-    public float getFlightNoiseRadius()     { return noiseLevel * 20f; }
-    public float getImpactNoiseIntensity()  { return noiseLevel * 1000f; }
-    public float getImpactNoiseRadius()     { return noiseLevel * 100f; }
-    public float getMeleeNoiseIntensity()   { return noiseLevel * 1.0f; }
-    public float getMeleeNoiseRadius()      { return noiseLevel * 50f; }
-
-
+    /** Fires or swings this weapon in-world. */
     public void use(PlayerActor player, Stage stage) {
-        int wepDamage = getDamage();
-        Vector2 target = stage.screenToStageCoordinates(
-            new Vector2(Gdx.input.getX(), Gdx.input.getY())
-        );
-        Vector2 direction = new Vector2(
-            target.x - player.getX(),
-            target.y - player.getY()
-        ).nor();
+        Vector2 mouse = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+        Vector2 aim   = stage.screenToStageCoordinates(mouse);
+        Vector2 dir   = aim.sub(player.getX(), player.getY()).nor();
 
-        if (projectileType) {
-            Texture arrowTex = new Texture(getAmmoTexture());
+        if (isProjectileType()) {
             ArrowActor arrow = new ArrowActor(
-                arrowTex,
+                ammoTexture,
                 player.getX(), player.getY() + 20,
-                target.x, target.y,
+                aim.x, aim.y,
                 stage,
-                wepDamage,
+                getDamage(),
                 getProjectileValue(),
-                noiseLevel,
+                getNoiseLevel(),
                 this,
                 player,
-                direction
+                dir
             );
             SoundPhysics.emitSound(
                 new Vector2(player.getX(), player.getY()),
                 getMeleeNoiseIntensity(),
                 getMeleeNoiseRadius(),
                 SoundPhysics.SoundType.PROJECTILE_IMPACT,
-                player.getStage()
+                stage
             );
             stage.addActor(arrow);
-        } else {                              // MELEE branch
-            boolean isKatana =
-                name.equalsIgnoreCase("Katana")   // by name
-                    || id.startsWith("04");              // by ID prefix
-
-
-            if (isKatana) {
-                if (player.isWeaponDashing())
-                    return;
-
+        } else {
+            boolean isKatana = getName().equalsIgnoreCase("Katana")
+                || itemCode.startsWith("04");
+            if (isKatana && !player.isWeaponDashing()) {
                 DashAttackActor dash = new DashAttackActor(
-                    new Texture(getAmmoTexture()),
+                    ammoTexture,
                     player,
                     getDamage(),
                     stage,
@@ -152,17 +109,16 @@ public class Weapon {
                     getDashDuration()
                 );
                 stage.addActor(dash);
-                return;
-            }
-            else {
-                Texture slashTex = new Texture(getAmmoTexture());
-                SlashActor slash = new SlashActor(slashTex, player, getDamage(), stage);
+            } else {
+                SlashActor slash = new SlashActor(
+                    ammoTexture, player, getDamage(), stage
+                );
                 SoundPhysics.emitSound(
                     new Vector2(player.getX(), player.getY()),
                     getMeleeNoiseIntensity(),
                     getMeleeNoiseRadius(),
                     SoundPhysics.SoundType.MELEE_NOISE,
-                    player.getStage()
+                    stage
                 );
                 stage.addActor(slash);
             }

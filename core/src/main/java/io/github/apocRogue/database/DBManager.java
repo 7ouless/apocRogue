@@ -41,6 +41,20 @@ public class DBManager {
         System.out.println("Registration finished");
     }
 
+    public void fetchInventory(JsonCallback cb) {
+        String url = baseUrl + "/inventoryPull";
+        Net.HttpRequest req = new HttpRequestBuilder()
+            .newRequest()
+            .method(Net.HttpMethods.POST)
+            .url(url)
+            .header("Content-Type","application/json")
+            .header("Authorization","Bearer "+ ServerSingleton.getInstance().getAuthToken())
+            .build();
+        // no filters, so empty object
+        req.setContent("{}");
+        req.setTimeOut(10_000);
+        Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
+    }
     /**
      * Logs in an existing user; cb.onSuccess receives the raw JSON response.
      */
@@ -254,7 +268,7 @@ public class DBManager {
         @Override public void cancelled()             { cb.onError(new Exception("Request cancelled")); }
     }
     public void pushInventory(Map<String,Integer> items, JsonCallback cb) {
-        String url = baseUrl + "/inventoryPush";
+        String url = baseUrl + "/inventorypush";
         List<Map<String,Object>> list = new ArrayList<>();
         items.forEach((code,count) -> {
             list.add(Map.of("itemCode", code, "count", count));
@@ -270,6 +284,7 @@ public class DBManager {
             .header("Authorization","Bearer "+ServerSingleton.getInstance().getAuthToken())
             .build();
         req.setContent(json);
+        req.setTimeOut(10_000);
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
 }

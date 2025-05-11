@@ -94,6 +94,11 @@ public class LoginScreen extends ScreenAdapter {
                     @Override public void onError(Throwable t) {
                         Gdx.app.postRunnable(() -> feedback.setText("Network error: " + t.getMessage()));
                     }
+
+                    @Override
+                    public void onFailure(String error) {
+
+                    }
                 });
             }
         });

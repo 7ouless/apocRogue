@@ -111,6 +111,11 @@ public class RegisterScreen extends ScreenAdapter {
                             System.out.println("NETWORK ERROR");
                         });
                     }
+
+                    @Override
+                    public void onFailure(String error) {
+
+                    }
                 });
             }
         });

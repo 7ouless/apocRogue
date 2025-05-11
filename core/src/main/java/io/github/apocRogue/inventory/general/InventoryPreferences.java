@@ -1,35 +1,58 @@
+// InventoryPreferences.java
 package io.github.apocRogue.inventory.general;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.utils.Json;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-
+/**
+ * Persists the player’s hotbar as an ordered list of encoded item IDs.
+ */
 public class InventoryPreferences {
-    private static final String PREF_NAME = "inventory_prefs";
-    private static final String KEY_ITEMS  = "items_json";
+    private static final String PREF_NAME   = "inventory_prefs";
+    private static final String KEY_HOTBAR  = "hotbar_item_codes";
 
-    public static void save(List<String> names) {
-        Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
-        String json = new Json().toJson(names);
-        prefs.putString(KEY_ITEMS, json);
-        prefs.flush();
+    private static Preferences prefs() {
+        return Gdx.app.getPreferences(PREF_NAME);
     }
 
+    /** Overwrites the saved hotbar order. */
+    public static void saveHotbar(List<String> itemCodes) {
+        String json = new Json().toJson(itemCodes);
+        prefs().putString(KEY_HOTBAR, json).flush();
+    }
+
+    /** Returns the saved hotbar order (empty list if none). */
     @SuppressWarnings("unchecked")
-    public static List<String> load() {
-        Preferences prefs = Gdx.app.getPreferences(PREF_NAME);
-        String str = prefs.getString(KEY_ITEMS, null);
-        if (str == null) return new ArrayList<>();
-        return new Json().fromJson(ArrayList.class, String.class, str);
+    public static List<String> loadHotbar() {
+        String json = prefs().getString(KEY_HOTBAR, "[]");
+        try {
+            return new Json().fromJson(ArrayList.class, String.class, json);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
+    /** Adds the code to the end of the hotbar (if not already present). */
+    public static void addToHotbar(String itemCode) {
+        List<String> list = loadHotbar();
+        if (!list.contains(itemCode)) {
+            list.add(itemCode);
+            saveHotbar(list);
+        }
+    }
 
-    public static void add(String name) {
-        List<String> list = load();
-        list.add(name);
-        save(list);
+    /** Removes the code from the hotbar (if present). */
+    public static void removeFromHotbar(String itemCode) {
+        List<String> list = loadHotbar();
+        if (list.remove(itemCode)) {
+            saveHotbar(list);
+        }
+    }
+
+    /** Clears out all saved hotbar slots. */
+    public static void clearHotbar() {
+        saveHotbar(Collections.emptyList());
     }
 }
