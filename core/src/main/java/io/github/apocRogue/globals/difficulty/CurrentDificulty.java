@@ -2,10 +2,14 @@ package io.github.apocRogue.globals.difficulty;
 
 public class CurrentDificulty {
     private static int difficulty = 3;
+    private static int radiation = 1;
 
     public static int getDifficulty() {
         return difficulty;
     }
+
+    public static int getRadiation() { return radiation; }
+    public static void setRadiation(int r) { radiation = r; }
 
     public static void setDifficulty(int difficulty) {
         CurrentDificulty.difficulty = difficulty;

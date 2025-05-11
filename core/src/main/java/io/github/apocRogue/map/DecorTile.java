@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class DecorTile extends TileActor {
     private static final Texture[] VARIANTS = {
-        new Texture(Gdx.files.internal("ui/rock.png")),
-        new Texture(Gdx.files.internal("ui/stone.png")),
-        new Texture(Gdx.files.internal("ui/bush.png"))
+        new Texture(Gdx.files.internal("ui/low/rock.png")),
+        new Texture(Gdx.files.internal("ui/low/stone.png")),
+        new Texture(Gdx.files.internal("ui/low/bush.png"))
     };
 
     private final boolean flipX;

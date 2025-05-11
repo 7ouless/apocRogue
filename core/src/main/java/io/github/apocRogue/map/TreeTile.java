@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class TreeTile extends TileActor {
     // load both variants inside the class
-    private static final Texture TREE1 = new Texture(Gdx.files.internal("ui/tree.png"));
-    private static final Texture TREE2 = new Texture(Gdx.files.internal("ui/tree2.png"));
+    private static final Texture TREE1 = new Texture(Gdx.files.internal("ui/low/tree.png"));
+    private static final Texture TREE2 = new Texture(Gdx.files.internal("ui/low/tree2.png"));
 
     private final boolean flipX;
     private final boolean useAlt;

@@ -7,9 +7,9 @@ import com.badlogic.gdx.math.Rectangle;
 
 
 public class GrassOverlayTile extends TileActor {
-    private static final Texture grass1 = new Texture("ui/floor-grass.png");
-    private static final Texture grassEdge1 = new Texture("ui/edge-grass.png");
-    private static final Texture grassEdge2 = new Texture("ui/edge2-grass.png");
+    private static final Texture grass1 = new Texture("ui/low/floor-grass.png");
+    private static final Texture grassEdge1 = new Texture("ui/low/edge-grass.png");
+    private static final Texture grassEdge2 = new Texture("ui/low/edge2-grass.png");
 
     private final Texture texture;
     private final boolean flipX;

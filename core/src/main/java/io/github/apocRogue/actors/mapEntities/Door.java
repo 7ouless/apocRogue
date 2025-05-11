@@ -23,8 +23,9 @@ public class Door extends Actor {
     private final Texture texture;
     private final Rectangle bounds;
 
-    public Door(Type type, Vector2 pos) {
+    public Door(Type type, Vector2 pos,int radiationLevel) {
         this.type    = type;
+        this.radiationLevel = radiationLevel;
         this.texture = (type == Type.CONTINUE) ? CONTINUE_TEX : EXTRACT_TEX;
         setPosition(pos.x, pos.y);
         setSize(texture.getWidth() * SCALE, texture.getHeight() * SCALE);
@@ -60,4 +61,6 @@ public class Door extends Actor {
         CONTINUE_TEX.dispose();
         EXTRACT_TEX.dispose();
     }
+
+    public int getRadiationLevel() { return radiationLevel; }
 }

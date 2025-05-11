@@ -89,14 +89,14 @@ public class GameScreen extends ScreenAdapter {
         maxCameraX = MapManager.settings.roomWidth - halfVW;
 
 
-        bgSky       = new Texture(Gdx.files.internal("ui/sky.png"));
-        bgMountains = new Texture(Gdx.files.internal("ui/mountains.png"));
-        bgSun          = new Texture(Gdx.files.internal("ui/sun.png"));
-        bgSideClouds   = new Texture(Gdx.files.internal("ui/side-clouds.png"));
-        bgTopClouds    = new Texture(Gdx.files.internal("ui/top-clouds.png"));
-        bgSmallClouds  = new Texture(Gdx.files.internal("ui/small-clouds.png"));
-        bgBigTree      = new Texture(Gdx.files.internal("ui/big-tree.png"));
-        bgMeadow    = new Texture(Gdx.files.internal("ui/meadow.png"));
+        bgSky       = new Texture(Gdx.files.internal("ui/low/sky.png"));
+        bgMountains = new Texture(Gdx.files.internal("ui/low/mountains.png"));
+        bgSun          = new Texture(Gdx.files.internal("ui/low/sun.png"));
+        bgSideClouds   = new Texture(Gdx.files.internal("ui/low/side-clouds.png"));
+        bgTopClouds    = new Texture(Gdx.files.internal("ui/low/top-clouds.png"));
+        bgSmallClouds  = new Texture(Gdx.files.internal("ui/low/small-clouds.png"));
+        bgBigTree      = new Texture(Gdx.files.internal("ui/low/big-tree.png"));
+        bgMeadow    = new Texture(Gdx.files.internal("ui/low/meadow.png"));
 
 
         batch = new SpriteBatch();

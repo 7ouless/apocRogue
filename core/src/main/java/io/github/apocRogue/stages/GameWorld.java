@@ -179,12 +179,12 @@ public class GameWorld {
     }
 
     private float[] getRandomSpawnPosition() {
-        Array<PlatformTile> plats = new Array<>();
+        Array<FloorTile> plats = new Array<>();
         for (Actor a : stage.getActors()) {
-            if (a instanceof PlatformTile) plats.add((PlatformTile) a);
+            if (a instanceof FloorTile) plats.add((FloorTile) a);
         }
         if (plats.size == 0) return null;
-        PlatformTile t = plats.random();
+        FloorTile t = plats.random();
         return new float[]{t.getX() + t.getWidth() / 2f, t.getY() + t.getHeight()};
     }
 
