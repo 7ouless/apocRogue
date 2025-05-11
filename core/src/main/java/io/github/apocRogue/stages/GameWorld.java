@@ -68,12 +68,16 @@ public class GameWorld {
     }
 
 
+    private final float baseSpawnX  = 30f;
+    private final float extraSpawnX = 20f;
+
     private void spawnPlayer() {
         player = new PlayerActor(playerTexture, playerAttackTexture);
-        float spawnX  = 30f;
+        float spawnX  = baseSpawnX + extraSpawnX;
         float groundY = getGroundHeightAtX(spawnX);
         float spawnY  = groundY + player.getHeight() + spawnOffsetY;
         player.setPosition(spawnX, spawnY);
+
         player.setInventory(inventory);
         stage.addActor(player);
     }
@@ -204,6 +208,23 @@ public class GameWorld {
     public void update(float delta) {
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
+        if (player != null) {
+            float feetX = player.getX() + player.getWidth() * 0.5f;
+            float feetY = player.getY();
+            boolean fellOff = player.getY() < 0;
+            boolean hitDirt = isOverlappingWithDirt(feetX, feetY);
+            if (fellOff || hitDirt) {
+                float respawnX  = baseSpawnX + extraSpawnX;
+                float groundY   = getGroundHeightAtX(respawnX);
+                float respawnY  = groundY + player.getHeight() + spawnOffsetY;
+
+                player.setPosition(respawnX, respawnY);
+                player.velocityX = 0;
+                player.velocityY = 0;
+                return;
+
+            }
+            }
         }
 
 
