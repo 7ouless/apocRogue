@@ -7,9 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 
 
 public class GrassOverlayTile extends TileActor {
-    private static final Texture grass1 = new Texture("ui/low/floor-grass.png");
-    private static final Texture grassEdge1 = new Texture("ui/low/edge-grass.png");
-    private static final Texture grassEdge2 = new Texture("ui/low/edge2-grass.png");
+    private static Texture grass1, grassEdge1, grassEdge2;
 
     private final Texture texture;
     private final boolean flipX;
@@ -40,6 +38,16 @@ public class GrassOverlayTile extends TileActor {
     @Override
     public com.badlogic.gdx.math.Rectangle getBounds() {
         return new com.badlogic.gdx.math.Rectangle(0, 0, 0, 0);
+    }
+
+
+    public static void loadForRadiation(String folder) {
+        if (grass1     != null) grass1.dispose();
+        if (grassEdge1 != null) grassEdge1.dispose();
+        if (grassEdge2 != null) grassEdge2.dispose();
+        grass1     = new Texture("ui/"+folder+"/floor-grass.png");
+        grassEdge1 = new Texture("ui/"+folder+"/edge-grass.png");
+        grassEdge2 = new Texture("ui/"+folder+"/edge2-grass.png");
     }
 
 }

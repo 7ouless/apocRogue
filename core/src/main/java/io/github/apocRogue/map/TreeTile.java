@@ -7,13 +7,12 @@ import com.badlogic.gdx.math.Rectangle;
 
 public class TreeTile extends TileActor {
     // load both variants inside the class
-    private static final Texture TREE1 = new Texture(Gdx.files.internal("ui/low/tree.png"));
-    private static final Texture TREE2 = new Texture(Gdx.files.internal("ui/low/tree2.png"));
+    private static Texture TREE1, TREE2;
 
     private final boolean flipX;
     private final boolean useAlt;
 
-    // NEW: accept flip & variant flags
+
     public TreeTile(float x, float y, float width, float height,
                     boolean flipX, boolean useAlt) {
         super(x, y, width, height, null);
@@ -41,4 +40,12 @@ public class TreeTile extends TileActor {
         // zero‐sized so you walk right through it
         return new Rectangle(0, 0, 0, 0);
     }
+
+    public static void loadForRadiation(String folder) {
+        if (TREE1 != null) TREE1.dispose();
+        if (TREE2 != null) TREE2.dispose();
+        TREE1 = new Texture(Gdx.files.internal("ui/"+folder+"/tree.png"));
+        TREE2 = new Texture(Gdx.files.internal("ui/"+folder+"/tree2.png"));
+    }
+
 }

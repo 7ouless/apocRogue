@@ -18,6 +18,7 @@ import io.github.apocRogue.actors.mobs.DummyActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
@@ -265,17 +266,29 @@ public class GameWorld {
         // separation in world‐units between the two doors
         float sep = 200f;
 
-        // CONTINUE door always at the end
-        Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
-        doors.add(new Door(Door.Type.CONTINUE, contPos));
+        if (!isFinalWorld) {
+            // Worlds 1–4: three different continue doors
+                for (int r = 1; r <= 3; r++) {
+                float x = baseX + (r - 2) * sep;
+                doors.add(new Door(Door.Type.CONTINUE,
+                 new Vector2(x, baseY),
+                 r));
+                            }
+            } else {
+            // World 5: exactly one continue + one extract
+                // Continue door – center‐left
+            Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
+            doors.add(new Door(Door.Type.CONTINUE,
+                contPos,
+                CurrentDificulty.getRadiation()));
 
-        // EXTRACT only on final world, offset the other direction
-        if (isFinalWorld) {
+            // Extract door – center‐right
             Vector2 exitPos = new Vector2(baseX + sep * 0.5f, baseY);
-            doors.add(new Door(Door.Type.EXTRACT, exitPos));
-        }
+            doors.add(new Door(Door.Type.EXTRACT,
+                exitPos));
+            }
 
-        // add them to the stage
+        // finally, attach them to the stage
         doors.forEach(stage::addActor);
     }
 
