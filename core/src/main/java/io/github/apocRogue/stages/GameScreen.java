@@ -245,6 +245,10 @@ public class GameScreen extends ScreenAdapter {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
             }
+
+        int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
+        CurrentDificulty.setDifficulty(diff);
+
         gameWorld = new GameWorld(stage, runMgr.isFinalWorld());
         gameWorld.initialize();
 
@@ -623,6 +627,11 @@ public class GameScreen extends ScreenAdapter {
                 runMgr.advanceWorld();
 
             }
+
+            //Updates global difficulty
+            int newDiff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
+            CurrentDificulty.setDifficulty(newDiff);
+
             updateHud();
 
             // reload all themed assets & rebuild the world
