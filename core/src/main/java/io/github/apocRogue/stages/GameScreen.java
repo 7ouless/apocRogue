@@ -461,14 +461,16 @@ public class GameScreen extends ScreenAdapter {
                 );
 
         // 4.3) Side‐clouds
+        batch.setColor(1f, 1f, 1f, 0.75f);
         drawTiledLayer(
             batch,
             bgSideClouds,
             camLeft,
             camBottom + viewportHeight * 0f,
             -0.005f,
-            0.4f
+             0.4f
         );
+        batch.setColor(1f, 1f, 1f, 1f);
 
         // 4.4) Mountains
         drawTiledLayer(batch,
@@ -550,19 +552,16 @@ public class GameScreen extends ScreenAdapter {
 
         int rad = CurrentDificulty.getRadiation();
         Color tintColor;
-        float tintAlpha;
-        switch (rad) {
+        switch (CurrentDificulty.getRadiation()) {
             case 2:
-                tintColor = new Color(1f, 0.5f, 0f, 0.12f);  // orange
-                tintAlpha = 0.12f;
+                tintColor = new Color(1f, 0.5f, 0f, 0.12f);  // orange @12%
                 break;
             case 3:
-                tintColor = new Color(0f, 0f, 0f, 0.12f);    // black
-                tintAlpha = 0.16f;
+                tintColor = new Color(0f, 0f, 0f, 0.30f);    // black @30%
                 break;
             default:
-                tintColor = new Color(0.4f, 0f, 0.2f, 0.12f); // pink
-                tintAlpha = 0.12f;
+                tintColor = new Color(0.4f, 0f, 0.2f, 0.12f); // pink  @12%
+                break;
         }
 
         // 8) Simple dark-pink full-screen tint
@@ -570,7 +569,7 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         // RGBA = (red=0.6, green=0.0, blue=0.2, alpha=0.1) → dark pink at 10% opacity
-        shapeRenderer.setColor(tintColor.r, tintColor.g, tintColor.b, tintAlpha);
+        shapeRenderer.setColor(tintColor);
         // compute the bottom-left corner of the camera’s view in world coords
         float tintX = camera.position.x - viewportWidth  / 2f;
         float tintY = camera.position.y - viewportHeight / 2f;
@@ -580,11 +579,18 @@ public class GameScreen extends ScreenAdapter {
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
         if (rad >= 2) {
-            // start our batch for the grain overlay
             batch.begin();
-            batch.setColor(1f, 1f, 1f, 0.05f);   // very faint white tint on the grain
 
-            // tile the noise texture in a simple nested loop
+            // Pick a grain‐opacity per radiation level:
+            float grainAlpha;
+            if (rad == 2) {
+                grainAlpha = 0.25f;
+            } else { // rad == 3
+                grainAlpha = 0.4f;
+            }
+            batch.setColor(1f, 1f, 1f, grainAlpha);
+
+            // Tile your noise texture over the screen:
             float tileW = grainTex.getWidth();
             float tileH = grainTex.getHeight();
             for (float x = camLeft; x < camLeft + viewportWidth; x += tileW) {
@@ -593,13 +599,9 @@ public class GameScreen extends ScreenAdapter {
                 }
             }
 
-            // reset tint and finish
             batch.setColor(Color.WHITE);
             batch.end();
         }
-
-
-
 
         // 9) Finally the UI
         uiStage.act(delta);

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 
 public class TreeTile extends TileActor {
     // load both variants inside the class
@@ -25,9 +26,16 @@ public class TreeTile extends TileActor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         Texture t = useAlt ? TREE2 : TREE1;
+
+        // lowering tree for rad 3 (sorry jimmy)
+        float yPos = getY();
+        if (CurrentDificulty.getRadiation() == 3) {
+            yPos -= 10f;    //
+        }
+
         batch.draw(
             t,
-            getX(), getY(),
+            getX(), yPos,
             getWidth(), getHeight(),
             0, 0,
             t.getWidth(), t.getHeight(),
