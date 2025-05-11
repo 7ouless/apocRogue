@@ -184,13 +184,18 @@ public class GameWorld {
     }
 
     private float[] getRandomSpawnPosition() {
-        Array<FloorTile> plats = new Array<>();
-        for (Actor a : stage.getActors()) {
-            if (a instanceof FloorTile) plats.add((FloorTile) a);
-        }
-        if (plats.size == 0) return null;
-        FloorTile t = plats.random();
-        return new float[]{t.getX() + t.getWidth() / 2f, t.getY() + t.getHeight()};
+        Array<Actor> spawnTiles = new Array<>();
+       for (Actor a : stage.getActors()) {
+                if (a instanceof FloorTile || a instanceof PlatformTile) {
+                spawnTiles.add(a);
+                }
+            }
+        if (spawnTiles.size == 0) return null;
+       Actor t = spawnTiles.random();
+       return new float[]{
+            t.getX() + t.getWidth() * 0.5f,
+            t.getY() + t.getHeight()
+       };
     }
 
     private boolean isOverlappingWithDirt(float x, float y) {
