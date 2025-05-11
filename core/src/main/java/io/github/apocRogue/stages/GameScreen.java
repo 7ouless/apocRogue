@@ -85,7 +85,12 @@ public class GameScreen extends ScreenAdapter {
         bgSideClouds = new Texture(Gdx.files.internal("ui/"+folder+"/side-clouds.png"));
         bgTopClouds  = new Texture(Gdx.files.internal("ui/"+folder+"/top-clouds.png"));
         bgSmallClouds= new Texture(Gdx.files.internal("ui/"+folder+"/small-clouds.png"));
-        bgBigTree    = new Texture(Gdx.files.internal("ui/"+folder+"/big-tree.png"));
+
+        String bigTreeAsset = "/big-tree.png";
+        if ("high".equals(folder)) {                            // radiation 3
+            bigTreeAsset = "/big-tree2.png";
+        }
+        bgBigTree    = new Texture(Gdx.files.internal("ui/"+folder+ bigTreeAsset));
         bgMeadow     = new Texture(Gdx.files.internal("ui/"+folder+"/meadow.png"));
     }
 
