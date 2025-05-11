@@ -1,10 +1,7 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -129,10 +126,6 @@ public class GameScreen extends ScreenAdapter {
         // but typically the game screen or the UI system loads the skin:
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        if (grainTex != null) grainTex.dispose();
-        grainTex = new Texture(Gdx.files.internal("ui/filters/grain.png"));
-        grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-
         // 1) Init our run HUD
         initUI();
         loadCurrentWorld();
@@ -211,6 +204,22 @@ public class GameScreen extends ScreenAdapter {
 
 // Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
+
+        // --- generate a small repeating noise texture (128×128) ---
+        if (grainTex != null) grainTex.dispose();
+        Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
+        for (int x = 0; x < 128; x++) {
+            for (int y = 0; y < 128; y++) {
+                // random alpha between 0 and 0.2f for low-level grain
+                float a = MathUtils.random() * 0.2f;
+                pix.setColor(1f, 1f, 1f, a);
+                pix.drawPixel(x, y);
+            }
+        }
+        grainTex = new Texture(pix);
+        grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        pix.dispose();
+
     }
 
     private void initUI() {
