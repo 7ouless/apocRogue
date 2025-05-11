@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.mobs.DummyActor;
@@ -23,12 +23,8 @@ import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
-import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.map.*;
-import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
-import io.github.apocRogue.weapons.WeaponFactory;
-import io.github.apocRogue.weapons.WeaponIDDecoder;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
@@ -47,8 +43,7 @@ public class GameWorld {
     private final boolean isFinalWorld;
     private final List<Door> doors = new ArrayList<>();
 
-    // ID system managers
-    private ItemManager itemManager;
+    // ID system: only cosmetic registry
     private WeaponTypeRegistry typeRegistry;
 
     // Actors & textures
@@ -105,14 +100,11 @@ public class GameWorld {
         inventory = new Inventory(skin);
         spawnPlayer();
 
-        //ID system: load base‐stat table and static metadata
-        itemManager = new ItemManager();
-        itemManager.loadBaseData("ui/items.json");// base stats + typeID
-
         typeRegistry = new WeaponTypeRegistry();
         typeRegistry.load("ui/weapon_types.json"); // name, textures, projectile flag
 
-        Array<String> allTypeIDs = itemManager.getAllTypeIDs();
+        Set<String> idSet = typeRegistry.getAllTypeIDs();
+        Array<String> allTypeIDs = new Array<>(idSet.toArray(new String[0]));
 
         //Rehydrate saved weapons
         List<String> savedNames = InventoryPreferences.load();
@@ -120,25 +112,16 @@ public class GameWorld {
             for (String typeID : allTypeIDs) {
                 WeaponTypeInfo info = typeRegistry.get(typeID);
                 if (info.getName().equals(name)) {
-                    // roll at diff=1,1 so you get base stats
-                    Map<String, Integer> baseStats = itemManager.getBaseStats(typeID);
-                    String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
-                    WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
-
-                    // build a fully‐decoded weapon
                     Weapon w = new Weapon(
-                        id,
+                        "DUMMY-" + typeID,                      // placeholder code
                         info.getName(),
-                        d.stats.get("damage"),
+                        0,// damage
                         new Texture(Gdx.files.internal(info.getTexturePath())),
                         info.isProjectileType(),
-                        d.stats.get("projectileValue"),
+                        0,// projectileValue
                         info.getAmmoTexture(),
-                        d.stats.get("animationSpeed"),
-                        d.stats.get("noiseLevel"),
-                        d.stats.get("dashSpeed"),
-                        d.stats.get("dashDuration"),
-                        d.stats.get("dashCooldown")
+                        0, 0,// animationSpeed, noise
+                        0, 0, 0// dashSpeed, dashDur, dashCD
                     );
                     inventory.addItem(w);
                     break;
@@ -172,7 +155,6 @@ public class GameWorld {
                 x, y,
                 allTypeIDs,
                 skin,
-                itemManager,
                 typeRegistry
             );
             chests.add(chest);

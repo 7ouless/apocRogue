@@ -5,8 +5,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
+import java.util.Map;
 
 /**
  * A single inventory slot that displays a Weapon’s icon,
@@ -54,10 +54,10 @@ public class InventorySlot extends Table {
             // Build tooltip
             StringBuilder sb = new StringBuilder();
             sb.append("ID: ").append(weapon.getID()).append("\n");
-            for (String key : StatKeys.ALL) {
-                sb.append(key)
+            for (Map.Entry<String, Integer> e : weapon.getStats().entrySet()) {
+                sb.append(e.getKey())
                     .append(": ")
-                    .append(weapon.getStats().get(key))
+                    .append(e.getValue())
                     .append("\n");
             }
             ((Label)tooltip.getActor()).setText(sb.toString());

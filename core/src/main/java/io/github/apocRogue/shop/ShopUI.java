@@ -8,14 +8,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
-import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import io.github.apocRogue.shop.ShopService;
+import io.github.apocRogue.shop.ShopWeaponPayload;
+import com.badlogic.gdx.utils.Array;
 
 public class ShopUI {
     private stageBuilder game;
@@ -45,14 +46,13 @@ public class ShopUI {
     private static final int ITEMS_PER_ROW = 3;
     private ShopKeeper currentTrader;
     private ShopItem selectedItem;
-    private final ItemManager itemManager;
     private final Inventory playerInventory;
 
     // Restock logic
     private float restockTimer = 200f;
     private List<ShopKeeper> allTraders;
 
-    // --- NEW: ID system support
+    // ID system support
     private final WeaponTypeRegistry typeRegistry;
     private final List<Weapon> loadedWeapons = new ArrayList<>();
 
@@ -60,13 +60,11 @@ public class ShopUI {
                   Skin skin,
                   List<ShopKeeper> shopkeepers,
                   stageBuilder game,
-                  ItemManager itemManager,
                   Inventory playerInventory)
     {
         this.skin            = skin;
         this.game            = game;
         this.allTraders      = shopkeepers;
-        this.itemManager     = itemManager;
         this.playerInventory = playerInventory;
 
         // ─── Build root UI ───────────────────────────────────────
@@ -214,33 +212,45 @@ public class ShopUI {
         typeRegistry = new WeaponTypeRegistry();
         typeRegistry.load("ui/weapon_types.json");
 
-        for (String typeID : itemManager.getAllTypeIDs()) {
-            Map<String,Integer> baseStats = itemManager.getBaseStats(typeID);
-            String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
-            WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
-            WeaponTypeInfo info = typeRegistry.get(typeID);
-            Weapon w = new Weapon(
-                id,
-                info.getName(),
-                d.stats.get("damage"),
-                new Texture(Gdx.files.internal(info.getTexturePath())),
-                info.isProjectileType(),
-                d.stats.get("projectileValue"),
-                info.getAmmoTexture(),
-                d.stats.get("animationSpeed"),
-                d.stats.get("noiseLevel"),
-                d.stats.get("dashSpeed"),
-                d.stats.get("dashDuration"),
-                d.stats.get("dashCooldown")
-            );
-            loadedWeapons.add(w);
-        }
+        // ─── Ask backend for today’s inventory ─────────────────────
 
+        ShopService api = new ShopService();
+        api.fetchShopWeapons(new ShopService.Callback() {
+            @Override public void onSuccess(Array<ShopWeaponPayload> list) {
+                loadedWeapons.clear();
+                for (ShopWeaponPayload p : list) {
+                    WeaponTypeInfo info = typeRegistry.get(p.typeID);
+
+                    Weapon w = new Weapon(
+                        p.itemCode,
+                        info.getName(),
+                        p.stats.get("damage"),
+                        new Texture(Gdx.files.internal(info.getTexturePath())),
+                        info.isProjectileType(),
+                        p.stats.get("projectileValue"),
+                        info.getAmmoTexture(),
+                        p.stats.get("animationSpeed"),
+                        p.stats.get("noiseLevel"),
+                        p.stats.get("dashSpeed"),
+                        p.stats.get("dashDuration"),
+                        p.stats.get("dashCooldown")
+                    );
+                    loadedWeapons.add(w);
+                }
+
+                // now that we *have* weapons we can open the first trader
+                if (!allTraders.isEmpty()) loadTraderAndGreet(allTraders.get(0));
+            }
+            @Override public void onFailure(Throwable t) {
+                Gdx.app.error("SHOP", "Could not fetch shop items", t);
+            }
+        });
         // ─── Load first trader’s view ─────────────────────────────
         if (!allTraders.isEmpty()) {
             loadTraderAndGreet(allTraders.get(0));
         }
     }
+
 
     public void update(float delta) {
         // Typewriter effect...

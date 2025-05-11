@@ -8,7 +8,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import io.github.apocRogue.inventory.gameinventory.Inventory;
-import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.shop.ShopKeeper;
 import io.github.apocRogue.shop.ShopUI;
 import io.github.apocRogue.shop.ShopInventory;
@@ -35,10 +34,6 @@ public class ShopScreen extends ScreenAdapter {
         // Load your shopkeepers
         List<ShopKeeper> shopkeepers = ShopInventory.loadShopkeepers();
 
-        // Initialise ItemManager with your new loadBaseData()
-        ItemManager mgr = new ItemManager();
-        mgr.loadBaseData("ui/items.json");
-
         // Initialise & draw the player inventory UI
         Inventory inv = new Inventory(skin);
         inv.draw(stage);
@@ -49,7 +44,6 @@ public class ShopScreen extends ScreenAdapter {
             skin,
             shopkeepers,
             game,
-            mgr,
             inv
         );
 

@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.weapons;
 
 import java.util.Map;
@@ -28,3 +29,4 @@ public class WeaponIDEncoder {
         return sb.toString();
     }
 }
+*/

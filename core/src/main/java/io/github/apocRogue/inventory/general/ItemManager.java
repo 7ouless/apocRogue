@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.inventory.general;
 
 import com.badlogic.gdx.Gdx;
@@ -46,3 +47,4 @@ public class ItemManager {
         return baseStatsByTypeID.get(typeID);
     }
 }
+*/

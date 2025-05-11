@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.weapons;
 
 import java.util.HashMap;
@@ -29,3 +30,4 @@ public class WeaponFactory {
         return WeaponIDEncoder.encode(typeID, skullLevel, skullSub, rolled);
     }
 }
+*/

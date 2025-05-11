@@ -14,6 +14,10 @@ public class WeaponTypeRegistry {
     private final Map<String, WeaponTypeInfo> infoByTypeID = new HashMap<>();
 
 
+    public java.util.Set<String> getAllTypeIDs() {
+        return infoByTypeID.keySet();
+    }
+
     public void load(String jsonPath) {
         FileHandle file = Gdx.files.internal(jsonPath);
         JsonReader reader = new JsonReader();
