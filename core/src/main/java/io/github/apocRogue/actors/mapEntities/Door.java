@@ -54,10 +54,9 @@ public class Door extends Actor {
             : Color.BLUE;
         batch.setColor(tint);
         batch.draw(texture, getX(), getY(), getWidth(), getHeight());
-        batch.setColor(Color.WHITE); // restore
+        batch.setColor(Color.WHITE);
 
         if (type == Type.CONTINUE) {
-            // how wide is the number?
             String text = String.valueOf(radiationLevel);
             LAYOUT.setText(FONT, text);
             float textX = getX() + (getWidth()  - LAYOUT.width)  * 0.5f;

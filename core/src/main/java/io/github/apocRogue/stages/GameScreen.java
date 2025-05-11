@@ -432,7 +432,7 @@ public class GameScreen extends ScreenAdapter {
         // maximum pixels up/down we ever allow
         float maxVOffset = 50f;
 
-// how far we’ve moved from rest
+        // how far we’ve moved from rest
         float deltaY     = camera.position.y - initialCamY;
 
         // 4.1) Sky (stationary relative to camera)
@@ -448,7 +448,7 @@ public class GameScreen extends ScreenAdapter {
         float rawCloudOffset = deltaY * cloudVFactor;
         float rawTrunkOffset = deltaY * trunkVFactor;
 
-// clamp so |offset| ≤ maxVOffset
+        // clamp so offset ≤ maxVOffset
         float cloudYOffset = MathUtils.clamp(rawCloudOffset, -maxVOffset, maxVOffset);
         float trunkYOffset = MathUtils.clamp(rawTrunkOffset, -maxVOffset, maxVOffset);
 
@@ -485,7 +485,7 @@ public class GameScreen extends ScreenAdapter {
                    batch,
                    bgTopClouds,
                    camLeft,
-                   camBottom + viewportHeight * 0.8f + + cloudYOffset ,
+                   camBottom + viewportHeight * 0.73f + + cloudYOffset ,
                    -0.13f,
                    0.6f
                );
