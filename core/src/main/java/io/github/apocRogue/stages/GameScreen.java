@@ -489,7 +489,7 @@ public class GameScreen extends ScreenAdapter {
                    batch,
                    bgTopClouds,
                    camLeft,
-                   camBottom + viewportHeight * 0.73f + + cloudYOffset ,
+                   camBottom + viewportHeight * 0.73f,
                    -0.13f,
                    0.6f
                );
@@ -539,8 +539,6 @@ public class GameScreen extends ScreenAdapter {
 
         // filled‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        //   ← draw your filled debug shapes here, e.g.:
-        //   shapeRenderer.circle(enemyX, enemyY, radius);
         shapeRenderer.end();
 
         // line‐shape pass
@@ -558,21 +556,21 @@ public class GameScreen extends ScreenAdapter {
         Color tintColor;
         switch (CurrentDificulty.getRadiation()) {
             case 2:
-                tintColor = new Color(1f, 0.5f, 0f, 0.12f);  // orange @12%
+                tintColor = new Color(1f, 0.5f, 0f, 0.12f);  // orange
                 break;
             case 3:
-                tintColor = new Color(0f, 0f, 0f, 0.30f);    // black @30%
+                tintColor = new Color(0f, 0f, 0f, 0.30f);    // black
                 break;
             default:
-                tintColor = new Color(0.4f, 0f, 0.2f, 0.12f); // pink  @12%
+                tintColor = new Color(0.4f, 0f, 0.2f, 0.12f); // pink
                 break;
         }
 
         // 8) Simple dark-pink full-screen tint
-        Gdx.gl.glEnable(GL20.GL_BLEND);  // turn on alpha blending
+        Gdx.gl.glEnable(GL20.GL_BLEND);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        // RGBA = (red=0.6, green=0.0, blue=0.2, alpha=0.1) → dark pink at 10% opacity
+
         shapeRenderer.setColor(tintColor);
         // compute the bottom-left corner of the camera’s view in world coords
         float tintX = camera.position.x - viewportWidth  / 2f;
@@ -585,7 +583,7 @@ public class GameScreen extends ScreenAdapter {
         if (rad >= 2) {
             batch.begin();
 
-            // Pick a grain‐opacity per radiation level:
+            // Pick a grain‐opacity per radiation level
             float grainAlpha;
             if (rad == 2) {
                 grainAlpha = 0.25f;
@@ -594,7 +592,7 @@ public class GameScreen extends ScreenAdapter {
             }
             batch.setColor(1f, 1f, 1f, grainAlpha);
 
-            // Tile your noise texture over the screen:
+            // Tile your noise texture over the screen
             float tileW = grainTex.getWidth();
             float tileH = grainTex.getHeight();
             for (float x = camLeft; x < camLeft + viewportWidth; x += tileW) {
@@ -617,7 +615,7 @@ public class GameScreen extends ScreenAdapter {
         if (door.getType() == Door.Type.EXTRACT) {
             game.setScreen(new MainScreen(game));
             } else {
-            // CONTINUE door → first record the player's choice
+            // CONTINUE door --> first record the player's choice
             CurrentDificulty.setRadiation(door.getRadiationLevel());
             // then advance or continue the run
             if (runMgr.isFinalWorld()) {

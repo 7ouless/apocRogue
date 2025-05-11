@@ -107,14 +107,14 @@ public class GameWorld {
 
         //ID system: load base‐stat table and static metadata
         itemManager = new ItemManager();
-        itemManager.loadBaseData("ui/items.json");            // base stats + typeID
+        itemManager.loadBaseData("ui/items.json");// base stats + typeID
 
         typeRegistry = new WeaponTypeRegistry();
-        typeRegistry.load("ui/weapon_types.json");            // name, textures, projectile flag
+        typeRegistry.load("ui/weapon_types.json"); // name, textures, projectile flag
 
         Array<String> allTypeIDs = itemManager.getAllTypeIDs();
 
-        //Rehydrate saved weapons (stash)
+        //Rehydrate saved weapons
         List<String> savedNames = InventoryPreferences.load();
         for (String name : savedNames) {
             for (String typeID : allTypeIDs) {
@@ -263,7 +263,6 @@ public class GameWorld {
     }
 
     private Vector2 findExitPosition() {
-        // back off one tile so the door sits fully inside the room
         float tileW = MapManager.settings.tileWidth;
         float x = MapManager.settings.roomWidth - tileW * 1.5f;
         // snap to ground height at that X
@@ -285,7 +284,7 @@ public class GameWorld {
         FloorTile end = floors.get(floors.size() - 1);
 
         // base world‐position: center atop that tile
-        float borderMargin = 80f;
+        float borderMargin = 110f;
         float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
         float baseY = end.getY() + end.getHeight();
 
@@ -314,7 +313,6 @@ public class GameWorld {
                 exitPos));
             }
 
-        // finally, attach them to the stage
         doors.forEach(stage::addActor);
     }
 
