@@ -1,0 +1,26 @@
+{
+  "01": {
+    "name": "Health Potion",
+    "texturePath": "textures/potions/health_potion.png",
+    "stackable": false,
+    "maxStack": 5
+  },
+  "02": {
+    "name": "Mana Potion",
+    "texturePath": "textures/potions/mana_potion.png",
+    "stackable": false,
+    "maxStack": 5
+  },
+  "03": {
+    "name": "Strength Elixir",
+    "texturePath": "textures/potions/strength_elixir.png",
+    "stackable": false,
+    "maxStack": 5
+  },
+  "04": {
+    "name": "Speed Tonic",
+    "texturePath": "textures/potions/speed_tonic.png",
+    "stackable": false,
+    "maxStack": 5
+  }
+}

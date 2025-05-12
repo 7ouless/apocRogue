@@ -1,0 +1,25 @@
+{
+  "01": {
+    "name": "Health Potion",
+    "texturePath": "textures/potions/health_potion.png",
+    "stackable": false,
+    "maxStack": 5,
+
+    "statRanges": {
+      "healAmount": { "min": 50,  "max": 100 },
+      "duration":   { "min": 5,   "max": 10   }
+    }
+  },
+
+  "02": {
+    "name": "Mana Potion",
+    "texturePath": "textures/potions/mana_potion.png",
+    "stackable": false,
+    "maxStack": 5,
+
+    "statRanges": {
+      "manaRestore": { "min": 30,  "max": 60 },
+      "duration":    { "min": 0,   "max":  0  }
+    }
+  }
+}
