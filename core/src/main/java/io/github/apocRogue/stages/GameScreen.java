@@ -26,6 +26,7 @@ import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
 import io.github.apocRogue.actors.mapEntities.Door;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 
 
 import io.github.apocRogue.globals.physics.SoundPhysics;
@@ -39,6 +40,8 @@ public class GameScreen extends ScreenAdapter {
     private Stage uiStage;     // For HUD / normal UI
     private SpriteBatch batch;
     private OrthographicCamera camera;
+
+    private ProgressBar staminaBar;
 
     private final RunManager runMgr = new RunManager();
     private Label skullLabel, worldLabel;
@@ -132,8 +135,9 @@ public class GameScreen extends ScreenAdapter {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // 1) Init our run HUD
-        initUI();
         loadCurrentWorld();
+        initUI();
+
 
         // move all decor into the overlay stage
         List<Actor> decorActors = new ArrayList<>();
@@ -227,29 +231,11 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
-    private void initUI() {
-        Table hud = new Table();
-        hud.setFillParent(true);
-        hud.top().right().padTop(20).padRight(20);
-
-        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
-        skullLabel.setFontScale(1.5f);           // ← bigger
-        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
-        worldLabel.setFontScale(1.2f);           // ← a bit smaller
-
-        hud.add(skullLabel)
-            .padBottom(20)
-            .row();
-        hud.add(worldLabel);
-
-        uiStage.addActor(hud);
-    }
-
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
-            }
+        }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
         CurrentDificulty.setDifficulty(diff);
@@ -267,6 +253,64 @@ public class GameScreen extends ScreenAdapter {
             }
         }
 
+    }
+
+    private void initUI() {
+        // 1) Root HUD table, anchored to the top
+        Table hud = new Table();
+        hud.setFillParent(true);
+        hud.top().padTop(20);
+        uiStage.addActor(hud);
+
+        // 2) Clone the skin’s real default-horizontal style
+        ProgressBar.ProgressBarStyle baseStyle =
+            skin.get("default-horizontal", ProgressBar.ProgressBarStyle.class);
+        ProgressBar.ProgressBarStyle staminaStyle =
+            new ProgressBar.ProgressBarStyle(baseStyle);
+
+        // 3) Recolor just the filled part (knobBefore) to yellow
+        staminaStyle.knobBefore =
+            skin.newDrawable("progress-bar-square-knob", Color.YELLOW);
+
+        // 4) (Optional) Keep the empty track dark grey
+        staminaStyle.background =
+            skin.newDrawable("progress-bar-square", Color.DARK_GRAY);
+
+        // 5) Force the drawables to a taller height (8 px)
+        staminaStyle.background .setMinHeight(8f);
+        staminaStyle.knobBefore  .setMinHeight(8f);
+
+        // 6) Create your difficulty labels
+        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
+        skullLabel.setFontScale(1.5f);
+        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
+        worldLabel.setFontScale(1.2f);
+
+        // 7) Instantiate the stamina bar with the custom style
+        staminaBar = new ProgressBar(0, 100, 1, false, staminaStyle);
+        staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
+        staminaBar.setAnimateDuration(0.1f);
+
+        // 8) Left column for the bar
+        Table leftTable = new Table();
+        leftTable.padLeft(20);
+        leftTable.add(staminaBar)
+            .width(180)
+            .left();
+
+        // 9) Right column for skull/world
+        Table rightTable = new Table();
+        rightTable.padRight(20);
+        rightTable.add(skullLabel)
+            .left()
+            .padBottom(20)
+            .row();
+        rightTable.add(worldLabel)
+            .left();
+
+        // 10) Place them side-by-side in the HUD
+        hud.add(leftTable).expandX().left();
+        hud.add(rightTable).expandX().right();
     }
 
     private void createPauseOverlay() {
@@ -376,6 +420,8 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+
+        staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
         // 1) Update logic & stages
         if (!paused) {
             gameWorld.update(delta);
@@ -609,6 +655,9 @@ public class GameScreen extends ScreenAdapter {
             batch.setColor(Color.WHITE);
             batch.end();
         }
+
+        float currentStam = gameWorld.getPlayer().getStats().getStamina();
+        staminaBar.setValue(currentStam);
 
         // 9) Finally the UI
         uiStage.act(delta);

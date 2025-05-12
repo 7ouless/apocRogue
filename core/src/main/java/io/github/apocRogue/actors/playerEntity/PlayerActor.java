@@ -74,6 +74,7 @@ public class PlayerActor extends PhysicalActor {
 
     @Override
     public void act(float delta) {
+        stats.regenStamina(delta);
         super.act(delta);
 
         if (isAttacking) {

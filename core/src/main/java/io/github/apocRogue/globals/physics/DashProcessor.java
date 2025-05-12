@@ -22,6 +22,9 @@ public class DashProcessor {
     }
 
     public static void startDash(PlayerActor actor, float dashVel) {
+        // new guard:
+        if (!actor.getStats().spendStamina(actor.getStats().getDashStaminaCost())) return;
+
         actor.isDashing  = true;
         actor.dashTimer  = actor.dashDuration;
         actor.velocityX  = dashVel;
