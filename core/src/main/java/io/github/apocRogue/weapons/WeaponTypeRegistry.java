@@ -5,6 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import io.github.apocRogue.globals.ids.ClassDigit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,9 @@ public class WeaponTypeRegistry {
         }
     }
 
-    public WeaponTypeInfo get(String typeID) {
-        return infoByTypeID.get(typeID);
+    public WeaponTypeInfo getByGlobalID(String globalID) {
+        if (ClassDigit.classDigit(globalID) != ClassDigit.WEAPON) return null;
+        return infoByTypeID.get(ClassDigit.typeID(globalID));   // was substring(1)
     }
+
 }

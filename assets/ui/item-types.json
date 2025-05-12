@@ -1,0 +1,20 @@
+{
+  "01": {
+    "name": "Med-Kit",
+    "texturePath": "textures/items/medkit.png",
+    "stackable": true,
+    "maxStack": 3
+  },
+  "02": {
+    "name": "Iron Key",
+    "texturePath": "textures/items/key_iron.png",
+    "stackable": false,
+    "maxStack": 1
+  },
+  "03": {
+    "name": "Gold Coin",
+    "texturePath": "textures/items/coin_gold.png",
+    "stackable": true,
+    "maxStack": 99
+  }
+}

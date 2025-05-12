@@ -219,10 +219,10 @@ public class ShopUI {
             @Override public void onSuccess(Array<ShopWeaponPayload> list) {
                 loadedWeapons.clear();
                 for (ShopWeaponPayload p : list) {
-                    WeaponTypeInfo info = typeRegistry.get(p.typeID);
+                    WeaponTypeInfo info = typeRegistry.getByGlobalID(p.id);
 
                     Weapon w = new Weapon(
-                        p.itemCode,
+                        p.id,
                         info.getName(),
                         p.stats.get("damage"),
                         new Texture(Gdx.files.internal(info.getTexturePath())),

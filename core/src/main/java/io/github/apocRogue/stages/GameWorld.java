@@ -20,6 +20,7 @@ import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
@@ -106,28 +107,32 @@ public class GameWorld {
         Set<String> idSet = typeRegistry.getAllTypeIDs();
         Array<String> allTypeIDs = new Array<>(idSet.toArray(new String[0]));
 
-        //Rehydrate saved weapons
+        // Rehydrate saved weapons using new ID scheme
         List<String> savedNames = InventoryPreferences.load();
         for (String name : savedNames) {
-            for (String typeID : allTypeIDs) {
-                WeaponTypeInfo info = typeRegistry.get(typeID);
+            for (String localTypeID : allTypeIDs) {
+                // 1) build the 3-char global prefix: '1' (weapon) + localTypeID (e.g. "01")
+                    String globalID = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
+                // 2) lookup cosmetic info by that full ID
+                 WeaponTypeInfo info = typeRegistry.getByGlobalID(globalID);
                 if (info.getName().equals(name)) {
-                    Weapon w = new Weapon(
-                        "DUMMY-" + typeID,                      // placeholder code
+                    // 3) construct the dummy weapon with that same globalID
+                        Weapon w = new Weapon(
+                        globalID,
                         info.getName(),
-                        0,// damage
+                        0,
                         new Texture(Gdx.files.internal(info.getTexturePath())),
                         info.isProjectileType(),
-                        0,// projectileValue
-                        info.getAmmoTexture(),
-                        0, 0,// animationSpeed, noise
-                        0, 0, 0// dashSpeed, dashDur, dashCD
-                    );
+                         0,
+                         info.getAmmoTexture(),
+                        0, 0,
+                        0, 0, 0
+                        );
                     inventory.addItem(w);
-                    break;
+                     break;
+                   }
                 }
             }
-        }
 
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();

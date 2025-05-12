@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.Array;
 
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.weapons.Weapon;
@@ -112,17 +113,21 @@ public class ChestActor extends Image {
     private void spawnRandomItem() {
         if (possibleTypeIDs.size == 0) return;
 
-        String typeID = possibleTypeIDs.random();
+        // pick one of your local type-IDs ("01","02",…)
+        String localTypeID = possibleTypeIDs.random();
+
+        // build the 3-char prefix: class-digit '1' + localTypeID
+        String idPrefix = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
 
         WeaponGenerateService svc = new WeaponGenerateService();
-        svc.generate(typeID, 1, 1, new WeaponGenerateService.Callback() {
+        svc.generate(idPrefix, 1, 1, new WeaponGenerateService.Callback() {
             @Override public void onSuccess(ShopWeaponPayload p) {
+                // 1) look up cosmetics by the full ID
+                WeaponTypeInfo info = typeRegistry.getByGlobalID(p.id);
 
-                // lookup static cosmetics
-                WeaponTypeInfo info = typeRegistry.get(p.typeID);
-
+                // 2) pass p.id (full global ID) into your Weapon constructor
                 Weapon w = new Weapon(
-                    p.itemCode,
+                    p.id,
                     info.getName(),
                     p.stats.get("damage"),
                     new Texture(Gdx.files.internal(info.getTexturePath())),
@@ -149,6 +154,7 @@ public class ChestActor extends Image {
             }
         });
     }
+
 
 
     private PlayerActor findPlayer() {

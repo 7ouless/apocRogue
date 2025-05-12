@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 import com.badlogic.gdx.utils.Scaling;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.inventory.gameinventory.DragData;
 import io.github.apocRogue.inventory.gameinventory.InventorySlot;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
@@ -51,18 +52,24 @@ public class InventoryUI {
 
 
         loadedWeapons.clear();
-        for (String typeID : typeRegistry.getAllTypeIDs()) {
-            WeaponTypeInfo info = typeRegistry.get(typeID);
+        for (String localTypeID : typeRegistry.getAllTypeIDs()) {
+            // build the 3-char weapon prefix ("1" + localTypeID)
+            String globalID = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
+
+            // lookup the cosmetics via the full ID
+            WeaponTypeInfo info = typeRegistry.getByGlobalID(globalID);
+
+            // create a dummy Weapon with that globalID
             Weapon w = new Weapon(
-                "DUMMY-" + typeID,
+                globalID,
                 info.getName(),
-                0,                                      // damage
+                0,
                 new Texture(Gdx.files.internal(info.getTexturePath())),
                 info.isProjectileType(),
-                0,                                      // projectileValue
+                0,
                 info.getAmmoTexture(),
-                0, 0,                                   // animationSpeed, noiseLevel
-                0, 0, 0                                 // dashSpeed, dashDuration, dashCooldown
+                0, 0,
+                0, 0, 0
             );
             loadedWeapons.add(w);
         }
