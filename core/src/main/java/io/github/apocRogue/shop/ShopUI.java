@@ -108,8 +108,8 @@ public class ShopUI {
 
         int col = 0;
         for (ShopEntry e : currentInfo.items) {
+            final ShopEntry local = e;                 // ← safe capture
             Table cell = new Table(skin);
-            cell.setTouchable(Touchable.enabled);   // ensure it receives clicks
 
             Texture tex = new Texture(Gdx.files.internal(e.texturePath));
             Image   img = new Image(tex);
@@ -122,8 +122,11 @@ public class ShopUI {
             cell.add(price).row();
             cell.add(left);
 
-            cell.addListener(new ClickListener(){@Override public void clicked(InputEvent ev,float x,float y){selectEntry(e);}});
-
+            cell.addListener(new ClickListener() {
+                @Override public void clicked(InputEvent ev,float x,float y) {
+                    selectEntry(local);                // each tile keeps its own entry
+                }
+            });
             itemsTable.add(cell).pad(4);
             if (++col % 3 == 0) itemsTable.row();
         }
@@ -138,7 +141,7 @@ public class ShopUI {
             sb.append('\n');
         }
         sb.append("Price: ").append(e.price);
-
+        System.out.println(e.itemCode);
         dialogLabel.setText(sb.toString());
         buyBtn.setDisabled(e.remaining <= 0);
     }
@@ -154,5 +157,6 @@ public class ShopUI {
                 }
                 @Override public void onFailure(Throwable t){ dialogLabel.setText("Purchase failed: "+t.getMessage()); }
             });
+
     }
 }

@@ -223,22 +223,21 @@ public class InventoryUI {
     //  Drag‑and‑drop wiring (unchanged)
     // ------------------------------------------------------------------------
 
-    private Weapon cloneWithStats(Weapon template, Map<String,Integer> stats) {
-        if (stats == null) stats = Collections.emptyMap();
-
+    private Weapon cloneWithStats(Weapon t, Map<String,Integer> s) {
+        if (s == null) s = Collections.emptyMap();
         return new Weapon(
-            template.getID(),
-            template.getName(),
-            stats.getOrDefault("damage", template.getDamage()),
-            template.getTexture(),
-            template.isProjectileType(),
-            stats.getOrDefault("projectileValue", template.getProjectileValue()),
-            template.getAmmoTexture(),
-            stats.getOrDefault("animationSpeed", template.getAnimationSpeed()),
-            stats.getOrDefault("noiseLevel", template.getNoiseLevel()),
-            stats.getOrDefault("dashSpeed", template.getDashSpeed()),
-            stats.getOrDefault("dashDuration", template.getDashDuration()),
-            stats.getOrDefault("dashCooldown", template.getDashCooldown())
+            t.getID(),
+            t.getName(),
+            s.getOrDefault("damage",           t.getDamage()),
+            t.getTexture(),
+            t.isProjectileType(),                                   // boolean
+            s.getOrDefault("projectileValue", t.getProjectileValue()),
+            t.getAmmoTexture(),
+            s.getOrDefault("animationSpeed",   t.getAnimationSpeed()),
+            s.getOrDefault("noiseLevel",       t.getNoiseLevel()),
+            s.getOrDefault("dashSpeed",        t.getDashSpeed()),
+            s.getOrDefault("dashDuration",     t.getDashDuration()),
+            s.getOrDefault("dashCooldown",     t.getDashCooldown())
         );
     }
 

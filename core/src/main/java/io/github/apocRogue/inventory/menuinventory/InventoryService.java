@@ -33,7 +33,7 @@ public class InventoryService {
     }
 
     /** Fetch the full inventory for the current player. */
-    public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
+     public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
         HttpRequest req = new HttpRequest(HttpMethods.GET);
         req.setUrl(BASE_URL + "/inventorypull");
         // If you require auth:
