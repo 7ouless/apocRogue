@@ -4,6 +4,22 @@ public class CurrentDificulty {
     private static int difficulty = 3;
     private static int radiation = 1;
 
+    private static int skullLevel = 1;
+    private static int worldLevel = 1;
+
+    public static int getSkullLevel() {
+        return skullLevel;
+        }
+
+    public static int getWorldLevel() {
+        return worldLevel;
+        }
+
+    public static void setRunLevels(int skulls, int worlds) {
+        skullLevel = skulls;
+        worldLevel = worlds;
+        }
+
     public static int getDifficulty() {
         return difficulty;
     }

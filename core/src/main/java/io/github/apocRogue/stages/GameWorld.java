@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.apocRogue.actors.mapEntities.ChestActor;
-import io.github.apocRogue.actors.mobs.DummyActor;
+import io.github.apocRogue.actors.mobs.WolfActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
@@ -28,7 +28,6 @@ import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
-import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
 
@@ -48,14 +47,14 @@ public class GameWorld {
     private WeaponTypeRegistry typeRegistry;
 
     // Actors & textures
-    private Array<DummyActor> enemies = new Array<>();
+    private Array<WolfActor> enemies = new Array<>();
     private Array<FlyingEnemyActor> flyingEnemies = new Array<>();
     private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
     private Array<ChestActor> chests = new Array<>();
 
     private float spawnOffsetY = 22f;
 
-    private Texture playerTexture, playerAttackTexture, dummyTexture, chestTexture,
+    private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
         flyingCreatureTexture, samuraiTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
@@ -92,7 +91,8 @@ public class GameWorld {
         //Load textures
         playerTexture = new Texture("ui/main-character.png");
         playerAttackTexture = new Texture("ui/main-character-attack.png");
-        dummyTexture = new Texture("ui/dummy.png");
+        wolfNormalTexture    = new Texture("ui/wolf.png");
+        wolfAttackTexture    = new Texture("ui/wolf-attack.png");
         chestTexture = new Texture("ui/chest.png");
         samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
@@ -137,13 +137,13 @@ public class GameWorld {
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
-            float[] pos = getRandomSpawnPosition();
-            DummyActor d = new DummyActor(dummyTexture,
-                pos != null ? pos[0] : 400,
-                pos != null ? pos[1] : mapManager.settings.groundMax + 10
-            );
-            enemies.add(d);
-            stage.addActor(d);
+            float spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
+            float groundY = getGroundHeightAtX(spawnX);
+            float spawnY = groundY + spawnOffsetY;  // Ensure correct vertical offset like player
+
+            WolfActor wolf = new WolfActor( wolfNormalTexture, wolfAttackTexture, spawnX, spawnY);
+            enemies.add(wolf);
+            stage.addActor(wolf);
         }
 
 
@@ -320,7 +320,8 @@ public class GameWorld {
         stage.clear();
         playerTexture.dispose();
         playerAttackTexture.dispose();
-        dummyTexture.dispose();
+        wolfNormalTexture.dispose();
+        wolfAttackTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();
         flyingCreatureTexture.dispose();

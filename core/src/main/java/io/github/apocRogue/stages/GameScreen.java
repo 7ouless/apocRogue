@@ -563,16 +563,16 @@ public class GameScreen extends ScreenAdapter {
                     camLeft,
                     camBottom + viewportHeight * 0.1f,
                     -0.15f,      // parallax factor
-                    0.7f        // scale so they tile densely
+                    0.7f
                 );
         // 4.8) Meadow (front of all background layers)
         drawTiledLayer(
             batch,
             bgMeadow,
             camLeft,
-            camBottom + 150f,
+            camBottom + viewportHeight * -0.05f,
             -0.2f,      // parallaxFactor
-            1.8f
+            0.225f
         );
 
 

@@ -28,6 +28,7 @@ import io.github.apocRogue.weapons.WeaponGenerateService;
  * using your pseudo-hex ID system.
  */
 public class ChestActor extends Image {
+    private static final float SCALE = 0.11f;
     private boolean opened = false;
     private int health = 1;
     private final Array<String> possibleTypeIDs;
@@ -44,7 +45,7 @@ public class ChestActor extends Image {
     {
         super(texture);
         setPosition(x, y);
-        setSize(texture.getWidth(), texture.getHeight());
+        setSize(texture.getWidth() * SCALE, texture.getHeight() * SCALE);
         this.possibleTypeIDs = possibleTypeIDs;
         this.uiSkin          = uiSkin;
         this.typeRegistry    = typeRegistry;
@@ -106,7 +107,7 @@ public class ChestActor extends Image {
         for (int i = 0; i < 2; i++) spawnRandomItem();
 
         // show “open” texture
-        Texture openTex = new Texture("ui/openChest.jpg");
+        Texture openTex = new Texture("ui/openChest.png");
         setDrawable(new TextureRegionDrawable(new TextureRegion(openTex)));
     }
 

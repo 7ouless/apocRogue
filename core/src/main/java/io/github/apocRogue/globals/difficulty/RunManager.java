@@ -6,7 +6,6 @@ public class RunManager {
 
     private static final RunManager INSTANCE = new RunManager();
 
-
     private int skullLevel = 1;
     private int worldLevel = 1;
 

@@ -8,14 +8,14 @@ public class DifficultyLevelGen {
     public static int getEnemyCount() {
         int diff = CurrentDificulty.getDifficulty();
         int baseEnemies = diff;
-        int randomAddition = MathUtils.random(0, diff);
+        int randomAddition = MathUtils.random(0, diff / 2);
         return baseEnemies + randomAddition;
     }
 
     public static int getChestCount() {
         int enemyCount = getEnemyCount();
         Gdx.app.log("SPAWN", "EnemyCount = " + enemyCount);
-        int chestCount = MathUtils.floor(enemyCount / 2.0f);
+        int chestCount = MathUtils.floor(enemyCount /3.0f);
         return Math.max(1, chestCount);
     }
 }

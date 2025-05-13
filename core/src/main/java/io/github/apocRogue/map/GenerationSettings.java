@@ -15,7 +15,7 @@ public class GenerationSettings {
 
     //Tree Parameters
     public float treeDensity = 0.5f;
-    public float treeWidth   = 350f;
+    public float treeWidth   = 400f;
     public float treeHeight  = 500f;
     public float treeYOffset =  20f;
     public int treeGap = 1;
