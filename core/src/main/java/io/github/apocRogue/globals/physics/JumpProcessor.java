@@ -1,4 +1,3 @@
-// File: io/github/apocRogue/globals/physics/JumpProcessor.java
 package io.github.apocRogue.globals.physics;
 
 import io.github.apocRogue.actors.playerEntity.PlayerActor;

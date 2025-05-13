@@ -4,13 +4,6 @@ public class GravitySystem {
 
     private static final float BASE_GRAVITY = -600f;
 
-    /**
-     * Applies gravity and vertical movement to an actor, then resolves collisions with tiles.
-     *
-     * @param actor         The PhysicalActor to update.
-     * @param delta         Time step.
-     * @param gravityFactor Multiplier for gravity (1 for normal, 0 for none, etc.).
-     */
     public static void applyGravityAndPhysics(PhysicalActor actor, float delta, float gravityFactor) {
         // Reset ground state.
         actor.isOnGround = false;
