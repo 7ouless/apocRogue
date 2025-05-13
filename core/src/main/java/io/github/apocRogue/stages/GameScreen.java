@@ -43,7 +43,7 @@ public class GameScreen extends ScreenAdapter {
 
     private ProgressBar staminaBar;
 
-    private final RunManager runMgr = new RunManager();
+    private final RunManager runMgr = RunManager.getInstance();
     private Label skullLabel, worldLabel;
     private GameWorld gameWorld;
 
