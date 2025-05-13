@@ -1,6 +1,7 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -34,6 +35,10 @@ import io.github.apocRogue.globals.physics.SoundPhysics;
 import java.util.ArrayList;
 
 public class GameScreen extends ScreenAdapter {
+
+    private Music musicRad2;
+    private Music musicRad3;
+    private Music currentMusic;
 
     private stageBuilder game;
     private Stage stage;       // For gameplay
@@ -128,6 +133,12 @@ public class GameScreen extends ScreenAdapter {
         GrassOverlayTile.loadForRadiation(folder);
         DecorTile.loadForRadiation(folder);
 
+        // load your two looping tracks
+        musicRad2 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation2.mp3"));
+        musicRad3 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation3.mp3"));
+        // helper to pick & play
+        switchMusic(rad);
+
 
         batch = new SpriteBatch();
 
@@ -220,7 +231,7 @@ public class GameScreen extends ScreenAdapter {
         Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 128; x++) {
             for (int y = 0; y < 128; y++) {
-                // random alpha between 0 and 0.2f for low-level grain
+
                 float a = MathUtils.random() * 0.2f;
                 pix.setColor(1f, 1f, 1f, a);
                 pix.drawPixel(x, y);
@@ -255,6 +266,31 @@ public class GameScreen extends ScreenAdapter {
         }
 
     }
+
+    private void switchMusic(int rad) {
+        // stop whatever’s playing
+        if (currentMusic != null && currentMusic.isPlaying()) {
+            currentMusic.stop();
+        }
+
+        // rad == 1 or 2 → play musicRad2, rad == 3 → musicRad3
+        if (rad >= 1 && rad <= 2) {
+            currentMusic = musicRad2;
+        } else if (rad == 3) {
+            currentMusic = musicRad3;
+        } else {
+            currentMusic = null;
+        }
+
+        // kick it off at 50% volume
+        if (currentMusic != null) {
+            currentMusic.setLooping(true);
+            currentMusic.setVolume(0.05f);   // ← half-volume
+            currentMusic.play();
+        }
+    }
+
+
 
     private void initUI() {
         // 1) Root HUD table, anchored to the top
@@ -416,6 +452,9 @@ public class GameScreen extends ScreenAdapter {
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (currentMusic != null && currentMusic.isPlaying()) {
+                    currentMusic.stop();
+                }
                 // Return to main menu or wherever you want
                 game.setScreen(new MainScreen(game));
             }
@@ -680,6 +719,9 @@ public class GameScreen extends ScreenAdapter {
 
     private void handleDoor(Door door) {
         if (door.getType() == Door.Type.EXTRACT) {
+            if (currentMusic != null && currentMusic.isPlaying()) {
+                currentMusic.stop();
+            }
             game.setScreen(new MainScreen(game));
             } else {
             // CONTINUE door --> first record the player's choice
@@ -707,6 +749,7 @@ public class GameScreen extends ScreenAdapter {
             GrassOverlayTile.loadForRadiation(newFolder);
             DecorTile.loadForRadiation(newFolder);
             loadCurrentWorld();
+            switchMusic(newRad);
         }
         }
 
@@ -766,6 +809,7 @@ public class GameScreen extends ScreenAdapter {
         bgSmallClouds.dispose();
         bgMeadow.dispose();
         if (grainTex != null) grainTex.dispose();
-
+        if (musicRad2   != null) musicRad2.dispose();
+        if (musicRad3   != null) musicRad3.dispose();
     }
 }
