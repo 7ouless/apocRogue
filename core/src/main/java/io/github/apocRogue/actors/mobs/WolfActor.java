@@ -58,6 +58,10 @@ public class WolfActor extends EnemyActor {
         return lineOfSight.canSeeTarget(this, p, range, getStage());
     }
 
+    public boolean isFacingRight() {
+        return facingRight;
+    }
+
     public float distanceToPlayer(PlayerActor p) {
         if (p == null) return Float.MAX_VALUE;
         return (float)Math.hypot(p.getX() - getX(), p.getY() - getY());
@@ -91,6 +95,8 @@ public class WolfActor extends EnemyActor {
         shootCooldown = 3f;
         TailProjectile proj = new TailProjectile(this, tx, ty);
         getStage().addActor(proj);
+        System.out.println("Radiated wolf fired tail projectile at ("
+            + getX() + "," + getY() + ") -> target (" + tx + "," + ty + ")");
     }
 
     @Override
