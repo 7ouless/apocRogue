@@ -10,7 +10,6 @@ import io.github.apocRogue.actors.attackEntity.ArrowActor;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import io.github.apocRogue.weapons.DashAttackActor;
 
 public class Weapon {
     private final String id;
@@ -85,9 +84,9 @@ public class Weapon {
     public String getAmmoTexture()       { return ammoTexture; }
     public int    getAnimationSpeed()    { return animationSpeed; }
     public int    getNoiseLevel()        { return noiseLevel; }
-    public float  getDashSpeed()         { return dashSpeed; }
-    public float  getDashDuration()      { return dashDuration; }
-    public float  getDashCooldown()      { return dashCooldown; }
+    public int getDashSpeed()         { return (int) dashSpeed; }
+    public int getDashDuration()      { return (int) dashDuration; }
+    public int getDashCooldown()      { return (int) dashCooldown; }
 
     // noise‐helper methods
 
