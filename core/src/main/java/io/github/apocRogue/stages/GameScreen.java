@@ -42,6 +42,7 @@ public class GameScreen extends ScreenAdapter {
     private OrthographicCamera camera;
 
     private ProgressBar staminaBar;
+    private ProgressBar healthBar;
 
     private final RunManager runMgr = RunManager.getInstance();
     private Label skullLabel, worldLabel;
@@ -286,14 +287,25 @@ public class GameScreen extends ScreenAdapter {
         worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
         worldLabel.setFontScale(1.2f);
 
-        // 7) Instantiate the stamina bar with the custom style
+        // 7) Instantiate the stamina and health bar with the custom style
         staminaBar = new ProgressBar(0, 100, 1, false, staminaStyle);
         staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
         staminaBar.setAnimateDuration(0.1f);
 
+        int maxHP = gameWorld.getPlayer().getStats().getMaxHealth();
+        healthBar = new ProgressBar(0, maxHP, 1, false, baseStyle);
+
+        healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
+
+        healthBar.setAnimateDuration(0.1f);
+
         // 8) Left column for the bar
         Table leftTable = new Table();
         leftTable.padLeft(20);
+        leftTable.add(healthBar)
+            .width(180)
+            .left();
+        leftTable.row().padTop(8);
         leftTable.add(staminaBar)
             .width(180)
             .left();
@@ -422,6 +434,7 @@ public class GameScreen extends ScreenAdapter {
     public void render(float delta) {
 
         staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
+        healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
         // 1) Update logic & stages
         if (!paused) {
             gameWorld.update(delta);

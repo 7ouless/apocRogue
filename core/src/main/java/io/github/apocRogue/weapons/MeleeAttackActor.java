@@ -16,9 +16,10 @@ public abstract class MeleeAttackActor extends BaseAttackActor {
         // We pass the texture, damage, and stage up to BaseAttackActor
         super(texture, damage, stage);
         this.facingRight = player.isFacingRight();
+        float extraOffset = 80f;
 
         // Position slash relative to the player's location
-        float offsetX = facingRight ? player.getWidth() : -getWidth();
+        float offsetX = facingRight ? player.getWidth() : -getWidth() + extraOffset;
         float offsetY = (player.getHeight() / 2f) - (getHeight() / 2f);
         setPosition(player.getX() + offsetX, player.getY() + offsetY);
 
