@@ -165,8 +165,9 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
                 PlayerActor player = (PlayerActor) actor;
                 // Assuming both EnemyActor and PlayerActor have a proper getBounds() method
                 if (getBounds().overlaps(player.getBounds())) {
+                    int damage = stats.getStrength();
                     // Handle collision: for example, inflict damage or trigger an alert.
-                    player.takeDamage(10);  // Adjust damage accordingly
+                    player.takeDamage(damage);  // Adjust damage accordingly
                 }
             }
         }
