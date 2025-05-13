@@ -40,7 +40,7 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
 
-    private final RunManager runMgr = new RunManager();
+    private final RunManager runMgr = RunManager.getInstance();
     private Label skullLabel, worldLabel;
     private GameWorld gameWorld;
 

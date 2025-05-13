@@ -34,7 +34,7 @@ public final class ServerSingleton {
         }
     }
     public String getAuthToken() { return authToken; }
-
+    public String getBaseUrl() { return baseUrl; }
     public void fetchProfile(JsonCallback cb) {
         Net.HttpRequest req = new Net.HttpRequest(Net.HttpMethods.GET);
         req.setUrl(baseUrl + "/profile");
