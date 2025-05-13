@@ -1,82 +1,50 @@
+// File: ShopKeeper.java
 package io.github.apocRogue.shop;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.Gdx;
 import java.util.List;
 
-public class ShopKeeper {
-    private String name;
-    private Image portrait;
-    private List<ShopItem> inventory;
 
-    private int level = 1;
-    private int goldSpent = 0;
+public class ShopKeeper {    private final String sellerID;        // "A", "B", "C"
+    private final String displayName;     // e.g. "Bartholomew the Bold"
+    private final String portraitKey;     // "traderA"  (maps to file)
 
-    public ShopKeeper(String name, String portraitPath, List<ShopItem> inventory) {
-        this.name = name;
-        this.inventory = inventory;
-
-        Texture portraitTexture = new Texture(Gdx.files.internal("ui/" + portraitPath + ".png"));
-        this.portrait = new Image(portraitTexture);
-    }
-
-    // Buy logic
-    public void buyItem(ShopItem item) {
-        // If item still has stock
-        if (item.getStock() > 0) {
-            item.decrementStock();
-            goldSpent += item.getPrice(); // For now, just adds price to goldSpent
-        }
-
-        // If we cross 10,000 for the first time
-        if (goldSpent >= 10000 && level == 1) {
-            level = 2;
-        }
-    }
-
-    // Called by ShopUI to restock all items
-    public void restock() {
-        for (ShopItem item : inventory) {
-            item.restock();
-        }
+    private final String[] greetingLines;
+    private final String[] thankYouLines;
+    private final String[] soldOutLines;
+    private final String[] noMoney;
+    private final String[] lowLevel;
+    public ShopKeeper(String id,
+                      String name,
+                      String portraitKey,
+                      String[] greeting,
+                      String[] thankYou,
+                        String[] noMoney,
+                      String[] lowLevel,
+                      String[] soldOut
+    ) {
+        this.sellerID      = id;
+        this.displayName   = name;
+        this.portraitKey   = portraitKey;
+        this.greetingLines = greeting;
+        this.thankYouLines = thankYou;
+        this.soldOutLines  = soldOut;
+        this.noMoney = noMoney;
+        this.lowLevel = lowLevel;
     }
 
-    // Basic getters
-    public String getName() {
-        return name;
-    }
+    /* ---------- getters used by ShopUI ---------- */
+    public String   getSellerID()     { return sellerID; }
+    public String   getDisplayName()  { return displayName; }
+    public String   getPortraitPath() { return "ui/portraits/" + portraitKey + ".png"; }
 
-    public Image getPortrait() {
-        return portrait;
-    }
+    public String   getGreeting()     { return greetingLines.length>0 ? greetingLines[0] : ""; }
+    public String   getThankYou()     { return thankYouLines.length>0 ? thankYouLines[0] : "Thanks!"; }
+    public String   getSoldOutLine()  { return soldOutLines.length>0 ? soldOutLines[0] : "Sold out"; }
 
-    public List<ShopItem> getInventory() {
-        return inventory;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public int getGoldSpent() {
-        return goldSpent;
-    }
-
-    // Personality lines
-    public String getGreeting() {
-        return "Welcome! Good to see you.";
-    }
-    public String getThankYouLine() {
-        return "Thank you for your purchase!";
-    }
-    public String getCannotAffordLine() {
-        return "You don't have enough gold, friend.";
-    }
-    public String getLockedItemLine() {
-        return "Hmm, you seem unworthy to buy that just yet...";
-    }
-    public String getSoldOutLine() {
-        return "Sorry, that item is sold out!";
-    }
+    /* expose full arrays if UI ever wants variation */
+    public String[] getGreetingLines() { return greetingLines; }
+    public String[] getThankYouLines() { return thankYouLines; }
+    public String[] getSoldOutLines()  { return soldOutLines; }
+    public String[] getNoMoney() { return noMoney; }
+    public String[] getLowLevel() { return lowLevel; }
 }

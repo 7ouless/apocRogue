@@ -152,7 +152,6 @@ public class Weapon {
                     getDashDuration()
                 );
                 stage.addActor(dash);
-                return;
             }
             else {
                 Texture slashTex = new Texture(getAmmoTexture());
