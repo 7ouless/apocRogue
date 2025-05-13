@@ -55,7 +55,7 @@ public class GameWorld {
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
-        flyingCreatureTexture, samuraiTexture;
+        flyingCreatureTexture, samuraiTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
         this.stage = stage;
@@ -93,6 +93,8 @@ public class GameWorld {
         playerAttackTexture = new Texture("ui/main-character-attack.png");
         wolfNormalTexture    = new Texture("ui/wolf.png");
         wolfAttackTexture    = new Texture("ui/wolf-attack.png");
+        wolfRadNormalTexture = new Texture("ui/radiated-wolf.png");
+        wolfRadAttackTexture = new Texture("ui/radiated-wolf-attack.png");
         chestTexture = new Texture("ui/chest.png");
         samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
@@ -141,7 +143,14 @@ public class GameWorld {
             float groundY = getGroundHeightAtX(spawnX);
             float spawnY = groundY + spawnOffsetY;  // Ensure correct vertical offset like player
 
-            WolfActor wolf = new WolfActor( wolfNormalTexture, wolfAttackTexture, spawnX, spawnY);
+            boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
+            Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
+            Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
+
+            // build with the right sprites and flag
+            WolfActor wolf = new WolfActor(norm, atk, spawnX, spawnY);
+            wolf.setRadiated(isRad);
+
             enemies.add(wolf);
             stage.addActor(wolf);
         }

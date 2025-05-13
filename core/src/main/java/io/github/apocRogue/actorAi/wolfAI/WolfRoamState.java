@@ -24,7 +24,11 @@ public class WolfRoamState implements WolfState {
         PlayerActor p = wolf.findPlayer();
         if (p != null && lineOfSight.canSeeTarget(
             wolf, p, wolf.getStats().sightSens(), wolf.getStage())) {
-            fsm.changeState(new WolfChaseState(), wolf);
+            if (wolf.isRadiated()) {
+               fsm.changeState(new RadiatedWolfAttackState(), wolf);
+                } else {
+                fsm.changeState(new WolfChaseState(), wolf);
+                }
             return;
         }
 

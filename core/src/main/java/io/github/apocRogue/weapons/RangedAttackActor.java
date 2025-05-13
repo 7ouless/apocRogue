@@ -29,7 +29,7 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         this.player = player;
         setPosition(player.getX(), player.getY());
         this.velocity = direction.nor().scl(500f); // example speed
-        this.noiseLevel = weapon.getNoiseLevel();
+        this.noiseLevel = (weapon != null ? weapon.getNoiseLevel() : 0);
     }
     @Override
     public void act(float delta) {
@@ -72,16 +72,15 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         for (Actor actor : actorsCopy) {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
-                if (projectileRect.overlaps(tile.getBounds())) {
-                    // 1) Trigger sound alert for enemies
-                    Vector2 collisionPoint = new Vector2(getX(), getY());
+                if (weapon != null) {
                     SoundPhysics.emitSound(
                         new Vector2(getX(), getY()),
                         weapon.getImpactNoiseIntensity(),
                         weapon.getImpactNoiseRadius(),
                         SoundPhysics.SoundType.PROJECTILE_IMPACT,
                         player.getStage()
-                    );
+                            );
+                    }
                     remove();
                     break;
                 }
@@ -91,4 +90,4 @@ public abstract class RangedAttackActor extends BaseAttackActor {
 
 
 
-}
+

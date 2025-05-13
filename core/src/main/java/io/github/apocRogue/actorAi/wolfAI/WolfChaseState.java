@@ -26,6 +26,8 @@ public class WolfChaseState implements WolfState {
 
         if (!canSee) {
             fsm.changeState(new WolfRoamState(), wolf);
+        } else if (wolf.isRadiated()) {
+            fsm.changeState(new RadiatedWolfAttackState(), wolf);
         } else if (dist <= ATTACK_RANGE) {
             fsm.changeState(new WolfAttackState(), wolf);
         }

@@ -20,6 +20,15 @@ public class CurrentDificulty {
         worldLevel = worlds;
         }
 
+    public static float getRadiationChance() {
+        switch (radiation) {
+            case 1: return 0.2f;
+            case 2: return 0.5f;
+            case 3: return 0.8f;
+            default: return 0f;
+        }
+    }
+
     public static int getDifficulty() {
         return difficulty;
     }

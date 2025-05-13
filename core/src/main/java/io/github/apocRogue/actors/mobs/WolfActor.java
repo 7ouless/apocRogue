@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import io.github.apocRogue.actorAi.baseAI.lineOfSight;
 import io.github.apocRogue.actorAi.wolfAI.WolfStateMachine;
+import io.github.apocRogue.actors.attackEntity.TailProjectile;
 import io.github.apocRogue.actors.superClasses.EnemyActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
@@ -17,6 +18,10 @@ public class WolfActor extends EnemyActor {
     private final Texture attackTexture;
     private Texture activeTexture;
     private boolean facingRight = true;
+
+    private boolean radiated = false;
+    private float shootCooldown = 0f;
+
     // track last frame's X to compute actual movement
     private float previousX;
 
@@ -45,8 +50,12 @@ public class WolfActor extends EnemyActor {
     }
 
     public boolean canSeePlayer(PlayerActor p) {
-        return p != null && lineOfSight.canSeeTarget(
-            this, p, getStats().sightSens(), getStage());
+        if (p == null) return false;
+        float baseRange = getStats().sightSens();
+        float range = radiated
+            ? baseRange * 2f
+            : baseRange;
+        return lineOfSight.canSeeTarget(this, p, range, getStage());
     }
 
     public float distanceToPlayer(PlayerActor p) {
@@ -56,6 +65,32 @@ public class WolfActor extends EnemyActor {
 
     public void setAttackMode(boolean attacking) {
         activeTexture = attacking ? attackTexture : normalTexture;
+    }
+
+
+    public boolean isRadiated() {
+        return radiated;
+    }
+
+    public void setRadiated(boolean radiated) {
+        this.radiated = radiated;
+    }
+
+
+    public void updateRadiationTimer(float delta) {
+        if (shootCooldown > 0) shootCooldown -= delta;
+    }
+
+    public void resetShootCooldown() {
+        this.shootCooldown = 0f;
+    }
+
+
+    public void shootTailSting(float tx, float ty) {
+        if (shootCooldown > 0) return;
+        shootCooldown = 3f;
+        TailProjectile proj = new TailProjectile(this, tx, ty);
+        getStage().addActor(proj);
     }
 
     @Override
