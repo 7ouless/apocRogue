@@ -31,6 +31,45 @@ public class InventoryService {
         public HashMap<String,Integer> stats;
         public int                 count;
     }
+    public static class CheckResponse {
+        public boolean passed;
+        public String message;
+    }
+    public static void checkInventory(
+            List<InventoryItemPayload> items,
+            Callback<CheckResponse> cb
+    ) {
+        class CheckRequest { List<InventoryItemPayload> inventory;
+            CheckRequest(List<InventoryItemPayload> inv){ inventory = inv; }
+        }
+        Json json = new Json();
+        String body = json.toJson(new CheckRequest(items));
+
+        HttpRequest req = new HttpRequest(HttpMethods.POST);
+        req.setUrl(BASE_URL + "/checkinventory");
+        req.setHeader("Content-Type", "application/json");
+        req.setHeader("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken());
+        req.setContent(body);
+
+        Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
+            @Override public void handleHttpResponse(HttpResponse response) {
+                try {
+                    int status = response.getStatus().getStatusCode();
+                    String jsonText = response.getResultAsString();
+                    if (status == 200) {
+                        CheckResponse cr = new Json().fromJson(CheckResponse.class, jsonText);
+                        cb.onSuccess(cr);
+                    } else {
+                        cb.onFailure(new RuntimeException("checkInventory HTTP " + status));
+                    }
+                } catch (Exception e) {
+                    cb.onFailure(e);
+                }
+            }
+            @Override public void failed(Throwable t) { cb.onFailure(t); }
+            @Override public void cancelled()   { cb.onFailure(new RuntimeException("Request cancelled")); }
+        });
+    }
 
     /** Fetch the full inventory for the current player. */
      public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
@@ -46,9 +85,14 @@ public class InventoryService {
                     int code = response.getStatus().getStatusCode();
 
                     String jsonText = response.getResultAsString();
-                    Json json = new Json();
                     System.out.println(jsonText);
                     Gdx.app.log("InventoryService", "InventoryPull HTTP " + code + " → " + jsonText);
+                    if (code != 200) {
+                        // propagate the failure so onFailure() is invoked, and skip parsing
+                        cb.onFailure(new RuntimeException("InventoryPull HTTP " + code));
+                        return;
+                    }
+                    Json json = new Json();
 
                     InventoryItemPayload[] arr = json.fromJson(InventoryItemPayload[].class, jsonText);
                     cb.onSuccess(Arrays.asList(arr));
@@ -106,4 +150,39 @@ public class InventoryService {
             }
         });
     }
+    public static void wipeInventory(
+            List<InventoryItemPayload> items,
+            Callback<Void> cb
+    ) {
+        // Matches InventoryWipe.WipeRequest { List<ItemEntry> inventory; }
+        class WipeRequest { List<InventoryItemPayload> inventory;
+            WipeRequest(List<InventoryItemPayload> inv){ inventory = inv; }
+        }
+
+        Json json = new Json();
+        String body = json.toJson(new WipeRequest(items));
+
+        HttpRequest req = new HttpRequest(HttpMethods.POST);
+        req.setUrl(BASE_URL + "/inventorywipe");
+        req.setHeader("Content-Type", "application/json");
+        req.setHeader("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken());
+        req.setContent(body);
+
+        Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
+            @Override public void handleHttpResponse(HttpResponse response) {
+                if (response.getStatus().getStatusCode() == 200) {
+                    cb.onSuccess(null);
+                } else {
+                    cb.onFailure(new RuntimeException("Wipe HTTP "
+                            + response.getStatus().getStatusCode()));
+                }
+            }
+            @Override public void failed(Throwable t) { cb.onFailure(t); }
+            @Override public void cancelled()   { cb.onFailure(
+                    new RuntimeException("Wipe cancelled")); }
+        });
+
+    }
+
+
 }

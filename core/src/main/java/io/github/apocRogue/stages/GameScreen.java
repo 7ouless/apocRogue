@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
+import io.github.apocRogue.inventory.menuinventory.InventoryService;
 import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.map.MapManager;
@@ -618,6 +619,7 @@ public class GameScreen extends ScreenAdapter {
 
     private void handleDoor(Door door) {
         if (door.getType() == Door.Type.EXTRACT) {
+            gameWorld.extractItems();
             game.setScreen(new MainScreen(game));
             } else {
             // CONTINUE door --> first record the player's choice

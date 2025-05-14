@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +23,9 @@ import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
+import io.github.apocRogue.inventory.gameinventory.InventorySlot;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
+import io.github.apocRogue.inventory.menuinventory.InventoryService;
 import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
@@ -51,7 +54,7 @@ public class GameWorld {
     private Array<FlyingEnemyActor> flyingEnemies = new Array<>();
     private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
     private Array<ChestActor> chests = new Array<>();
-
+    private boolean wipedOnStart = false;
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, dummyTexture, chestTexture,
@@ -108,28 +111,75 @@ public class GameWorld {
 
         //Rehydrate saved weapons
         List<String> savedNames = InventoryPreferences.load();
-        for (String name : savedNames) {
-            for (String typeID : allTypeIDs) {
-                WeaponTypeInfo info = typeRegistry.get(typeID);
-                if (info.getName().equals(name)) {
-                    Weapon w = new Weapon(
-                        "DUMMY-" + typeID,                      // placeholder code
-                        info.getName(),
-                        0,// damage
-                        new Texture(Gdx.files.internal(info.getTexturePath())),
-                        info.isProjectileType(),
-                        0,// projectileValue
-                        info.getAmmoTexture(),
-                        0, 0,// animationSpeed, noise
-                        0, 0, 0// dashSpeed, dashDur, dashCD
-                    );
-                    inventory.addItem(w);
-                    break;
-                }
-            }
-        }
+        InventoryService.fetchInventory(new InventoryService.Callback<List<InventoryService.InventoryItemPayload>>() {
+            @Override public void onSuccess(List<InventoryService.InventoryItemPayload> items) {
+                // ensure all Texture/Actor work happens on the render thread
+                Gdx.app.postRunnable(() -> {
+                    for (String wantCode : savedNames) {
+                        if (wantCode == null || wantCode.isEmpty()) continue;
+                        // find the payload whose itemCode matches the saved code
+                        for (InventoryService.InventoryItemPayload p : items) {
+                            if (wantCode.equals(p.itemCode)) {
+                                Weapon w = new Weapon(
+                                    p.itemCode,
+                                    typeRegistry.get(p.typeID).getName(),
+                                    p.stats.getOrDefault("damage", 0),
+                                    new Texture(Gdx.files.internal(typeRegistry.get(p.typeID).getTexturePath())),
+                                    typeRegistry.get(p.typeID).isProjectileType(),
+                                    p.stats.getOrDefault("projectileValue", 0),
+                                    typeRegistry.get(p.typeID).getAmmoTexture(),
+                                    p.stats.getOrDefault("animationSpeed", 0),
+                                    p.stats.getOrDefault("noiseLevel", 0),
+                                    p.stats.getOrDefault("dashSpeed", 0),
+                                    p.stats.getOrDefault("dashDuration", 0),
+                                    p.stats.getOrDefault("dashCooldown", 0)
+                                );
+                                inventory.addItem(w);
+                                break;  // move on to the next savedCode
+                            }
+                        }
+                    }
+                        if (!wipedOnStart) {
+                            wipedOnStart = true;
+                            List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+                            for (InventorySlot slot : inventory.getAllSlots()) {
+                                if (!slot.isEmpty()) {
+                                    Weapon w = slot.getWeapon();
+                                    InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                                    p.itemCode = w.getID();
+                                    p.typeID = p.itemCode.substring(2, 4);
+                                    p.stats = new HashMap<>(w.getStats());
+                                    p.count = 1;
+                                    payloads.add(p);
+                                    System.out.println("Removed " + p.typeID);
 
-        // Spawn enemies
+                                }
+                            }
+                            InventoryService.wipeInventory(payloads, new InventoryService.Callback<Void>() {
+                                @Override
+                                public void onSuccess(Void nothing) {
+                                    Gdx.app.log("GameWorld", "Server inventory wiped at run start");
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    Gdx.app.error("GameWorld", "Failed to wipe at start", t);
+                                }
+                            });
+                        }
+                });
+            }
+
+
+                @Override
+                public void onFailure (Throwable t){
+
+                }
+            });
+
+
+
+            // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
             float[] pos = getRandomSpawnPosition();
@@ -191,7 +241,66 @@ public class GameWorld {
         }
         return false;
     }
+      public void extractItems() {
+               // build payloads from your live Inventory
+                  List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+               for (InventorySlot slot : inventory.getAllSlots()) {
+                      if (!slot.isEmpty()) {
+                               Weapon w = slot.getWeapon();
+                               InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                               p.itemCode = w.getID();
+                              p.typeID   = p.itemCode.substring(2,4);
+                               p.stats    = new HashMap<>(w.getStats());
+                               p.count    = 1; // or slot.getCount() if you track stacks
+                               payloads.add(p);
+                           }
+                   }
 
+          checkItems();
+          InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
+           @Override public void onSuccess(Void result) {
+                                       Gdx.app.log("GameWorld", "Inventory successfully pushed");
+                                   }
+           @Override public void onFailure(Throwable t) {
+                                       Gdx.app.error("GameWorld", "Failed to push inventory", t);
+                                   }
+       });
+           }
+
+    public void checkItems() {
+        // 1) load the hotbar codes to skip
+        List<String> hotbarCodes = InventoryPreferences.load();
+
+        // 2) collect payloads for *all other* slots
+        List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+        for (InventorySlot slot : inventory.getAllSlots()) {
+            if (slot.isEmpty()) continue;                          // skip empty
+            Weapon w = slot.getWeapon();
+            String code = w.getID();
+            if (hotbarCodes.contains(code)) continue;             // skip hotbar items
+
+            InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+            p.itemCode = code;
+            p.typeID   = code.substring(2,4);
+            p.stats    = new HashMap<>(w.getStats());
+            p.count    = 1;                                       // always 1 per slot
+            payloads.add(p);
+        }
+
+        // 3) invoke your new checkInventory endpoint
+        InventoryService.checkInventory(payloads, new InventoryService.Callback<InventoryService.CheckResponse>() {
+            @Override public void onSuccess(InventoryService.CheckResponse resp) {
+                if (resp.passed) {
+                    Gdx.app.log("GameWorld", "Inventory check passed");
+                } else {
+                    Gdx.app.error("GameWorld", "Inventory check failed: " + resp.message);
+                }
+            }
+            @Override public void onFailure(Throwable t) {
+                Gdx.app.error("GameWorld", "Failed to run inventory check", t);
+            }
+        });
+    }
     public void update(float delta) {
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);

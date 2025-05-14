@@ -14,6 +14,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import io.github.apocRogue.weapons.Weapon;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class Inventory {
     private Table hotbarTable;
     private Table inventoryTable;
@@ -54,6 +58,18 @@ public class Inventory {
             hotbarSlots.add(slot);
             hotbarTable.add(slot).size(50, 50).pad(5);
         }
+    }
+    public List<InventorySlot> getAllSlots() {
+        List<InventorySlot> all = new ArrayList<>();
+        // Add hotbar slots
+        for (InventorySlot slot : hotbarSlots) {
+            all.add(slot);
+        }
+        // Add main inventory slots
+        for (InventorySlot slot : inventorySlots) {
+            all.add(slot);
+        }
+        return all;
     }
 
     // Create an inventory grid with 18 slots (6 columns x 3 rows).

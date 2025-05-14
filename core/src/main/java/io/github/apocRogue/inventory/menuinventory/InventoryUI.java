@@ -25,68 +25,53 @@ import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
+import io.github.apocRogue.inventory.menuinventory.InventoryService.InventoryItemPayload;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * Inventory UI that synchronises with the remote Cloud‑Functions back‑end.
- * <p>
- * **Option 1 implemented**: each <strong>itemCode</strong> is now treated as its own visual
- * stack by composing the key <code>typeID + "_" + (projectile?"R":"M")</code>.  Bows and
- * swords (same typeID "01" but different projectile flag) end up in different stash slots.
+ * Inventory UI that synchronises with the remote Cloud-Functions back-end.
+ * All items and stats are loaded directly from the server;
+ * if no saved layout exists, items appear in a random order.
+ * UI updates occur on the render thread via postRunnable.
  */
-
 public class InventoryUI {
 
-    private final Stage               stage;
-    private final Skin                skin;
-    private final stageBuilder        game;
+    private final Stage stage;
+    private final Skin skin;
+    private final stageBuilder game;
 
     private Table root;
     private final List<InventorySlot> stashSlots = new ArrayList<>();
     private final List<InventorySlot> equipSlots = new ArrayList<>();
-    private final DragAndDrop         dragAndDrop;
+    private final DragAndDrop dragAndDrop;
 
-    // ─── ID‑system managers & cache ────────────────────────────────────────────
-    private final WeaponTypeRegistry  typeRegistry;
-    private final List<Weapon>        loadedWeapons = new ArrayList<>();
-
-    /** Fast lookup that distinguishes projectile/melee variants of the same typeID. */
-    private Map<String, Weapon>       weaponByKey = Collections.emptyMap();
+    // Weapon metadata registry
+    private final WeaponTypeRegistry typeRegistry;
 
     public InventoryUI(Stage stage, Skin skin, stageBuilder game) {
         this.stage = stage;
-        this.skin  = skin;
-        this.game  = game;
+        this.skin = skin;
+        this.game = game;
 
         dragAndDrop = new DragAndDrop();
         buildLayout();
 
-        // ─── Load static weapon metadata (names, textures, etc.) ────────────
         typeRegistry = new WeaponTypeRegistry();
         typeRegistry.load("ui/weapon_types.json");
-        preloadWeapons();
 
-        // ─── Populate stash from local preferences so the UI is never empty ─
-        hydrateFromPreferences();
-
-        // ─── Now pull the definitive truth from the server (asynchronously) ─
+        // Load the authoritative inventory from server
         syncWithServerInventory();
 
         setupDragAndDrop();
     }
-
-    // ------------------------------------------------------------------------
-    //  Construction helpers
-    // ------------------------------------------------------------------------
 
     private void buildLayout() {
         root = new Table(skin);
         root.setFillParent(true);
         stage.addActor(root);
 
-        // Back button --------------------------------------------------------
         TextButton back = new TextButton("Back", skin);
         back.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, Actor actor) {
@@ -96,12 +81,10 @@ public class InventoryUI {
         root.add(back).left().pad(10);
         root.row();
 
-        // Main content container -------------------------------------------
         Table content = new Table(skin);
         root.add(content).expand().fill().pad(10);
         root.row();
 
-        // Stash grid --------------------------------------------------------
         Table stashTable = new Table(skin);
         stashTable.defaults().size(64,64).pad(5);
         int cols = 6, rows = 3;
@@ -116,7 +99,6 @@ public class InventoryUI {
         ScrollPane stashPane = new ScrollPane(stashTable, skin);
         content.add(stashPane).expand().fill().padRight(10);
 
-        // Right column (portrait + equip slots) -----------------------------
         Table rightCol = new Table(skin);
         rightCol.defaults().pad(5);
 
@@ -140,105 +122,82 @@ public class InventoryUI {
     }
 
     /**
-     * Pre‑loads one <strong>Weapon</strong> stub for every entry in
-     * <code>weapon_types.json</code> and registers it in {@link #weaponByKey} using the
-     * projectile flag so ranged and melee variants no longer collide.
-     */
-    private void preloadWeapons() {
-        loadedWeapons.clear();
-        weaponByKey = new HashMap<>();
-
-        for (String typeID : typeRegistry.getAllTypeIDs()) {
-            WeaponTypeInfo info = typeRegistry.get(typeID);
-            boolean projectile = info.isProjectileType();
-
-            Weapon w = new Weapon(
-                "DUMMY-" + typeID,
-                info.getName(),
-                0,
-                new Texture(Gdx.files.internal(info.getTexturePath())),
-                projectile,
-                0,
-                info.getAmmoTexture(),
-                0,0,
-                0,0,0
-            );
-            loadedWeapons.add(w);
-            String key = typeID + "_" + (projectile ? "R" : "M");
-            weaponByKey.put(key, w);
-        }
-    }
-
-    private void hydrateFromPreferences() {
-        List<String> saved = InventoryPreferences.load();
-        for (int i = 0; i < stashSlots.size(); i++) {
-            InventorySlot slot = stashSlots.get(i);
-            if (i < saved.size()) {
-                String name = saved.get(i);
-                loadedWeapons.stream()
-                    .filter(w -> w.getName().equals(name))
-                    .findFirst()
-                    .ifPresent(slot::setItem);
-            } else {
-                slot.clearItem();
-            }
-        }
-    }
-
-    /**
-     * Downloads the authoritative inventory list and merges it into the UI.
+     * Downloads the authoritative inventory list and populates hotbar and stash.
+     * If no saved preferences exist, items appear in random order.
+     * Ensures GL operations run on the render thread.
      */
     private void syncWithServerInventory() {
-        InventoryService.fetchInventory(new InventoryService.Callback<List<InventoryService.InventoryItemPayload>>() {
-            @Override public void onSuccess(List<InventoryService.InventoryItemPayload> items) {
-                stashSlots.forEach(InventorySlot::clearItem);
+        List<String> saved = InventoryPreferences.load();
+        boolean noPrefs = saved.isEmpty() || saved.stream().allMatch(String::isEmpty);
 
-                for (InventoryService.InventoryItemPayload p : items) {
-                    boolean proj = p.stats != null && p.stats.getOrDefault("projectileValue", 0) > 0;
-                    String key   = p.typeID + "_" + (proj ? "R" : "M");
+        InventoryService.fetchInventory(new InventoryService.Callback<List<InventoryItemPayload>>() {
+            @Override
+            public void onSuccess(List<InventoryItemPayload> items) {
+                Gdx.app.postRunnable(() -> {
+                    // clear all slots
+                    equipSlots.forEach(InventorySlot::clearItem);
+                    stashSlots.forEach(InventorySlot::clearItem);
 
-                    Weapon base = weaponByKey.get(key);
-                    if (base == null) {
-                        Gdx.app.error("InventoryUI", "No weapon stub for key "+key);
-                        continue;
+                    // flatten payloads by count
+                    List<InventoryItemPayload> flat = new ArrayList<>();
+                    for (InventoryItemPayload p : items) {
+                        for (int i = 0; i < p.count; i++) {
+                            flat.add(p);
+                        }
+                    }
+                    if (noPrefs) Collections.shuffle(flat);
+
+                    // populate hotbar (up to equipSlots.size)
+                    Iterator<InventoryItemPayload> it = flat.iterator();
+                    for (int i = 0; i < equipSlots.size() && it.hasNext(); i++) {
+                        InventoryItemPayload p = it.next();
+                        WeaponTypeInfo info = typeRegistry.get(p.typeID);
+                        if (info == null) continue;
+                        Weapon w = new Weapon(
+                            p.itemCode,
+                            info.getName(),
+                            p.stats.getOrDefault("damage", 0),
+                            new Texture(Gdx.files.internal(info.getTexturePath())),
+                            info.isProjectileType(),
+                            p.stats.getOrDefault("projectileValue", 0),
+                            info.getAmmoTexture(),
+                            p.stats.getOrDefault("animationSpeed", 0),
+                            p.stats.getOrDefault("noiseLevel", 0),
+                            p.stats.getOrDefault("dashSpeed", 0),
+                            p.stats.getOrDefault("dashDuration", 0),
+                            p.stats.getOrDefault("dashCooldown", 0)
+                        );
+                        equipSlots.get(i).setItem(w);
                     }
 
-                    Weapon w = cloneWithStats(base, p.stats);
-
-                    for (int i = 0; i < p.count; i++) {
+                    // populate stash from the same flat list
+                    for (InventoryItemPayload p : flat) {
+                        WeaponTypeInfo info = typeRegistry.get(p.typeID);
+                        if (info == null) continue;
+                        Weapon w = new Weapon(
+                            p.itemCode,
+                            info.getName(),
+                            p.stats.getOrDefault("damage", 0),
+                            new Texture(Gdx.files.internal(info.getTexturePath())),
+                            info.isProjectileType(),
+                            p.stats.getOrDefault("projectileValue", 0),
+                            info.getAmmoTexture(),
+                            p.stats.getOrDefault("animationSpeed", 0),
+                            p.stats.getOrDefault("noiseLevel", 0),
+                            p.stats.getOrDefault("dashSpeed", 0),
+                            p.stats.getOrDefault("dashDuration", 0),
+                            p.stats.getOrDefault("dashCooldown", 0)
+                        );
                         int idx = findFirstEmptyStash();
-                        if (idx >= 0) stashSlots.get(idx).setItem(w);
+                        if (idx < 0) break;
+                        stashSlots.get(idx).setItem(w);
                     }
-                }
-                saveStashToPrefs();
+                });
             }
-
             @Override public void onFailure(Throwable t) {
-                Gdx.app.error("InventoryUI", "Failed to pull inventory – keeping local copy", t);
+                Gdx.app.error("InventoryUI", "Failed to pull inventory", t);
             }
         });
-    }
-
-    // ------------------------------------------------------------------------
-    //  Drag‑and‑drop wiring (unchanged)
-    // ------------------------------------------------------------------------
-
-    private Weapon cloneWithStats(Weapon t, Map<String,Integer> s) {
-        if (s == null) s = Collections.emptyMap();
-        return new Weapon(
-            t.getID(),
-            t.getName(),
-            s.getOrDefault("damage",           t.getDamage()),
-            t.getTexture(),
-            t.isProjectileType(),                                   // boolean
-            s.getOrDefault("projectileValue", t.getProjectileValue()),
-            t.getAmmoTexture(),
-            s.getOrDefault("animationSpeed",   t.getAnimationSpeed()),
-            s.getOrDefault("noiseLevel",       t.getNoiseLevel()),
-            s.getOrDefault("dashSpeed",        t.getDashSpeed()),
-            s.getOrDefault("dashDuration",     t.getDashDuration()),
-            s.getOrDefault("dashCooldown",     t.getDashCooldown())
-        );
     }
 
     private void setupDragAndDrop() {
@@ -247,18 +206,19 @@ public class InventoryUI {
                 @Override public Payload dragStart(InputEvent event, float x, float y, int pointer) {
                     if (slot.isEmpty()) return null;
                     DragData dd = new DragData(slot, slot.getWeapon());
-                    Payload p  = new Payload();
+                    Payload p = new Payload();
                     p.setObject(dd);
                     p.setDragActor(new Image(slot.getItemDrawable()));
                     slot.clearItem();
                     return p;
                 }
+
                 @Override public void dragStop(InputEvent event, float x, float y, int pointer, Payload payload, Target target) {
                     if (target == null) {
                         DragData dd = (DragData) payload.getObject();
                         if (dd.sourceSlot != null) dd.sourceSlot.setItem(dd.weapon);
                     }
-                    saveStashToPrefs();
+                    saveHotbarToPrefs();
                 }
             });
 
@@ -270,18 +230,14 @@ public class InventoryUI {
                     Weapon existing = slot.getWeapon();
                     slot.setItem(incoming);
                     dd.sourceSlot.setItem(existing);
-                    saveStashToPrefs();
+                    saveHotbarToPrefs();
                 }
             });
         });
     }
-    // ------------------------------------------------------------------------
-    //  Utility helpers
-    // ------------------------------------------------------------------------
 
     private Iterable<InventorySlot> iterateAllSlots() {
-        List<InventorySlot> all = new ArrayList<>();
-        all.addAll(stashSlots);
+        List<InventorySlot> all = new ArrayList<>(stashSlots);
         all.addAll(equipSlots);
         return all;
     }
@@ -293,9 +249,15 @@ public class InventoryUI {
         return -1;
     }
 
+    private void saveHotbarToPrefs() {
+        List<String> codes = new ArrayList<>();
+        equipSlots.forEach(s -> codes.add(s.isEmpty() ? "" : s.getWeapon().getID()));
+        InventoryPreferences.save(codes);
+    }
+
     private void saveStashToPrefs() {
-        List<String> names = new ArrayList<>();
-        stashSlots.forEach(s -> names.add(s.isEmpty() ? "" : s.getWeapon().getName()));
-        InventoryPreferences.save(names);
+        List<String> codes = new ArrayList<>();
+        stashSlots.forEach(s -> codes.add(s.isEmpty() ? "" : s.getWeapon().getID()));
+        InventoryPreferences.save(codes);
     }
 }
