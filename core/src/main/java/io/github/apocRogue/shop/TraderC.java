@@ -1,71 +1,22 @@
+// File: TraderC.java
 package io.github.apocRogue.shop;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TraderC extends ShopKeeper {
     public TraderC() {
-        super("Trader C", "portrait-traderC", createInventory());
-    }
+        super(
+                "C",
+                "Igor",
+                "traderC",
+                new String[]{ "Hello, I am Igor. I am Shop. Thank you."},
+                new String[]{"This makes me happy, tiny person! Do you want another?"},
 
-    private static List<ShopItem> createInventory() {
-        List<ShopItem> items = new ArrayList<>();
-        //Always unlocked items
-        items.add(new ShopItem("Armor", "Small iron armour, should fit you fine though. Give me 300 gold and it's yours.",
-            300,
-            1,
-            3));
-        items.add(new ShopItem("Sword", "Tiny sword. You might need two hands for it though. Give me 250 gold and it's yours.",
-            250,
-            1,
-            5));
+                new String[]{"It seems your wallet is as small as you, give more money."},
 
-        // Level 2 items
-        items.add(new ShopItem("Big Axe",
-            "A normal Axe! Maybe you can use it as roof... or SeeSaw. You're small man. Give me 500 gold and it's yours.",
-            1000,
-            2,
-            5)
+                new String[]{"Ha Ha Ha, that is for grown ups, little boy." },
+                new String[]{"Hmmm, this as much as I have on me. Sorry little man."}
+
         );
-        items.add(new ShopItem("Bow",
-            "Toothpick shooter! Maybe you can be dentist from far away. HA HA HA! Me funny! Give me 700 gold and it's yours. ",
-            700,
-            2,
-            5)
-        );
-
-        items.add(new ShopItem(
-            "HandGun",
-            "Coward Bow, I prefer old style. Give me 600 gold and it's yours.",
-            600,
-            2,
-            5)
-        );
-
-        return items;
-    }
-    // Personality lines
-    @Override
-    public String getGreeting() {
-        return "Hello, I am Igor. I am Shop. Thank you.";
-    }
-
-    @Override
-    public String getThankYouLine() {
-        return "This makes me happy, tiny person! Do you want another?";
-    }
-
-    @Override
-    public String getCannotAffordLine() {
-        return "It seems your wallet is as small as you, give more money.";
-    }
-
-    @Override
-    public String getLockedItemLine() {
-        return "Ha Ha Ha, that is for grown ups, little boy.";
-    }
-    @Override
-    public String getSoldOutLine() {
-        return "Hmmm, I do not wear more of that. Sorry little man.";
     }
 }

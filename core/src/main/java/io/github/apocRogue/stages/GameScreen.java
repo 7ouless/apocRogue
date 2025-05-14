@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
+import io.github.apocRogue.inventory.menuinventory.InventoryService;
 import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.map.MapManager;
@@ -243,11 +244,29 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
+    private void initUI() {
+        Table hud = new Table();
+        hud.setFillParent(true);
+        hud.top().right().padTop(20).padRight(20);
+
+        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
+        skullLabel.setFontScale(1.5f);           // ← bigger
+        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
+        worldLabel.setFontScale(1.2f);           // ← a bit smaller
+
+        hud.add(skullLabel)
+            .padBottom(20)
+            .row();
+        hud.add(worldLabel);
+
+        uiStage.addActor(hud);
+    }
+
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
-        }
+            }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
         CurrentDificulty.setDifficulty(diff);
@@ -722,6 +741,7 @@ public class GameScreen extends ScreenAdapter {
             if (currentMusic != null && currentMusic.isPlaying()) {
                 currentMusic.stop();
             }
+            gameWorld.extractItems();
             game.setScreen(new MainScreen(game));
             } else {
             // CONTINUE door --> first record the player's choice

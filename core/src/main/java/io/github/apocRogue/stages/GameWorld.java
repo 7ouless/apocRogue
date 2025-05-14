@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -23,11 +24,14 @@ import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
+import io.github.apocRogue.inventory.gameinventory.InventorySlot;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
+import io.github.apocRogue.inventory.menuinventory.InventoryService;
 import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
+import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
 
@@ -51,7 +55,7 @@ public class GameWorld {
     private Array<FlyingEnemyActor> flyingEnemies = new Array<>();
     private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
     private Array<ChestActor> chests = new Array<>();
-
+    private boolean wipedOnStart = false;
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
@@ -109,32 +113,75 @@ public class GameWorld {
         Set<String> idSet = typeRegistry.getAllTypeIDs();
         Array<String> allTypeIDs = new Array<>(idSet.toArray(new String[0]));
 
-        // Rehydrate saved weapons using new ID scheme
+        //Rehydrate saved weapons
         List<String> savedNames = InventoryPreferences.load();
-        for (String name : savedNames) {
-            for (String localTypeID : allTypeIDs) {
-                // 1) build the 3-char global prefix: '1' (weapon) + localTypeID (e.g. "01")
-                    String globalID = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
-                // 2) lookup cosmetic info by that full ID
-                 WeaponTypeInfo info = typeRegistry.getByGlobalID(globalID);
-                if (info.getName().equals(name)) {
-                    // 3) construct the dummy weapon with that same globalID
-                        Weapon w = new Weapon(
-                        globalID,
-                        info.getName(),
-                        0,
-                        new Texture(Gdx.files.internal(info.getTexturePath())),
-                        info.isProjectileType(),
-                         0,
-                         info.getAmmoTexture(),
-                        0, 0,
-                        0, 0, 0
-                        );
-                    inventory.addItem(w);
-                     break;
-                   }
-                }
+        InventoryService.fetchInventory(new InventoryService.Callback<List<InventoryService.InventoryItemPayload>>() {
+            @Override public void onSuccess(List<InventoryService.InventoryItemPayload> items) {
+                // ensure all Texture/Actor work happens on the render thread
+                Gdx.app.postRunnable(() -> {
+                    for (String wantCode : savedNames) {
+                        if (wantCode == null || wantCode.isEmpty()) continue;
+                        // find the payload whose itemCode matches the saved code
+                        for (InventoryService.InventoryItemPayload p : items) {
+                            if (wantCode.equals(p.itemCode)) {
+                                Weapon w = new Weapon(
+                                    p.itemCode,
+                                    typeRegistry.get(p.typeID).getName(),
+                                    p.stats.getOrDefault("damage", 0),
+                                    new Texture(Gdx.files.internal(typeRegistry.get(p.typeID).getTexturePath())),
+                                    typeRegistry.get(p.typeID).isProjectileType(),
+                                    p.stats.getOrDefault("projectileValue", 0),
+                                    typeRegistry.get(p.typeID).getAmmoTexture(),
+                                    p.stats.getOrDefault("animationSpeed", 0),
+                                    p.stats.getOrDefault("noiseLevel", 0),
+                                    p.stats.getOrDefault("dashSpeed", 0),
+                                    p.stats.getOrDefault("dashDuration", 0),
+                                    p.stats.getOrDefault("dashCooldown", 0)
+                                );
+                                inventory.addItem(w);
+                                break;  // move on to the next savedCode
+                            }
+                        }
+                    }
+                        if (!wipedOnStart) {
+                            wipedOnStart = true;
+                            List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+                            for (InventorySlot slot : inventory.getAllSlots()) {
+                                if (!slot.isEmpty()) {
+                                    Weapon w = slot.getWeapon();
+                                    InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                                    p.itemCode = w.getID();
+                                    p.typeID = p.itemCode.substring(2, 4);
+                                    p.stats = new HashMap<>(w.getStats());
+                                    p.count = 1;
+                                    payloads.add(p);
+                                    System.out.println("Removed " + p.typeID);
+
+                                }
+                            }
+                            InventoryService.wipeInventory(payloads, new InventoryService.Callback<Void>() {
+                                @Override
+                                public void onSuccess(Void nothing) {
+                                    Gdx.app.log("GameWorld", "Server inventory wiped at run start");
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    Gdx.app.error("GameWorld", "Failed to wipe at start", t);
+                                }
+                            });
+                        }
+                });
             }
+
+
+                @Override
+                public void onFailure (Throwable t){
+
+                }
+            });
+
+
 
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
@@ -205,7 +252,66 @@ public class GameWorld {
         }
         return false;
     }
+      public void extractItems() {
+               // build payloads from your live Inventory
+                  List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+               for (InventorySlot slot : inventory.getAllSlots()) {
+                      if (!slot.isEmpty()) {
+                               Weapon w = slot.getWeapon();
+                               InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                               p.itemCode = w.getID();
+                              p.typeID   = p.itemCode.substring(2,4);
+                               p.stats    = new HashMap<>(w.getStats());
+                               p.count    = 1; // or slot.getCount() if you track stacks
+                               payloads.add(p);
+                           }
+                   }
 
+          checkItems();
+          InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
+           @Override public void onSuccess(Void result) {
+                                       Gdx.app.log("GameWorld", "Inventory successfully pushed");
+                                   }
+           @Override public void onFailure(Throwable t) {
+                                       Gdx.app.error("GameWorld", "Failed to push inventory", t);
+                                   }
+       });
+           }
+
+    public void checkItems() {
+        // 1) load the hotbar codes to skip
+        List<String> hotbarCodes = InventoryPreferences.load();
+
+        // 2) collect payloads for *all other* slots
+        List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+        for (InventorySlot slot : inventory.getAllSlots()) {
+            if (slot.isEmpty()) continue;                          // skip empty
+            Weapon w = slot.getWeapon();
+            String code = w.getID();
+            if (hotbarCodes.contains(code)) continue;             // skip hotbar items
+
+            InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+            p.itemCode = code;
+            p.typeID   = code.substring(2,4);
+            p.stats    = new HashMap<>(w.getStats());
+            p.count    = 1;                                       // always 1 per slot
+            payloads.add(p);
+        }
+
+        // 3) invoke your new checkInventory endpoint
+        InventoryService.checkInventory(payloads, new InventoryService.Callback<InventoryService.CheckResponse>() {
+            @Override public void onSuccess(InventoryService.CheckResponse resp) {
+                if (resp.passed) {
+                    Gdx.app.log("GameWorld", "Inventory check passed");
+                } else {
+                    Gdx.app.error("GameWorld", "Inventory check failed: " + resp.message);
+                }
+            }
+            @Override public void onFailure(Throwable t) {
+                Gdx.app.error("GameWorld", "Failed to run inventory check", t);
+            }
+        });
+    }
     public void update(float delta) {
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
@@ -280,7 +386,7 @@ public class GameWorld {
         FloorTile end = floors.get(floors.size() - 1);
 
         // base world‐position: center atop that tile
-        float borderMargin = 200f;
+        float borderMargin = 110f;
         float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
         float baseY = end.getY() + end.getHeight();
 
@@ -329,8 +435,7 @@ public class GameWorld {
         stage.clear();
         playerTexture.dispose();
         playerAttackTexture.dispose();
-        wolfNormalTexture.dispose();
-        wolfAttackTexture.dispose();
+        dummyTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();
         flyingCreatureTexture.dispose();

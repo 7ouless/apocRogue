@@ -7,7 +7,7 @@ import io.github.apocRogue.database.DBManager;
 public class stageBuilder extends Game {
     @Override
     public void create() {
-        setScreen(new MainScreen(this));
+        setScreen(new LoginScreen(this));
     }
 
     @Override
