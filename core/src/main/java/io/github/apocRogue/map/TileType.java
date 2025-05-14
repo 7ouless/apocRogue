@@ -7,6 +7,7 @@ public enum TileType {
     DIRT,
     BORDER,
     EDGE,
+    PLATFORM_EDGE,
     GRASS,
     TREE,
     DECOR
