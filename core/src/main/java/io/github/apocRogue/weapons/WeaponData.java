@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.weapons;
 
 public class WeaponData {
@@ -15,3 +16,4 @@ public class WeaponData {
     public float dashDuration;
     public float dashCooldown;
 }
+*/

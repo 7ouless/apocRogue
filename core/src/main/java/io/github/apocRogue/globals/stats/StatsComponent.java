@@ -11,6 +11,12 @@ public class StatsComponent {
     private int sightSens;
     private float aggression;
 
+    private float stamina;
+    private float maxStamina = 100f;
+    private float staminaRegenPerSec = 20f;
+    private float jumpStaminaCost = 25f;
+    private float dashStaminaCost = 40f;
+
     public StatsComponent(int health, int maxHealth, int strength, int defense, int speed, int dashes, int jumps, int sightSens, float aggression) {
         this.health = health;
         this.maxHealth = maxHealth;
@@ -21,6 +27,7 @@ public class StatsComponent {
         this.jumps = jumps;
         this.sightSens = sightSens;
         this.aggression = aggression;
+        this.stamina = maxStamina;
     }
 
     public void takeDamage(int amount) {
@@ -65,4 +72,26 @@ public class StatsComponent {
     }
 
     // getters, setters, etc.
+
+    public boolean spendStamina(float cost) {
+        if (stamina < cost) return false;
+        stamina -= cost;
+        return true;
+    }
+
+    public float getJumpStaminaCost() {
+        return jumpStaminaCost;
+    }
+
+
+    public float getDashStaminaCost() {
+        return dashStaminaCost;
+    }
+
+    public void regenStamina(float delta) {
+        stamina = Math.min(maxStamina, stamina + staminaRegenPerSec * delta);
+    }
+
+    public float getStamina() { return stamina; }
+    public float getMaxStamina() { return maxStamina; }
 }

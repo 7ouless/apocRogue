@@ -1,9 +1,7 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -19,13 +17,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.map.DecorTile;
 import io.github.apocRogue.map.GrassOverlayTile;
 import io.github.apocRogue.map.MapManager;
+import io.github.apocRogue.map.TreeTile;
 import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
 import io.github.apocRogue.actors.mapEntities.Door;
+import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
+
+
 import io.github.apocRogue.globals.physics.SoundPhysics;
 
 import java.util.ArrayList;
@@ -38,7 +41,10 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
 
-    public static final RunManager runMgr = new RunManager();
+    private ProgressBar staminaBar;
+    private ProgressBar healthBar;
+
+    private final RunManager runMgr = RunManager.getInstance();
     private Label skullLabel, worldLabel;
     private GameWorld gameWorld;
 
@@ -52,6 +58,7 @@ public class GameScreen extends ScreenAdapter {
     private Stage overlayStage;
     private Texture bgSky, bgMountains, bgSun, bgSideClouds, bgTopClouds, bgSmallClouds, bgBigTree,bgMeadow;
     private float viewportWidth, viewportHeight;
+    private Texture grainTex;
 
     private boolean paused = false; // Tracks if the game is paused
 
@@ -62,6 +69,33 @@ public class GameScreen extends ScreenAdapter {
 
     public GameScreen(stageBuilder game) {
         this.game = game;
+    }
+
+    private void loadBackgrounds(String folder){
+        //dispose old BG textures
+        if (bgSky != null) bgSky.dispose();
+        if (bgMountains != null) bgMountains.dispose();
+        if (bgSun != null) bgSun.dispose();
+        if (bgSideClouds != null) bgSideClouds.dispose();
+        if (bgTopClouds != null) bgTopClouds.dispose();
+        if (bgSmallClouds != null) bgSmallClouds.dispose();
+        if (bgBigTree != null) bgBigTree.dispose();
+        if (bgMeadow != null) bgMeadow.dispose();
+
+        // load the new ones
+        bgSky        = new Texture(Gdx.files.internal("ui/"+folder+"/sky.png"));
+        bgMountains  = new Texture(Gdx.files.internal("ui/"+folder+"/mountains.png"));
+        bgSun        = new Texture(Gdx.files.internal("ui/"+folder+"/sun.png"));
+        bgSideClouds = new Texture(Gdx.files.internal("ui/"+folder+"/side-clouds.png"));
+        bgTopClouds  = new Texture(Gdx.files.internal("ui/"+folder+"/top-clouds.png"));
+        bgSmallClouds= new Texture(Gdx.files.internal("ui/"+folder+"/small-clouds.png"));
+
+        String bigTreeAsset = "/big-tree.png";
+        if ("high".equals(folder)) {                            // radiation 3
+            bigTreeAsset = "/big-tree2.png";
+        }
+        bgBigTree    = new Texture(Gdx.files.internal("ui/"+folder+ bigTreeAsset));
+        bgMeadow     = new Texture(Gdx.files.internal("ui/"+folder+"/meadow.png"));
     }
 
     @Override
@@ -86,15 +120,13 @@ public class GameScreen extends ScreenAdapter {
         minCameraX = halfVW;
         maxCameraX = MapManager.settings.roomWidth - halfVW;
 
-
-        bgSky       = new Texture(Gdx.files.internal("ui/sky.png"));
-        bgMountains = new Texture(Gdx.files.internal("ui/mountains.png"));
-        bgSun          = new Texture(Gdx.files.internal("ui/sun.png"));
-        bgSideClouds   = new Texture(Gdx.files.internal("ui/side-clouds.png"));
-        bgTopClouds    = new Texture(Gdx.files.internal("ui/top-clouds.png"));
-        bgSmallClouds  = new Texture(Gdx.files.internal("ui/small-clouds.png"));
-        bgBigTree      = new Texture(Gdx.files.internal("ui/big-tree.png"));
-        bgMeadow    = new Texture(Gdx.files.internal("ui/meadow.png"));
+        // load the correct BGs for our current radiation level
+        int rad = CurrentDificulty.getRadiation();
+        String folder = (rad == 2 ? "med" : rad == 3 ? "high" : "low");
+        loadBackgrounds(folder);
+        TreeTile.loadForRadiation(folder);
+        GrassOverlayTile.loadForRadiation(folder);
+        DecorTile.loadForRadiation(folder);
 
 
         batch = new SpriteBatch();
@@ -104,8 +136,9 @@ public class GameScreen extends ScreenAdapter {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // 1) Init our run HUD
-        initUI();
         loadCurrentWorld();
+        initUI();
+
 
         // move all decor into the overlay stage
         List<Actor> decorActors = new ArrayList<>();
@@ -181,31 +214,33 @@ public class GameScreen extends ScreenAdapter {
 
 // Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
-    }
 
-    private void initUI() {
-        Table hud = new Table();
-        hud.setFillParent(true);
-        hud.top().right().padTop(20).padRight(20);
+        // --- generate a small repeating noise texture (128×128) ---
+        if (grainTex != null) grainTex.dispose();
+        Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
+        for (int x = 0; x < 128; x++) {
+            for (int y = 0; y < 128; y++) {
+                // random alpha between 0 and 0.2f for low-level grain
+                float a = MathUtils.random() * 0.2f;
+                pix.setColor(1f, 1f, 1f, a);
+                pix.drawPixel(x, y);
+            }
+        }
+        grainTex = new Texture(pix);
+        grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        pix.dispose();
 
-        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
-        skullLabel.setFontScale(1.5f);           // ← bigger
-        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
-        worldLabel.setFontScale(1.2f);           // ← a bit smaller
-
-        hud.add(skullLabel)
-            .padBottom(20)
-            .row();
-        hud.add(worldLabel);
-
-        uiStage.addActor(hud);
     }
 
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
-            }
+        }
+
+        int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
+        CurrentDificulty.setDifficulty(diff);
+
         gameWorld = new GameWorld(stage, runMgr.isFinalWorld());
         gameWorld.initialize();
 
@@ -221,8 +256,73 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
-    public static RunManager getRunManager() { //used to access this RunManager object to mapManager
-        return runMgr;
+    private void initUI() {
+        // 1) Root HUD table, anchored to the top
+        Table hud = new Table();
+        hud.setFillParent(true);
+        hud.top().padTop(20);
+        uiStage.addActor(hud);
+
+        // 2) Clone the skin’s real default-horizontal style
+        ProgressBar.ProgressBarStyle baseStyle =
+            skin.get("default-horizontal", ProgressBar.ProgressBarStyle.class);
+        ProgressBar.ProgressBarStyle staminaStyle =
+            new ProgressBar.ProgressBarStyle(baseStyle);
+
+        // 3) Recolor just the filled part (knobBefore) to yellow
+        staminaStyle.knobBefore =
+            skin.newDrawable("progress-bar-square-knob", Color.YELLOW);
+
+        // 4) (Optional) Keep the empty track dark grey
+        staminaStyle.background =
+            skin.newDrawable("progress-bar-square", Color.DARK_GRAY);
+
+        // 5) Force the drawables to a taller height (8 px)
+        staminaStyle.background .setMinHeight(8f);
+        staminaStyle.knobBefore  .setMinHeight(8f);
+
+        // 6) Create your difficulty labels
+        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
+        skullLabel.setFontScale(1.5f);
+        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
+        worldLabel.setFontScale(1.2f);
+
+        // 7) Instantiate the stamina and health bar with the custom style
+        staminaBar = new ProgressBar(0, 100, 1, false, staminaStyle);
+        staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
+        staminaBar.setAnimateDuration(0.1f);
+
+        int maxHP = gameWorld.getPlayer().getStats().getMaxHealth();
+        healthBar = new ProgressBar(0, maxHP, 1, false, baseStyle);
+
+        healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
+
+        healthBar.setAnimateDuration(0.1f);
+
+        // 8) Left column for the bar
+        Table leftTable = new Table();
+        leftTable.padLeft(20);
+        leftTable.add(healthBar)
+            .width(180)
+            .left();
+        leftTable.row().padTop(8);
+        leftTable.add(staminaBar)
+            .width(180)
+            .left();
+
+        // 9) Right column for skull/world
+        Table rightTable = new Table();
+        rightTable.padRight(20);
+        rightTable.add(skullLabel)
+            .left()
+            .padBottom(20)
+            .row();
+        rightTable.add(worldLabel)
+            .left();
+
+        // 10) Place them side-by-side in the HUD
+        hud.add(leftTable).expandX().left();
+        hud.add(rightTable).expandX().right();
     }
 
     private void createPauseOverlay() {
@@ -332,6 +432,9 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+
+        staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
+        healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
         // 1) Update logic & stages
         if (!paused) {
             gameWorld.update(delta);
@@ -389,19 +492,19 @@ public class GameScreen extends ScreenAdapter {
 // 4) Parallax pass
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        float left   = camera.position.x - viewportWidth  / 2f;
-        float bottom = camera.position.y - viewportHeight / 2f;
+        float camLeft   = camera.position.x - viewportWidth  / 2f;
+        float camBottom = camera.position.y - viewportHeight / 2f;
 
         float cloudVFactor  = 0.1f;
         float trunkVFactor  = 0.2f;
         // maximum pixels up/down we ever allow
         float maxVOffset = 50f;
 
-// how far we’ve moved from rest
+        // how far we’ve moved from rest
         float deltaY     = camera.position.y - initialCamY;
 
         // 4.1) Sky (stationary relative to camera)
-        batch.draw(bgSky, left, bottom, viewportWidth, viewportHeight);
+        batch.draw(bgSky, camLeft, camBottom, viewportWidth, viewportHeight);
 
         // 4.2) Sun (almost stationary; slight horizontal drift if you like)
         float sunScale = 0.5f; // adjust size
@@ -413,33 +516,35 @@ public class GameScreen extends ScreenAdapter {
         float rawCloudOffset = deltaY * cloudVFactor;
         float rawTrunkOffset = deltaY * trunkVFactor;
 
-// clamp so |offset| ≤ maxVOffset
+        // clamp so offset ≤ maxVOffset
         float cloudYOffset = MathUtils.clamp(rawCloudOffset, -maxVOffset, maxVOffset);
         float trunkYOffset = MathUtils.clamp(rawTrunkOffset, -maxVOffset, maxVOffset);
 
         batch.draw(
             bgSun,
-                    left + viewportWidth * 0.2f - sunW/2,
-                    bottom + viewportHeight * 0.7f - sunH/2,
+            camLeft + viewportWidth * 0.2f - sunW/2,
+            camBottom + viewportHeight * 0.7f - sunH/2,
                     sunW,
                     sunH
                 );
 
         // 4.3) Side‐clouds
+        batch.setColor(1f, 1f, 1f, 0.75f);
         drawTiledLayer(
             batch,
             bgSideClouds,
-            left,
-            bottom + viewportHeight * 0f,
+            camLeft,
+            camBottom + viewportHeight * 0f,
             -0.005f,
-            0.4f
+             0.4f
         );
+        batch.setColor(1f, 1f, 1f, 1f);
 
         // 4.4) Mountains
         drawTiledLayer(batch,
             bgMountains,
-            left,
-            bottom + 40f,
+            camLeft,
+            camBottom + 40f,
             -0.025f,
             0.5f);
 
@@ -447,8 +552,8 @@ public class GameScreen extends ScreenAdapter {
                drawTiledLayer(
                    batch,
                    bgTopClouds,
-                   left,
-                   bottom + viewportHeight * 0.8f + + cloudYOffset ,
+                   camLeft,
+                   camBottom + viewportHeight * 0.73f,
                    -0.13f,
                    0.6f
                );
@@ -457,8 +562,8 @@ public class GameScreen extends ScreenAdapter {
                drawTiledLayer(
                    batch,
                    bgSmallClouds,
-                   left,
-                   bottom + viewportHeight * 0.4f + trunkYOffset ,
+                   camLeft,
+                   camBottom + viewportHeight * 0.4f + trunkYOffset ,
                    -0.12f,
                    0f
                );
@@ -468,19 +573,19 @@ public class GameScreen extends ScreenAdapter {
                 drawTiledLayer(
                     batch,
                     bgBigTree,
-                    left,
-                    bottom + viewportHeight * 0.1f,
+                    camLeft,
+                    camBottom + viewportHeight * 0.1f,
                     -0.15f,      // parallax factor
-                    0.7f        // scale so they tile densely
+                    0.7f
                 );
         // 4.8) Meadow (front of all background layers)
         drawTiledLayer(
             batch,
             bgMeadow,
-            left,
-            bottom + 150f,
+            camLeft,
+            camBottom + viewportHeight * -0.05f,
             -0.2f,      // parallaxFactor
-            1.8f
+            0.225f
         );
 
 
@@ -498,8 +603,6 @@ public class GameScreen extends ScreenAdapter {
 
         // filled‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        //   ← draw your filled debug shapes here, e.g.:
-        //   shapeRenderer.circle(enemyX, enemyY, radius);
         shapeRenderer.end();
 
         // line‐shape pass
@@ -513,12 +616,26 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.end();
 
 
+        int rad = CurrentDificulty.getRadiation();
+        Color tintColor;
+        switch (CurrentDificulty.getRadiation()) {
+            case 2:
+                tintColor = new Color(1f, 0.5f, 0f, 0.12f);  // orange
+                break;
+            case 3:
+                tintColor = new Color(0f, 0f, 0f, 0.30f);    // black
+                break;
+            default:
+                tintColor = new Color(0.4f, 0f, 0.2f, 0.12f); // pink
+                break;
+        }
+
         // 8) Simple dark-pink full-screen tint
-        Gdx.gl.glEnable(GL20.GL_BLEND);  // turn on alpha blending
+        Gdx.gl.glEnable(GL20.GL_BLEND);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        // RGBA = (red=0.6, green=0.0, blue=0.2, alpha=0.1) → dark pink at 10% opacity
-        shapeRenderer.setColor(0.4f, 0.0f, 0.2f, 0.12f);
+
+        shapeRenderer.setColor(tintColor);
         // compute the bottom-left corner of the camera’s view in world coords
         float tintX = camera.position.x - viewportWidth  / 2f;
         float tintY = camera.position.y - viewportHeight / 2f;
@@ -527,6 +644,33 @@ public class GameScreen extends ScreenAdapter {
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
+        if (rad >= 2) {
+            batch.begin();
+
+            // Pick a grain‐opacity per radiation level
+            float grainAlpha;
+            if (rad == 2) {
+                grainAlpha = 0.25f;
+            } else { // rad == 3
+                grainAlpha = 0.4f;
+            }
+            batch.setColor(1f, 1f, 1f, grainAlpha);
+
+            // Tile your noise texture over the screen
+            float tileW = grainTex.getWidth();
+            float tileH = grainTex.getHeight();
+            for (float x = camLeft; x < camLeft + viewportWidth; x += tileW) {
+                for (float y = camBottom; y < camBottom + viewportHeight; y += tileH) {
+                    batch.draw(grainTex, x, y, tileW, tileH);
+                }
+            }
+
+            batch.setColor(Color.WHITE);
+            batch.end();
+        }
+
+        float currentStam = gameWorld.getPlayer().getStats().getStamina();
+        staminaBar.setValue(currentStam);
 
         // 9) Finally the UI
         uiStage.act(delta);
@@ -538,15 +682,32 @@ public class GameScreen extends ScreenAdapter {
         if (door.getType() == Door.Type.EXTRACT) {
             game.setScreen(new MainScreen(game));
             } else {
-            // CONTINUE door
-                if (runMgr.isFinalWorld()) {
-                 runMgr.continueRun();
-                } else {
+            // CONTINUE door --> first record the player's choice
+            CurrentDificulty.setRadiation(door.getRadiationLevel());
+            // then advance or continue the run
+            if (runMgr.isFinalWorld()) {
+            runMgr.continueRun();
+
+            } else {
                 runMgr.advanceWorld();
-                }
-                updateHud();
+
+            }
+
+            //Updates global difficulty
+            int newDiff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
+            CurrentDificulty.setDifficulty(newDiff);
+
+            updateHud();
+
+            // reload all themed assets & rebuild the world
+            int newRad = CurrentDificulty.getRadiation();
+            String newFolder = (newRad == 2 ? "med" : newRad == 3 ? "high" : "low");
+            loadBackgrounds(newFolder);
+            TreeTile.loadForRadiation(newFolder);
+            GrassOverlayTile.loadForRadiation(newFolder);
+            DecorTile.loadForRadiation(newFolder);
             loadCurrentWorld();
-             }
+        }
         }
 
     private void updateHud() {
@@ -604,7 +765,7 @@ public class GameScreen extends ScreenAdapter {
         bgTopClouds.dispose();
         bgSmallClouds.dispose();
         bgMeadow.dispose();
-
+        if (grainTex != null) grainTex.dispose();
 
     }
 }

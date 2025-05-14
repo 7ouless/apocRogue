@@ -1,4 +1,3 @@
-// File: io/github/apocRogue/globals/physics/DashProcessor.java
 package io.github.apocRogue.globals.physics;
 
 import com.badlogic.gdx.Gdx;
@@ -22,6 +21,9 @@ public class DashProcessor {
     }
 
     public static void startDash(PlayerActor actor, float dashVel) {
+
+        if (!actor.getStats().spendStamina(actor.getStats().getDashStaminaCost())) return;
+
         actor.isDashing  = true;
         actor.dashTimer  = actor.dashDuration;
         actor.velocityX  = dashVel;

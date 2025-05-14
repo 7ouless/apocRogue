@@ -12,16 +12,16 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 import com.badlogic.gdx.utils.Scaling;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.inventory.gameinventory.DragData;
 import io.github.apocRogue.inventory.gameinventory.InventorySlot;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
-import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.stages.MainScreen;
 import io.github.apocRogue.stages.stageBuilder;
 import io.github.apocRogue.weapons.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 public class InventoryUI {
     private final Stage stage;
@@ -34,7 +34,6 @@ public class InventoryUI {
     private final DragAndDrop dragAndDrop;
 
     // ID‐system managers & cache
-    private final ItemManager itemManager;
     private final WeaponTypeRegistry typeRegistry;
     private final List<Weapon> loadedWeapons = new ArrayList<>();
 
@@ -47,32 +46,30 @@ public class InventoryUI {
         buildLayout();
 
         // ─── Load base statistics and static metadata ───────────
-        itemManager = new ItemManager();
-        itemManager.loadBaseData("ui/items.json");
 
         typeRegistry = new WeaponTypeRegistry();
         typeRegistry.load("ui/weapon_types.json");
 
-        // Build a list of “base” weapons (skull=1,sub=1) for name lookup
-        for (String typeID : itemManager.getAllTypeIDs()) {
-            Map<String,Integer> baseStats = itemManager.getBaseStats(typeID);
-            String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
-            WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
-            WeaponTypeInfo info = typeRegistry.get(typeID);
 
+        loadedWeapons.clear();
+        for (String localTypeID : typeRegistry.getAllTypeIDs()) {
+            // build the 3-char weapon prefix ("1" + localTypeID)
+            String globalID = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
+
+            // lookup the cosmetics via the full ID
+            WeaponTypeInfo info = typeRegistry.getByGlobalID(globalID);
+
+            // create a dummy Weapon with that globalID
             Weapon w = new Weapon(
-                id,
+                globalID,
                 info.getName(),
-                d.stats.get("damage"),
+                0,
                 new Texture(Gdx.files.internal(info.getTexturePath())),
                 info.isProjectileType(),
-                d.stats.get("projectileValue"),
+                0,
                 info.getAmmoTexture(),
-                d.stats.get("animationSpeed"),
-                d.stats.get("noiseLevel"),
-                d.stats.get("dashSpeed"),
-                d.stats.get("dashDuration"),
-                d.stats.get("dashCooldown")
+                0, 0,
+                0, 0, 0
             );
             loadedWeapons.add(w);
         }

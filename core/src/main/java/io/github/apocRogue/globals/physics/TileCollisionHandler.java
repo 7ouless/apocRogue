@@ -8,17 +8,10 @@ import io.github.apocRogue.globals.getters.ObstacleGetters;
 
 public class TileCollisionHandler {
 
-    // Optionally, add a small buffer to make collisions extra sensitive.
+
     private static final float BUFFER = 1f;
 
-    /**
-     * Resolves collisions between a physical actor and any TileActor in the stage.
-     * If any overlap is found, the actor is pushed out along the axis of smallest overlap.
-     *
-     * @param actor The physical actor (e.g., PlayerActor, EnemyActor).
-     * @param oldX  The actor's X position before movement.
-     * @param oldY  The actor's Y position before movement.
-     */
+
     public static void resolveCollisions(PhysicalActor actor, float oldX, float oldY) {
         if (actor.getStage() == null) return;
 

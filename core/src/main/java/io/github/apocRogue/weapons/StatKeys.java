@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.weapons;
 
 public class StatKeys {
@@ -11,3 +12,4 @@ public class StatKeys {
         "dashCooldown"
     };
 }
+*/

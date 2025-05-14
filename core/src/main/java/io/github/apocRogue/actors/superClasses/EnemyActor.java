@@ -9,6 +9,7 @@ import io.github.apocRogue.actorAi.baseAI.SoundAlertComponent;
 import io.github.apocRogue.actorAi.baseAI.lineOfSight;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.physics.GravitySystem;
+import io.github.apocRogue.globals.physics.KnockbackProcessor;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
 
@@ -165,8 +166,15 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
                 PlayerActor player = (PlayerActor) actor;
                 // Assuming both EnemyActor and PlayerActor have a proper getBounds() method
                 if (getBounds().overlaps(player.getBounds())) {
-                    // Handle collision: for example, inflict damage or trigger an alert.
-                    player.takeDamage(0);  // Adjust damage accordingly
+                    int damage = stats.getStrength();
+                    // 1) apply damage
+                    player.takeDamage(damage);
+                    // 2) apply knockback impulse
+                    float dir   = player.getX() < getX() ? -1f : 1f;
+                    float forceX = dir * 5000f;   // tweak magnitude as you like
+                    float forceY = 800f;
+                    KnockbackProcessor.applyKnockback(player, forceX, forceY);
+                    player.startKnockback();
                 }
             }
         }

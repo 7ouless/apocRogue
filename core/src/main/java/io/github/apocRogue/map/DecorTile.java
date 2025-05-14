@@ -6,11 +6,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Rectangle;
 
 public class DecorTile extends TileActor {
-    private static final Texture[] VARIANTS = {
-        new Texture(Gdx.files.internal("ui/rock.png")),
-        new Texture(Gdx.files.internal("ui/stone.png")),
-        new Texture(Gdx.files.internal("ui/bush.png"))
-    };
+    private static Texture[] VARIANTS;
 
     private final boolean flipX;
     private final int     variantIdx;
@@ -43,4 +39,16 @@ public class DecorTile extends TileActor {
         // zero size => non-collidable like trees
         return new Rectangle(0, 0, 0, 0);
     }
+
+    public static void loadForRadiation(String folder) {
+        if (VARIANTS != null) {
+            for (Texture t : VARIANTS) t.dispose();
+        }
+        VARIANTS = new Texture[] {
+            new Texture(Gdx.files.internal("ui/"+folder+"/rock.png")),
+            new Texture(Gdx.files.internal("ui/"+folder+"/stone.png")),
+            new Texture(Gdx.files.internal("ui/"+folder+"/bush.png"))
+        };
+    }
+
 }

@@ -11,26 +11,23 @@ import com.badlogic.gdx.utils.Array;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import io.github.apocRogue.actors.mapEntities.ChestActor;
-import io.github.apocRogue.actors.mobs.DummyActor;
+import io.github.apocRogue.actors.mobs.WolfActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.general.InventoryPreferences;
-import io.github.apocRogue.inventory.general.ItemManager;
 import io.github.apocRogue.map.*;
-import io.github.apocRogue.weapons.StatKeys;
 import io.github.apocRogue.weapons.Weapon;
-import io.github.apocRogue.weapons.WeaponFactory;
-import io.github.apocRogue.weapons.WeaponIDDecoder;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
-import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
 
@@ -46,20 +43,19 @@ public class GameWorld {
     private final boolean isFinalWorld;
     private final List<Door> doors = new ArrayList<>();
 
-    // ID system managers
-    private ItemManager itemManager;
+    // ID system: only cosmetic registry
     private WeaponTypeRegistry typeRegistry;
 
     // Actors & textures
-    private Array<DummyActor> enemies = new Array<>();
+    private Array<WolfActor> enemies = new Array<>();
     private Array<FlyingEnemyActor> flyingEnemies = new Array<>();
     private Array<MiniSamuraiActor> samuraiActorArray = new Array<>();
     private Array<ChestActor> chests = new Array<>();
 
     private float spawnOffsetY = 22f;
 
-    private Texture playerTexture, playerAttackTexture, dummyTexture, chestTexture,
-        flyingCreatureTexture, samuraiTexture;
+    private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
+        flyingCreatureTexture, samuraiTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
         this.stage = stage;
@@ -67,12 +63,16 @@ public class GameWorld {
     }
 
 
+    private final float baseSpawnX  = 30f;
+    private final float extraSpawnX = 20f;
+
     private void spawnPlayer() {
         player = new PlayerActor(playerTexture, playerAttackTexture);
-        float spawnX  = 30f;
+        float spawnX  = baseSpawnX + extraSpawnX;
         float groundY = getGroundHeightAtX(spawnX);
         float spawnY  = (groundY + player.getHeight() + spawnOffsetY);
         player.setPosition(spawnX, spawnY);
+
         player.setInventory(inventory);
         stage.addActor(player);
     }
@@ -91,7 +91,10 @@ public class GameWorld {
         //Load textures
         playerTexture = new Texture("ui/main-character.png");
         playerAttackTexture = new Texture("ui/main-character-attack.png");
-        dummyTexture = new Texture("ui/dummy.png");
+        wolfNormalTexture    = new Texture("ui/wolf.png");
+        wolfAttackTexture    = new Texture("ui/wolf-attack.png");
+        wolfRadNormalTexture = new Texture("ui/radiated-wolf.png");
+        wolfRadAttackTexture = new Texture("ui/radiated-wolf-attack.png");
         chestTexture = new Texture("ui/chest.png");
         samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
@@ -100,57 +103,56 @@ public class GameWorld {
         inventory = new Inventory(skin);
         spawnPlayer();
 
-        //ID system: load base‐stat table and static metadata
-        itemManager = new ItemManager();
-        itemManager.loadBaseData("ui/items.json");            // base stats + typeID
-
         typeRegistry = new WeaponTypeRegistry();
-        typeRegistry.load("ui/weapon_types.json");            // name, textures, projectile flag
+        typeRegistry.load("ui/weapon_types.json"); // name, textures, projectile flag
 
-        Array<String> allTypeIDs = itemManager.getAllTypeIDs();
+        Set<String> idSet = typeRegistry.getAllTypeIDs();
+        Array<String> allTypeIDs = new Array<>(idSet.toArray(new String[0]));
 
-        //Rehydrate saved weapons (stash)
+        // Rehydrate saved weapons using new ID scheme
         List<String> savedNames = InventoryPreferences.load();
         for (String name : savedNames) {
-            for (String typeID : allTypeIDs) {
-                WeaponTypeInfo info = typeRegistry.get(typeID);
+            for (String localTypeID : allTypeIDs) {
+                // 1) build the 3-char global prefix: '1' (weapon) + localTypeID (e.g. "01")
+                    String globalID = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
+                // 2) lookup cosmetic info by that full ID
+                 WeaponTypeInfo info = typeRegistry.getByGlobalID(globalID);
                 if (info.getName().equals(name)) {
-                    // roll at diff=1,1 so you get base stats
-                    Map<String, Integer> baseStats = itemManager.getBaseStats(typeID);
-                    String id = WeaponFactory.rollAndEncode(typeID, baseStats, 1, 1);
-                    WeaponIDDecoder.Decoded d = WeaponIDDecoder.decode(id);
-
-                    // build a fully‐decoded weapon
-                    Weapon w = new Weapon(
-                        id,
+                    // 3) construct the dummy weapon with that same globalID
+                        Weapon w = new Weapon(
+                        globalID,
                         info.getName(),
-                        d.stats.get("damage"),
+                        0,
                         new Texture(Gdx.files.internal(info.getTexturePath())),
                         info.isProjectileType(),
-                        d.stats.get("projectileValue"),
-                        info.getAmmoTexture(),
-                        d.stats.get("animationSpeed"),
-                        d.stats.get("noiseLevel"),
-                        d.stats.get("dashSpeed"),
-                        d.stats.get("dashDuration"),
-                        d.stats.get("dashCooldown")
-                    );
+                         0,
+                         info.getAmmoTexture(),
+                        0, 0,
+                        0, 0, 0
+                        );
                     inventory.addItem(w);
-                    break;
+                     break;
+                   }
                 }
             }
-        }
 
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
-            float[] pos = getRandomSpawnPosition();
-            DummyActor d = new DummyActor(dummyTexture,
-                pos != null ? pos[0] : 400,
-                pos != null ? pos[1] : mapManager.settings.groundMax + 10
-            );
-            enemies.add(d);
-            stage.addActor(d);
+            float spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
+            float groundY = getGroundHeightAtX(spawnX);
+            float spawnY = groundY + spawnOffsetY;  // Ensure correct vertical offset like player
+
+            boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
+            Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
+            Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
+
+            // build with the right sprites and flag
+            WolfActor wolf = new WolfActor(norm, atk, spawnX, spawnY);
+            wolf.setRadiated(isRad);
+
+            enemies.add(wolf);
+            stage.addActor(wolf);
         }
 
 
@@ -167,7 +169,6 @@ public class GameWorld {
                 x, y,
                 allTypeIDs,
                 skin,
-                itemManager,
                 typeRegistry
             );
             chests.add(chest);
@@ -179,13 +180,18 @@ public class GameWorld {
     }
 
     private float[] getRandomSpawnPosition() {
-        Array<PlatformTile> plats = new Array<>();
-        for (Actor a : stage.getActors()) {
-            if (a instanceof PlatformTile) plats.add((PlatformTile) a);
-        }
-        if (plats.size == 0) return null;
-        PlatformTile t = plats.random();
-        return new float[]{t.getX() + t.getWidth() / 2f, t.getY() + t.getHeight()};
+        Array<Actor> spawnTiles = new Array<>();
+       for (Actor a : stage.getActors()) {
+                if (a instanceof FloorTile || a instanceof PlatformTile) {
+                spawnTiles.add(a);
+                }
+            }
+        if (spawnTiles.size == 0) return null;
+       Actor t = spawnTiles.random();
+       return new float[]{
+            t.getX() + t.getWidth() * 0.5f,
+            t.getY() + t.getHeight()
+       };
     }
 
     private boolean isOverlappingWithDirt(float x, float y) {
@@ -203,6 +209,23 @@ public class GameWorld {
     public void update(float delta) {
         stage.act(delta);
         SoundPhysics.updateDebugEvents(delta);
+        if (player != null) {
+            float feetX = player.getX() + player.getWidth() * 0.5f;
+            float feetY = player.getY();
+            boolean fellOff = player.getY() < 0;
+            boolean hitDirt = isOverlappingWithDirt(feetX, feetY);
+            if (fellOff || hitDirt) {
+                float respawnX  = baseSpawnX + extraSpawnX;
+                float groundY   = getGroundHeightAtX(respawnX);
+                float respawnY  = groundY + player.getHeight() + spawnOffsetY;
+
+                player.setPosition(respawnX, respawnY);
+                player.velocityX = 0;
+                player.velocityY = 0;
+                return;
+
+            }
+            }
         }
 
 
@@ -236,7 +259,6 @@ public class GameWorld {
     }
 
     private Vector2 findExitPosition() {
-        // back off one tile so the door sits fully inside the room
         float tileW = MapManager.settings.tileWidth;
         float x = MapManager.settings.roomWidth - tileW * 1.5f;
         // snap to ground height at that X
@@ -258,24 +280,35 @@ public class GameWorld {
         FloorTile end = floors.get(floors.size() - 1);
 
         // base world‐position: center atop that tile
-        float borderMargin = 80f;
+        float borderMargin = 110f;
         float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
         float baseY = end.getY() + end.getHeight();
 
         // separation in world‐units between the two doors
         float sep = 200f;
 
-        // CONTINUE door always at the end
-        Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
-        doors.add(new Door(Door.Type.CONTINUE, contPos));
+        if (!isFinalWorld) {
+            // Worlds 1–4: three different continue doors
+                for (int r = 1; r <= 3; r++) {
+                float x = baseX + (r - 2) * sep;
+                doors.add(new Door(Door.Type.CONTINUE,
+                 new Vector2(x, baseY),
+                 r));
+                            }
+            } else {
+            // World 5: exactly one continue + one extract
+                // Continue door – center‐left
+            Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
+            doors.add(new Door(Door.Type.CONTINUE,
+                contPos,
+                CurrentDificulty.getRadiation()));
 
-        // EXTRACT only on final world, offset the other direction
-        if (isFinalWorld) {
+            // Extract door – center‐right
             Vector2 exitPos = new Vector2(baseX + sep * 0.5f, baseY);
-            doors.add(new Door(Door.Type.EXTRACT, exitPos));
-        }
+            doors.add(new Door(Door.Type.EXTRACT,
+                exitPos));
+            }
 
-        // add them to the stage
         doors.forEach(stage::addActor);
     }
 
@@ -296,7 +329,8 @@ public class GameWorld {
         stage.clear();
         playerTexture.dispose();
         playerAttackTexture.dispose();
-        dummyTexture.dispose();
+        wolfNormalTexture.dispose();
+        wolfAttackTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();
         flyingCreatureTexture.dispose();

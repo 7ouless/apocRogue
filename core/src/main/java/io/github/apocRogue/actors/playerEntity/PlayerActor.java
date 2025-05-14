@@ -11,11 +11,7 @@ import io.github.apocRogue.actors.mapEntities.ChestActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
 import io.github.apocRogue.globals.getters.ObstacleGetters;
 import io.github.apocRogue.globals.movementProcesses.StepUpProcessor;
-import io.github.apocRogue.globals.physics.MovementProcessor;
-import io.github.apocRogue.globals.physics.DashProcessor;
-import io.github.apocRogue.globals.physics.JumpProcessor;
-import io.github.apocRogue.globals.physics.GravitySystem;
-import io.github.apocRogue.globals.physics.PhysicalActor;
+import io.github.apocRogue.globals.physics.*;
 import io.github.apocRogue.globals.stats.StatsComponent;
 import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.map.TileActor;
@@ -37,6 +33,13 @@ public class PlayerActor extends PhysicalActor {
     public float dashDuration  = 0.15f;
     public float dashTimer     = 0f;
     public boolean isDashing   = false;
+
+    private boolean isKnockedback   = false;
+    private float   knockbackTimer  = 0f;
+    private static final float KNOCKBACK_DURATION = 0.3f;  // seconds
+
+    private float   flashTimer      = 0f;
+    private static final float FLASH_DURATION      = 0.4f;  // seconds
 
     private Inventory inventory;
     public float timeCounter   = 0f;
@@ -70,10 +73,12 @@ public class PlayerActor extends PhysicalActor {
     public void takeDamage(int amount) {
         stats.takeDamage(amount);
         System.out.println("Damage Taken " + amount);
+        flashTimer = FLASH_DURATION;
     }
 
     @Override
     public void act(float delta) {
+        stats.regenStamina(delta);
         super.act(delta);
 
         if (isAttacking) {
@@ -87,6 +92,13 @@ public class PlayerActor extends PhysicalActor {
         if (katanaCooldownTimer > 0f) {
             katanaCooldownTimer -= delta;
         }
+
+        if (flashTimer > 0f) {
+            flashTimer -= delta;
+            if (flashTimer < 0f) flashTimer = 0f;
+        }
+
+        KnockbackProcessor.updateKnockback(this, delta);
 
         // movement & dash
         if (!isWeaponDashing) {
@@ -128,6 +140,12 @@ public class PlayerActor extends PhysicalActor {
         timeCounter += delta;
     }
 
+
+    public void startKnockback() {
+        isKnockedback  = true;
+        knockbackTimer = KNOCKBACK_DURATION;
+    }
+
     // preserve existing inventory/weapon-dash API
     public void setWeaponDashing(boolean d)   { this.isWeaponDashing = d; }
     public boolean isWeaponDashing()          { return isWeaponDashing; }
@@ -140,6 +158,13 @@ public class PlayerActor extends PhysicalActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+
+        if (flashTimer > 0f) {
+            batch.setColor(1f, 0f, 0f, 1f);
+        } else {
+            batch.setColor(1f, 1f, 1f, 1f);
+        }
+
         Texture current = isAttacking ? attackTex : idleTex;
 
         float drawX = getX(), drawY = getY(),
@@ -151,6 +176,7 @@ public class PlayerActor extends PhysicalActor {
         }
 
         batch.draw(current, drawX, drawY, drawW, drawH);
+        batch.setColor(1f, 1f, 1f, 1f);
     }
 
 

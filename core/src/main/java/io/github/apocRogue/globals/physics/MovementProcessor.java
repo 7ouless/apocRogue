@@ -1,4 +1,3 @@
-// File: io/github/apocRogue/globals/physics/MovementProcessor.java
 package io.github.apocRogue.globals.physics;
 
 import com.badlogic.gdx.Gdx;

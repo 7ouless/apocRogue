@@ -1,3 +1,4 @@
+/*
 package io.github.apocRogue.weapons;
 
 import java.util.LinkedHashMap;
@@ -43,3 +44,4 @@ public class WeaponIDDecoder {
         return 10 + (c - 'A');
     }
 }
+*/

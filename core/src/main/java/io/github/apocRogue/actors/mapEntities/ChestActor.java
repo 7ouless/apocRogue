@@ -15,24 +15,23 @@ import com.badlogic.gdx.utils.Array;
 
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
-import io.github.apocRogue.inventory.general.ItemManager;
-import io.github.apocRogue.weapons.WeaponFactory;
-import io.github.apocRogue.weapons.WeaponIDDecoder;
-import io.github.apocRogue.weapons.WeaponIDDecoder.Decoded;
+import io.github.apocRogue.globals.ids.ClassDigit;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.weapons.Weapon;
 import java.util.Map;
+import io.github.apocRogue.shop.ShopWeaponPayload;
+import io.github.apocRogue.weapons.WeaponGenerateService;
 
 /**
  * A chest that, when opened (or destroyed), rolls and spawns two weapons
  * using your pseudo-hex ID system.
  */
 public class ChestActor extends Image {
+    private static final float SCALE = 0.11f;
     private boolean opened = false;
     private int health = 1;
     private final Array<String> possibleTypeIDs;
-    private final ItemManager itemManager;
     private final WeaponTypeRegistry typeRegistry;
     private Label pressRLabel;
     private final Skin uiSkin;
@@ -42,15 +41,13 @@ public class ChestActor extends Image {
                       float x, float y,
                       Array<String> possibleTypeIDs,
                       Skin uiSkin,
-                      ItemManager itemManager,
                       WeaponTypeRegistry typeRegistry)
     {
         super(texture);
         setPosition(x, y);
-        setSize(texture.getWidth(), texture.getHeight());
+        setSize(texture.getWidth() * SCALE, texture.getHeight() * SCALE);
         this.possibleTypeIDs = possibleTypeIDs;
         this.uiSkin          = uiSkin;
-        this.itemManager     = itemManager;
         this.typeRegistry    = typeRegistry;
     }
 
@@ -110,50 +107,56 @@ public class ChestActor extends Image {
         for (int i = 0; i < 2; i++) spawnRandomItem();
 
         // show “open” texture
-        Texture openTex = new Texture("ui/openChest.jpg");
+        Texture openTex = new Texture("ui/openChest.png");
         setDrawable(new TextureRegionDrawable(new TextureRegion(openTex)));
     }
 
     private void spawnRandomItem() {
         if (possibleTypeIDs.size == 0) return;
 
-        // 1) pick a random weapon type
-        String typeID = possibleTypeIDs.random();
+        // pick one of your local type-IDs ("01","02",…)
+        String localTypeID = possibleTypeIDs.random();
 
-        // 2) roll & encode with skullLevel=1, skullSub=1
-        Map<String,Integer> base = itemManager.getBaseStats(typeID);
-        String id = WeaponFactory.rollAndEncode(typeID, base, 1, 1);
+        // build the 3-char prefix: class-digit '1' + localTypeID
+        String idPrefix = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
 
-        // 3) decode back to exact stats
-        Decoded d = WeaponIDDecoder.decode(id);
+        WeaponGenerateService svc = new WeaponGenerateService();
+        svc.generate(idPrefix, 1, 1, new WeaponGenerateService.Callback() {
+            @Override public void onSuccess(ShopWeaponPayload p) {
+                // 1) look up cosmetics by the full ID
+                WeaponTypeInfo info = typeRegistry.getByGlobalID(p.id);
 
-        // 4) lookup static info
-        WeaponTypeInfo info = typeRegistry.get(d.typeID);
+                // 2) pass p.id (full global ID) into your Weapon constructor
+                Weapon w = new Weapon(
+                    p.id,
+                    info.getName(),
+                    p.stats.get("damage"),
+                    new Texture(Gdx.files.internal(info.getTexturePath())),
+                    info.isProjectileType(),
+                    p.stats.get("projectileValue"),
+                    info.getAmmoTexture(),
+                    p.stats.get("animationSpeed"),
+                    p.stats.get("noiseLevel"),
+                    p.stats.get("dashSpeed"),
+                    p.stats.get("dashDuration"),
+                    p.stats.get("dashCooldown")
+                );
 
-        // 5) build the Weapon instance
-        Weapon w = new Weapon(
-            id,
-            info.getName(),
-            d.stats.get("damage"),
-            new Texture(Gdx.files.internal(info.getTexturePath())),
-            info.isProjectileType(),
-            d.stats.get("projectileValue"),
-            info.getAmmoTexture(),
-            d.stats.get("animationSpeed"),
-            d.stats.get("noiseLevel"),
-            d.stats.get("dashSpeed"),
-            d.stats.get("dashDuration"),
-            d.stats.get("dashCooldown")
-        );
+                ItemActor drop = new ItemActor(w, getX(), getY());
+                drop.setVelocity(
+                    MathUtils.random(-100f, 100f),
+                    MathUtils.random(100f, 200f)
+                );
+                getStage().addActor(drop);
+            }
 
-        // 6) drop it into the world
-        ItemActor drop = new ItemActor(w, getX(), getY());
-        drop.setVelocity(
-            MathUtils.random(-100f,100f),
-            MathUtils.random(100f,200f)
-        );
-        getStage().addActor(drop);
+            @Override public void onFailure(Throwable t) {
+                Gdx.app.error("CHEST", "Loot generation failed", t);
+            }
+        });
     }
+
+
 
     private PlayerActor findPlayer() {
         for (Actor a : getStage().getActors()) {

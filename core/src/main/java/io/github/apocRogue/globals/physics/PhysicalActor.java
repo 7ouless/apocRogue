@@ -1,4 +1,3 @@
-// PhysicalActor.java
 package io.github.apocRogue.globals.physics;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Image;

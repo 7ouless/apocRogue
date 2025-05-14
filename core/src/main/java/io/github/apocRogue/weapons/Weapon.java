@@ -11,6 +11,7 @@ import io.github.apocRogue.globals.physics.SoundPhysics;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import io.github.apocRogue.weapons.DashAttackActor;
+import io.github.apocRogue.globals.ids.ClassDigit;
 
 public class Weapon {
     private final String id;
@@ -135,8 +136,8 @@ public class Weapon {
             stage.addActor(arrow);
         } else {                              // MELEE branch
             boolean isKatana =
-                name.equalsIgnoreCase("Katana")   // by name
-                    || id.startsWith("04");              // by ID prefix
+                name.equalsIgnoreCase("Katana") ;  // by name
+
 
 
             if (isKatana) {
