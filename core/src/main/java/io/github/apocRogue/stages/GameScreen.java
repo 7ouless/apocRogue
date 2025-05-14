@@ -232,6 +232,12 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
+    public void RunManager
+
+    public RunManager getRunMgr() {
+        return runMgr;
+    }
+
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage
