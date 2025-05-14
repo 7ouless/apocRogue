@@ -5,7 +5,7 @@ import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 
 public class RunManager {
     private int skullLevel = 1;
-    private int worldLevel = 1;
+    public int worldLevel = 1;
 
 
     public RunManager() { }
@@ -18,6 +18,13 @@ public class RunManager {
         return worldLevel;
     }
 
+    public void setSkullLevel(int level) {
+        this.skullLevel = level;
+    }
+
+    public void setWorldLevel(int worldLevel) {
+        this.worldLevel = worldLevel;
+    }
 
     public void advanceWorld() {
         worldLevel++;

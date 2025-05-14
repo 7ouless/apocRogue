@@ -26,8 +26,6 @@ import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
 import io.github.apocRogue.actors.mapEntities.Door;
-
-
 import io.github.apocRogue.globals.physics.SoundPhysics;
 
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ public class GameScreen extends ScreenAdapter {
     private SpriteBatch batch;
     private OrthographicCamera camera;
 
-    private final RunManager runMgr = new RunManager();
+    public static final RunManager runMgr = new RunManager();
     private Label skullLabel, worldLabel;
     private GameWorld gameWorld;
 
@@ -221,6 +219,10 @@ public class GameScreen extends ScreenAdapter {
             }
         }
 
+    }
+
+    public static RunManager getRunManager() { //used to access this RunManager object to mapManager
+        return runMgr;
     }
 
     private void createPauseOverlay() {

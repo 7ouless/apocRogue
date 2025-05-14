@@ -2,6 +2,8 @@ package io.github.apocRogue.map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import io.github.apocRogue.stages.GameScreen;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -140,9 +142,9 @@ public class MapManager {
         for (int i = 0; i < settings.roomWidth / tileWidth; i++) {
             //Per-column noise
             float persistence = 0.5f;
-            float frequency   = 0.5f;
-            float amplitude   = 0.9f;
-            float noiseValue  = 0f;
+            float frequency = 0.5f;
+            float amplitude = 0.9f;
+            float noiseValue = 0f;
 
             for (int octave = 0; octave < octaves; octave++) {
                 noiseValue += pg.noise(i * frequency) * amplitude;
@@ -152,7 +154,7 @@ public class MapManager {
             noiseValue += pg.noise(i * 0.2f);
 
             //Snap to grid
-            int yRaw = (int)((noiseValue + 1f) / 2f
+            int yRaw = (int) ((noiseValue + 1f) / 2f
                 * ((settings.groundMax / 2 - settings.groundMin) - settings.groundMin)
                 + settings.groundMin);
             float unclampedY = ProcGen.fitGrid(yRaw, tileHeight);
@@ -187,6 +189,53 @@ public class MapManager {
                 tileHeight,
                 TileType.GROUND
             ));
+
+            if (GameScreen.getRunManager().getWorldLevel() >= 4 && i > 6) {
+                int ceilingY = (settings.roomHeight - Math.round(floorY)) - (i * 22);
+                if (ceilingY < 650) {
+                    ceilingY = 650;
+                }
+
+                platformTiles.add(new TileInfo(
+                    i * tileWidth,
+                    ceilingY,
+                    tileWidth,
+                    tileHeight,
+                    TileType.PLATFORM
+                ));
+            } else {
+                //Island-creation logic
+                if (canCreateIsland) {
+                    int var = random.nextInt(15);
+                    if (var > 4) {
+                        islandGoalLength = random.nextInt(2, 4);
+                        islandCurrentLength = 1;
+                        islandCurrentY = yPos;
+                        creatingIsland = true;
+                        canCreateIsland = false;
+                    }
+                } else if (!creatingIsland) {
+                    if (canCreateIslandCount >= 2) {
+                        canCreateIsland = true;
+                    } else {
+                        canCreateIslandCount++;
+                    }
+                }
+                if (creatingIsland) {
+                    if (islandCurrentLength <= islandGoalLength) {
+                        if (yPos < islandCurrentY - tileWidth) {
+                            islandCurrentY -= tileWidth;
+                        } else if (yPos > islandCurrentY + tileWidth) {
+                            islandCurrentY += tileWidth;
+                        }
+                        createIslandStrip(i * tileWidth, islandCurrentY);
+                        islandCurrentLength++;
+                    } else {
+                        creatingIsland = false;
+                    }
+                }
+            }
+
             if (GRASS_ENABLED) {
                 grassTiles.add(new TileInfo(
                     i * tileWidth,
@@ -206,7 +255,7 @@ public class MapManager {
                     + random.nextFloat() * (tileWidth - w);
                 float y = floorY + tileHeight - settings.treeYOffset;
                 boolean useAlt = random.nextBoolean();
-                boolean flip   = random.nextBoolean();
+                boolean flip = random.nextBoolean();
 
                 treeTiles.add(new TileInfo(
                     x, y, w, h,
@@ -233,18 +282,18 @@ public class MapManager {
                 float w, h, yOffset;
                 switch (variant) {
                     case 0: // rock
-                        w       = settings.rockWidth;
-                        h       = settings.rockHeight;
+                        w = settings.rockWidth;
+                        h = settings.rockHeight;
                         yOffset = settings.rockYOffset;
                         break;
                     case 1: // stone
-                        w       = settings.stoneWidth;
-                        h       = settings.stoneHeight;
+                        w = settings.stoneWidth;
+                        h = settings.stoneHeight;
                         yOffset = settings.stoneYOffset;
                         break;
                     default: // bush
-                        w       = settings.bushWidth;
-                        h       = settings.bushHeight;
+                        w = settings.bushWidth;
+                        h = settings.bushHeight;
                         yOffset = settings.bushYOffset;
                         break;
                 }
@@ -279,7 +328,7 @@ public class MapManager {
                 boolean flipX = rising;
                 boolean useAltTexture = random.nextBoolean();
 
-                float edgeHeight = tileHeight *0.3f;      // match floor tile's visual height
+                float edgeHeight = tileHeight * 0.3f;      // match floor tile's visual height
                 float edgeWidth = tileWidth * 0.1f;        // shrink width to 50%
 
                 // compute a “base” X exactly as before, then apply your offset:
@@ -307,8 +356,8 @@ public class MapManager {
                     float grassYOffset = tileHeight * 0.5f;
 
                     float grassW = grassUseEdgeSize
-                        ? edgeWidth  * grassWidthMultiplier
-                        : tileWidth  * grassWidthMultiplier;
+                        ? edgeWidth * grassWidthMultiplier
+                        : tileWidth * grassWidthMultiplier;
                     float grassH = grassUseEdgeSize
                         ? edgeHeight * grassHeightMultiplier
                         : tileHeight * grassHeightMultiplier;
@@ -317,8 +366,8 @@ public class MapManager {
                     float grassBaseX = flipX
                         ? (squareX + edgeWidth)
                         : squareX;
-                    float grassX = grassBaseX - grassW/2f
-                                         + (flipX ? +grassXOffset : -grassXOffset);
+                    float grassX = grassBaseX - grassW / 2f
+                        + (flipX ? +grassXOffset : -grassXOffset);
 
                     grassTiles.add(new TileInfo(
                         grassX,
@@ -340,68 +389,39 @@ public class MapManager {
 
             //Update lastTileY for next iteration
             lastTileY = yPos;
-
-            //Island-creation logic
-            if (canCreateIsland) {
-                int var = random.nextInt(15);
-                if (var > 4) {
-                    islandGoalLength    = random.nextInt(2, 4);
-                    islandCurrentLength = 1;
-                    islandCurrentY      = yPos;
-                    creatingIsland      = true;
-                    canCreateIsland     = false;
-                }
-            } else if (!creatingIsland) {
-                if (canCreateIslandCount >= 2) {
-                    canCreateIsland = true;
-                } else {
-                    canCreateIslandCount++;
-                }
-            }
-            if (creatingIsland) {
-                if (islandCurrentLength <= islandGoalLength) {
-                    if (yPos < islandCurrentY - tileWidth) {
-                        islandCurrentY -= tileWidth;
-                    } else if (yPos > islandCurrentY + tileWidth) {
-                        islandCurrentY += tileWidth;
-                    }
-                    createIslandStrip(i * tileWidth, islandCurrentY);
-                    islandCurrentLength++;
-                } else {
-                    creatingIsland = false;
-                }
-            }
         }
+
     }
 
 
 
-    private void fillGround(int i, float topY) {
-        // 1) Fill normally down to groundMin
-        int j = 0;
-        while (topY - (tileHeight * j) >= settings.groundMin) {
-            dirtTiles.add(new TileInfo(
-                i * tileWidth,
-                topY - (tileHeight * j),
-                tileWidth,
-                tileHeight,
-                TileType.DIRT
-            ));
-            j++;
+    private void fillGround(int i, float topY){
+            // 1) Fill normally down to groundMin
+            int j = 0;
+            while (topY - (tileHeight * j) >= settings.groundMin) {
+                dirtTiles.add(new TileInfo(
+                    i * tileWidth,
+                    topY - (tileHeight * j),
+                    tileWidth,
+                    tileHeight,
+                    TileType.DIRT
+                ));
+                j++;
+            }
+
+            // 2) Add 5 extra dirt layers below that
+            for (int extra = 1; extra <= 5; extra++) {
+                dirtTiles.add(new TileInfo(
+                    i * tileWidth,
+                    // continue stacking downwards
+                    topY - (tileHeight * (j + extra - 1)),
+                    tileWidth,
+                    tileHeight,
+                    TileType.DIRT
+                ));
+            }
         }
 
-        // 2) Add 5 extra dirt layers below that
-        for (int extra = 1; extra <= 5; extra++) {
-            dirtTiles.add(new TileInfo(
-                i * tileWidth,
-                // continue stacking downwards
-                topY - (tileHeight * (j + extra - 1)),
-                tileWidth,
-                tileHeight,
-                TileType.DIRT
-            ));
-        }
-    }
 
 
     private Actor createTileActor(TileInfo info) {
