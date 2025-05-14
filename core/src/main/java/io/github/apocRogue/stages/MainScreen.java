@@ -2,6 +2,7 @@ package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -16,13 +17,19 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.graphics.Color;
 
 public class MainScreen extends ScreenAdapter {
     private Stage stage;
     private Skin skin;
     private stageBuilder game;
     private SpriteBatch batch;
+    private Texture normalBg, deadBg;
+    private Texture grainTex;
     private Texture bgTex;
+    private enum State { WAITING, FLASHING, HOLD, SCARED }
+    private State state = State.WAITING;
+    private float nextTrigger, timer,  holdTimer, scareTimer, grainAlpha;
     private float bgScale = 1.2f;
 
     public MainScreen(stageBuilder game) {
@@ -32,7 +39,9 @@ public class MainScreen extends ScreenAdapter {
     @Override
     public void show() {
         batch = new SpriteBatch();
-        bgTex = new Texture(Gdx.files.internal("ui/main-menu-bg.png"));
+        normalBg = new Texture(Gdx.files.internal("ui/main-menu-bg.png"));
+        deadBg   = new Texture(Gdx.files.internal("ui/main-menu-bg-dead.png"));
+        bgTex    = normalBg;
 
         stage = new Stage(new FillViewport(1080, 720));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
@@ -112,8 +121,31 @@ public class MainScreen extends ScreenAdapter {
 
         stage.addActor(window);
         Gdx.input.setInputProcessor(stage);
+
+        // prepare a simple repeating noise texture
+        Pixmap pix = new Pixmap(64,64,Pixmap.Format.RGBA8888);
+        for(int ix = 0; ix < 64; ix++){
+            for(int iy = 0; iy < 64; iy++){
+                float a = MathUtils.random() * 0.3f;
+                pix.setColor(1,1,1,a);
+                pix.drawPixel(ix, iy);
+                }
+            }
+        grainTex = new Texture(pix);
+        grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        pix.dispose();
+
+        // schedule first scare in 10–20s
+        scheduleNext();
     }
 
+
+
+    private void scheduleNext() {
+        nextTrigger = MathUtils.random(5f,12f);
+        timer = 0;
+        state = State.WAITING;
+    }
 
     @Override
     public void render(float delta) {
@@ -140,10 +172,61 @@ public class MainScreen extends ScreenAdapter {
         // 5) Center the image so overflow is equal on both sides
         float x = (vw - w) / 2f;
         float y = (vh - h) / 2f + 50f;
+        timer += delta;
+
+        switch(state) {
+            case WAITING:
+                if (timer >= nextTrigger) {
+                    timer      = 0f;
+                    grainAlpha = 0f;
+                    state      = State.FLASHING;
+                }
+                break;
+
+            case FLASHING:
+                // ramp grain up more slowly:
+                grainAlpha = Math.min(1f, grainAlpha + delta * 1f);  // try 1f instead of 5f
+                if (grainAlpha >= 1f) {
+                    holdTimer = 0f;
+                    state     = State.HOLD;
+                }
+                break;
+
+            case HOLD:
+                holdTimer += delta;
+                if (holdTimer >= 0.5f) {
+                    // after 1 second at full grain, switch to dead BG and clear grain
+                    bgTex      = deadBg;
+                    grainAlpha = 0f;
+                    scareTimer = 0f;
+                    state      = State.SCARED;
+                }
+                break;
+
+            case SCARED:
+                scareTimer += delta;
+                if (scareTimer >= 0.5f) {
+                    bgTex      = normalBg;
+                    grainAlpha = 0f;
+                    scheduleNext();
+                }
+                break;
+        }
 
         batch.setProjectionMatrix(stage.getCamera().combined);
         batch.begin();
         batch.draw(bgTex, x, y, w, h);
+
+        if ((state == State.FLASHING || state == State.HOLD) && grainAlpha > 0f) {
+            batch.setColor(1f,1f,1f, grainAlpha);
+            float tileW = grainTex.getWidth(), tileH = grainTex.getHeight();
+            for (float gx = x; gx < x + w; gx += tileW) {
+                for (float gy = y; gy < y + h; gy += tileH) {
+                    batch.draw(grainTex, gx, gy, tileW, tileH);
+                }
+            }
+            batch.setColor(Color.WHITE);
+        }
         batch.end();
 
         stage.act(delta);
@@ -161,5 +244,8 @@ public class MainScreen extends ScreenAdapter {
         skin.dispose();
         batch.dispose();
         bgTex.dispose();
+        normalBg.dispose();
+        deadBg.dispose();
+        grainTex.dispose();
     }
 }

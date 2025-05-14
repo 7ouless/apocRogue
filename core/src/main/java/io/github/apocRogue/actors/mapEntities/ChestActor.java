@@ -86,12 +86,10 @@ public class ChestActor extends Image {
         }
     }
 
-    /** Called by your “E/R” listener */
     public void openByInteraction() {
         if (!opened) openChest();
     }
 
-    /** Called when the chest is attacked */
     public void takeDamage(int amount) {
         if (!opened && (health -= amount) <= 0) {
             openChest();

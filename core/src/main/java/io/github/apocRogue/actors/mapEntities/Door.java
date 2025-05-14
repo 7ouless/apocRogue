@@ -9,12 +9,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 
 public class Door extends Actor {
     public enum Type { CONTINUE, EXTRACT }
 
-    private static final float SCALE = 0.08f;
+    private static final float SCALE = 0.2f;
 
     private final int radiationLevel;
 
@@ -29,6 +31,9 @@ public class Door extends Actor {
 
     private static final BitmapFont FONT = new BitmapFont();
     private static final GlyphLayout LAYOUT = new GlyphLayout();
+
+    private Label pressWLabel;
+    private static final float INTERACT_RADIUS = 100f;
 
 
     public Door(Type type, Vector2 pos,int radiationLevel) {
@@ -49,10 +54,7 @@ public class Door extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         // tint by door type
-        Color tint = (type == Type.CONTINUE)
-            ? Color.RED
-            : Color.BLUE;
-        batch.setColor(tint);
+
         batch.draw(texture, getX(), getY(), getWidth(), getHeight());
         batch.setColor(Color.WHITE);
 
