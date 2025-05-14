@@ -280,7 +280,7 @@ public class GameWorld {
         FloorTile end = floors.get(floors.size() - 1);
 
         // base world‐position: center atop that tile
-        float borderMargin = 110f;
+        float borderMargin = 200f;
         float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
         float baseY = end.getY() + end.getHeight();
 
