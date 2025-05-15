@@ -244,17 +244,11 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
-    public void RunManager
-
-    public RunManager getRunMgr() {
-        return runMgr;
-    }
-
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
-            }
+        }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
         CurrentDificulty.setDifficulty(diff);
@@ -492,9 +486,9 @@ public class GameScreen extends ScreenAdapter {
         //1.5) handle doors -- Im lazy and dont want to change the next numbers hehehe
 
         Door door = gameWorld.getOverlappingDoor();
-         if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+        if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             handleDoor(door);
-            }
+        }
 
 
         // 1.7) if the player isn’t spawned yet, skip camera + rest -- Im lazy and dont want to change the next numbers hehehe
@@ -570,9 +564,9 @@ public class GameScreen extends ScreenAdapter {
             bgSun,
             camLeft + viewportWidth * 0.2f - sunW/2,
             camBottom + viewportHeight * 0.7f - sunH/2,
-                    sunW,
-                    sunH
-                );
+            sunW,
+            sunH
+        );
 
         // 4.3) Side‐clouds
         batch.setColor(1f, 1f, 1f, 0.75f);
@@ -582,7 +576,7 @@ public class GameScreen extends ScreenAdapter {
             camLeft,
             camBottom + viewportHeight * 0f,
             -0.005f,
-             0.4f
+            0.4f
         );
         batch.setColor(1f, 1f, 1f, 1f);
 
@@ -595,35 +589,35 @@ public class GameScreen extends ScreenAdapter {
             0.5f);
 
         // 4.5) Top‐clouds
-               drawTiledLayer(
-                   batch,
-                   bgTopClouds,
-                   camLeft,
-                   camBottom + viewportHeight * 0.73f,
-                   -0.13f,
-                   0.6f
-               );
+        drawTiledLayer(
+            batch,
+            bgTopClouds,
+            camLeft,
+            camBottom + viewportHeight * 0.73f,
+            -0.13f,
+            0.6f
+        );
 
         // 4.6) Small‐clouds
-               drawTiledLayer(
-                   batch,
-                   bgSmallClouds,
-                   camLeft,
-                   camBottom + viewportHeight * 0.4f + trunkYOffset ,
-                   -0.12f,
-                   0f
-               );
+        drawTiledLayer(
+            batch,
+            bgSmallClouds,
+            camLeft,
+            camBottom + viewportHeight * 0.4f + trunkYOffset ,
+            -0.12f,
+            0f
+        );
 
         // 4.7) Big‐tree trunk
 
-                drawTiledLayer(
-                    batch,
-                    bgBigTree,
-                    camLeft,
-                    camBottom + viewportHeight * 0.1f,
-                    -0.15f,      // parallax factor
-                    0.7f
-                );
+        drawTiledLayer(
+            batch,
+            bgBigTree,
+            camLeft,
+            camBottom + viewportHeight * 0.1f,
+            -0.15f,      // parallax factor
+            0.7f
+        );
         // 4.8) Meadow (front of all background layers)
         drawTiledLayer(
             batch,
@@ -636,9 +630,9 @@ public class GameScreen extends ScreenAdapter {
 
 
         // …any further parallax layers…
-                batch.end();
-                // 5)draw the world
-                stage.draw();
+        batch.end();
+        // 5)draw the world
+        stage.draw();
 
         // 6) Any overlay Stage (e.g. grass)
         overlayStage.setViewport(stage.getViewport());
@@ -731,12 +725,12 @@ public class GameScreen extends ScreenAdapter {
             }
             gameWorld.extractItems();
             game.setScreen(new MainScreen(game));
-            } else {
+        } else {
             // CONTINUE door --> first record the player's choice
             CurrentDificulty.setRadiation(door.getRadiationLevel());
             // then advance or continue the run
             if (runMgr.isFinalWorld()) {
-            runMgr.continueRun();
+                runMgr.continueRun();
 
             } else {
                 runMgr.advanceWorld();
@@ -759,12 +753,12 @@ public class GameScreen extends ScreenAdapter {
             loadCurrentWorld();
             switchMusic(newRad);
         }
-        }
+    }
 
     private void updateHud() {
         skullLabel.setText("Skull: " + runMgr.getSkullLevel());
         worldLabel.setText("World: " + runMgr.getWorldLevel());
-        }
+    }
 
     private void drawTiledLayer(SpriteBatch batch,
                                 Texture tex,
