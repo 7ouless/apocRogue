@@ -44,6 +44,7 @@ public class MapManager {
     private int octaves = settings.octaves;  //#of octaves
 
     private List<TileInfo> platformTiles = new ArrayList<>();
+    private List<TileInfo> platformGrassTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
     private List<TileInfo> borderTiles = new ArrayList<>();
     private List<TileInfo> edgeTiles = new ArrayList<>();
@@ -66,6 +67,9 @@ public class MapManager {
             stage.addActor(tileActor);
         }
 
+        for (TileInfo info : platformGrassTiles) {
+            stage.addActor(createTileActor(info));
+        }
 
         for (TileInfo info : decorTiles) {
             stage.addActor(createTileActor(info));
@@ -130,6 +134,16 @@ public class MapManager {
             tileHeight,
             TileType.PLATFORM
         ));
+
+        if (GRASS_ENABLED) {
+            platformGrassTiles.add(new TileInfo(
+                xStart,
+                currentIslandPlatY + tileHeight,
+                tileWidth,
+                tileHeight,
+                TileType.PLATFORM_GRASS_OVERLAY
+            ));
+        }
     }
 
 
@@ -424,7 +438,10 @@ public class MapManager {
             case DECOR:
                 int idx = Integer.parseInt(info.grassType);
                 return new DecorTile(info.x, info.y, info.width, info.height, info.flipX, idx);
-           default:
+            case PLATFORM_GRASS_OVERLAY:
+                return new PlatformGrassOverlayTile(info.x, info.y, info.width,info.height);
+
+            default:
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
     }

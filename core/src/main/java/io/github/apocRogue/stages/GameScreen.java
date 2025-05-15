@@ -20,10 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.inventory.menuinventory.InventoryService;
-import io.github.apocRogue.map.DecorTile;
-import io.github.apocRogue.map.GrassOverlayTile;
-import io.github.apocRogue.map.MapManager;
-import io.github.apocRogue.map.TreeTile;
+import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
@@ -133,6 +130,7 @@ public class GameScreen extends ScreenAdapter {
         TreeTile.loadForRadiation(folder);
         GrassOverlayTile.loadForRadiation(folder);
         DecorTile.loadForRadiation(folder);
+        PlatformGrassOverlayTile.loadForRadiation(folder);
 
         // load your two looping tracks
         musicRad2 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation2.mp3"));
@@ -167,11 +165,14 @@ public class GameScreen extends ScreenAdapter {
         // move all grass into the overlay stage
         List<Actor> grassActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
-            if (a instanceof GrassOverlayTile) grassActors.add(a);
+            if (a instanceof GrassOverlayTile
+                || a instanceof PlatformGrassOverlayTile) {
+                grassActors.add(a);
+            }
         }
-        for (Actor grass : grassActors) {
-            grass.remove();
-            overlayStage.addActor(grass);
+        for (Actor g : grassActors) {
+            g.remove();
+            overlayStage.addActor(g);
         }
 
         // Create normal UI or HUD elements here (if any)...
@@ -750,6 +751,7 @@ public class GameScreen extends ScreenAdapter {
             TreeTile.loadForRadiation(newFolder);
             GrassOverlayTile.loadForRadiation(newFolder);
             DecorTile.loadForRadiation(newFolder);
+            PlatformGrassOverlayTile.loadForRadiation(newFolder);
             loadCurrentWorld();
             switchMusic(newRad);
         }
