@@ -28,7 +28,7 @@ public class MiniSamuraiActor extends EnemyActor {
     private final Texture normalTexture;
     private final Texture attackTexture;
     private Texture activeTexture;
-    private static final float SCALE = 0.5f;
+    private static final float SCALE = 0.9f;
 
 
     public MiniSamuraiActor(Texture texture, Texture samuraiAttackTexture, float x, float y) {

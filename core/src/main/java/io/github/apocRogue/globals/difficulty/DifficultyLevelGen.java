@@ -15,7 +15,7 @@ public class DifficultyLevelGen {
     public static int getChestCount() {
         int enemyCount = getEnemyCount();
         Gdx.app.log("SPAWN", "EnemyCount = " + enemyCount);
-        int chestCount = MathUtils.floor(enemyCount /3.0f);
+        int chestCount = MathUtils.floor(enemyCount );
         return Math.max(1, chestCount);
     }
 }

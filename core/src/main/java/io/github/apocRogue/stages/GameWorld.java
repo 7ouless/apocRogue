@@ -184,27 +184,26 @@ public class GameWorld {
 
 
 
-        // Spawn enemies
+        // Spawn enemies (wolves OR samurai)
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
             float spawnX, spawnY;
             float[] pos;
             int attempts = 0;
 
-            // Pick only floor/platform tiles, retry if it ends up in dirt
-                   do {
+            // find a non‐dirt spot
+            do {
                 pos = getRandomSpawnPosition();
                 if (pos != null) {
-                     spawnX = pos[0];
+                    spawnX = pos[0];
                     spawnY = pos[1] + spawnOffsetY;
-                    } else {
-                    // fallback to full‐width random
-                        spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
+                } else {
+                    spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
                     float groundY = getGroundHeightAtX(spawnX);
                     spawnY = groundY + spawnOffsetY;
-                    }
+                }
                 attempts++;
-                } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
+            } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
 
             // randomly choose wolf vs. samurai
             if (MathUtils.randomBoolean(0.5f)) {
@@ -230,7 +229,6 @@ public class GameWorld {
                 stage.addActor(samurai);
             }
         }
-
 
         // Spawn chests
         int chestCount = DifficultyLevelGen.getChestCount();
