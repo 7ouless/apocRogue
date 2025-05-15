@@ -23,6 +23,6 @@ public class RoamingState implements State<MiniSamuraiActor> {
 
     @Override
     public void exit(MiniSamuraiActor samurai) {
-        // Cleanup if needed.
+        samurai.stopRoaming();
     }
 }

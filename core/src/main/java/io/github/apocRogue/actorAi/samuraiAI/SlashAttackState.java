@@ -7,6 +7,7 @@ public class SlashAttackState implements State<MiniSamuraiActor> {
     private float attackDuration = 0.5f; // a quick slash
     @Override
     public void enter(MiniSamuraiActor samurai) {
+        samurai.stopRoaming();
         samurai.playSlashAnimation();
         if (samurai.canDash()) {
             samurai.startDash();

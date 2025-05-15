@@ -7,7 +7,7 @@ public class DifficultyLevelGen {
 
     public static int getEnemyCount() {
         int diff = CurrentDificulty.getDifficulty();
-        int baseEnemies = diff;
+        int baseEnemies = diff / 3;
         int randomAddition = MathUtils.random(0, diff / 2);
         return baseEnemies + randomAddition;
     }
