@@ -140,38 +140,12 @@ public class GameWorld {
                                     p.stats.getOrDefault("dashCooldown", 0)
                                 );
                                 inventory.addItem(w);
+
                                 break;  // move on to the next savedCode
                             }
                         }
                     }
-                        if (!wipedOnStart) {
-                            wipedOnStart = true;
-                            List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
-                            for (InventorySlot slot : inventory.getAllSlots()) {
-                                if (!slot.isEmpty()) {
-                                    Weapon w = slot.getWeapon();
-                                    InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
-                                    p.itemCode = w.getID();
-                                    p.typeID = p.itemCode.substring(2, 4);
-                                    p.stats = new HashMap<>(w.getStats());
-                                    p.count = 1;
-                                    payloads.add(p);
-                                    System.out.println("Removed " + p.typeID);
 
-                                }
-                            }
-                            InventoryService.wipeInventory(payloads, new InventoryService.Callback<Void>() {
-                                @Override
-                                public void onSuccess(Void nothing) {
-                                    Gdx.app.log("GameWorld", "Server inventory wiped at run start");
-                                }
-
-                                @Override
-                                public void onFailure(Throwable t) {
-                                    Gdx.app.error("GameWorld", "Failed to wipe at start", t);
-                                }
-                            });
-                        }
                 });
             }
 

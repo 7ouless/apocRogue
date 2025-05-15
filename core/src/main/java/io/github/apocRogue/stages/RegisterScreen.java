@@ -7,11 +7,13 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.apocRogue.database.DBManager;
 import io.github.apocRogue.database.JsonCallback;
+import io.github.apocRogue.database.ServerSingleton;
 
 public class RegisterScreen extends ScreenAdapter {
     private final stageBuilder game;
@@ -98,21 +100,52 @@ public class RegisterScreen extends ScreenAdapter {
                         boolean registered = data.getBoolean("registered", false);
                         Gdx.app.postRunnable(() -> {
                             if (registered) {
-                                game.setScreen(new MainScreen(game));
+                                feedback.setText("…loading…");
+
+                                DBManager.get().login(u, p, new JsonCallback() {
+                                    @Override
+                                    public void onSuccess(String json) {
+                                        JsonValue data = new JsonReader().parse(json);
+                                        onSuccess(data);
+                                    }
+
+                                    @Override
+                                    public void onSuccess(JsonValue data) {
+                                        boolean ok = data.getBoolean("authenticated", false);
+                                        if (!ok) {
+                                            Gdx.app.postRunnable(() -> feedback.setText("Bad username or password"));
+                                            return;
+                                        }
+                                        // Extract and store the token
+                                        String token = data.getString("token");
+                                        ServerSingleton.getInstance().setAuthToken(token);
+                                        // Proceed to main screen
+                                        Gdx.app.postRunnable(() -> game.setScreen(new MainScreen(game)));
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable t) {
+                                        Gdx.app.postRunnable(() -> feedback.setText("Network error: " + t.getMessage()));
+                                    }
+                                });
                             } else {
                                 feedback.setText("Username already taken");
                             }
                         });
                     }
+
                     @Override
+                    public void onError(Throwable t) {
+
+                    };
+                });
+            }
                     public void onError(Throwable t) {
                         Gdx.app.postRunnable(() -> {
                             feedback.setText("Network error");
                             System.out.println("NETWORK ERROR");
                         });
                     }
-                });
-            }
         });
         backBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
