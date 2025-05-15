@@ -12,15 +12,9 @@ import io.github.apocRogue.database.ServerSingleton;
  */
 public class LootGenerateService {
     public interface Callback<T> {
-        /**
-         * Successful response handler.
-         * @param value parsed value of type T (here an array of Res)
-         */
+
         void onSuccess(T value);
-        /**
-         * Failure handler.
-         * @param t exception or error cause
-         */
+
         void onFailure(Throwable t);
     }
 
@@ -47,14 +41,6 @@ public class LootGenerateService {
         public java.util.HashMap<String,Integer> stats;
     }
 
-    /**
-     * POST /generateloot
-     * @param difficulty world tier
-     * @param subLevel sub-level within tier
-     * @param radiation environmental radiation bonus
-     * @param count number of items to generate
-     * @param cb callback receiving an array of Res on success
-     */
     public void generate(int difficulty, int subLevel, int radiation,
                          int count, float chestX, float chestY, Callback<Res[]> cb) {
         String url = BASE + "/generateloot";

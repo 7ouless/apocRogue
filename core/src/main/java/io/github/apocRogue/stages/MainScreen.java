@@ -5,14 +5,15 @@ import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FillViewport;
@@ -46,8 +47,46 @@ public class MainScreen extends ScreenAdapter {
         stage = new Stage(new FillViewport(1080, 720));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
+        //Age Recommendation
+        Dialog ageDialog = new Dialog("", skin);
+        ageDialog.getContentTable().pad(15);
+        ageDialog.getButtonTable().padTop(10).padBottom(10);
+        ageDialog.text(
+            "Contains themes of nuclear disaster and stylised combat. Recommended 12+."
+        );
+        ageDialog.button("Acknowledge");
+        ageDialog.show(stage);
+
+        //Tutorial Button
+        Texture tutTex = new Texture(Gdx.files.internal("ui/tutorial.png"));
+        ImageButton tutorialButton = new ImageButton(
+            new TextureRegionDrawable(new TextureRegion(tutTex))
+        );
+
+        tutorialButton.setTransform(true);
+        tutorialButton.setScale(0.07f);
+
+        tutorialButton.setPosition(10, 60);
+
+        tutorialButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                new Tutorial(skin).show(stage);
+            }
+        });
+
+        stage.addActor(tutorialButton);
+
         // 1) Add a big centered title at the top
         float vw = stage.getViewport().getWorldWidth();
+        float vh = stage.getViewport().getWorldHeight();
+        float dw = ageDialog.getWidth();
+        float dh = ageDialog.getHeight();
+
+        ageDialog.setPosition(
+            (vw - dw) / 2,
+            vh * 0.75f - dh / 2
+        );
         Label title = new Label("KIGEN", skin);
         title.setFontScale(3f);
         title.setAlignment(Align.center);
