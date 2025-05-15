@@ -9,6 +9,7 @@ public class ReadyUpState implements State<MiniSamuraiActor> {
     @Override
     public void enter(MiniSamuraiActor samurai) {
         // Play a ready-up or wind-up animation.
+        samurai.setAttackMode(true);
         samurai.playReadyAnimation();
         samurai.stopMovement();
     }
@@ -24,6 +25,6 @@ public class ReadyUpState implements State<MiniSamuraiActor> {
 
     @Override
     public void exit(MiniSamuraiActor samurai) {
-        // Optionally reset animations.
+        samurai.setAttackMode(false);
     }
 }

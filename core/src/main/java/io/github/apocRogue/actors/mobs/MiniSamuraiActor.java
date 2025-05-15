@@ -29,7 +29,7 @@ public class MiniSamuraiActor extends EnemyActor {
     private final Texture attackTexture;
     private Texture activeTexture;
     private static final float SCALE = 0.12f;
-
+    private float previousX;
 
     public MiniSamuraiActor(Texture normalTexture,
                             Texture attackTexture,
@@ -40,6 +40,7 @@ public class MiniSamuraiActor extends EnemyActor {
         this.normalTexture = normalTexture;
         this.attackTexture = attackTexture;
         this.activeTexture = normalTexture;
+        this.previousX = x;
 
         setPosition(x, y);
         setSize(normalTexture.getWidth()* SCALE, normalTexture.getHeight()* SCALE);
@@ -51,9 +52,14 @@ public class MiniSamuraiActor extends EnemyActor {
         normalSpeed = getStats().getSpeed();
     }
 
-    @Override
     public void act(float delta) {
         super.act(delta);
+
+        float dx = getX() - previousX;
+        if (dx < 0)      facingRight = false;
+        else if (dx > 0) facingRight = true;
+        previousX = getX();
+
         GravitySystem.applyGravityAndPhysics(this, delta, 1f);
         fsm.update(delta);
     }
@@ -70,9 +76,7 @@ public class MiniSamuraiActor extends EnemyActor {
         return fsm;
     }
 
-    /**
-     * Roams only horizontally.
-     */
+
     public void roam(float delta) {
         Vector2 pos = new Vector2(getX(), getY());
         float distance = pos.dst(roamTarget);
