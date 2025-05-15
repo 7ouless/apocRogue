@@ -8,7 +8,11 @@ public class RunManager {
     public int worldLevel = 1;
 
 
-    public RunManager() { }
+    public RunManager() {}
+
+    public static RunManager getInstance() {
+        return null;
+    }
 
     public int getSkullLevel() {
         return skullLevel;
