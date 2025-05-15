@@ -244,24 +244,6 @@ public class GameScreen extends ScreenAdapter {
 
     }
 
-    private void initUI() {
-        Table hud = new Table();
-        hud.setFillParent(true);
-        hud.top().right().padTop(20).padRight(20);
-
-        skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
-        skullLabel.setFontScale(1.5f);           // ← bigger
-        worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
-        worldLabel.setFontScale(1.2f);           // ← a bit smaller
-
-        hud.add(skullLabel)
-            .padBottom(20)
-            .row();
-        hud.add(worldLabel);
-
-        uiStage.addActor(hud);
-    }
-
     private void loadCurrentWorld() {
         if (gameWorld != null) {
             gameWorld.dispose();        // clears main stage

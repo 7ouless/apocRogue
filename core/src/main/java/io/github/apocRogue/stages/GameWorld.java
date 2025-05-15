@@ -435,7 +435,8 @@ public class GameWorld {
         stage.clear();
         playerTexture.dispose();
         playerAttackTexture.dispose();
-        dummyTexture.dispose();
+        wolfNormalTexture.dispose();
+        wolfAttackTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();
         flyingCreatureTexture.dispose();

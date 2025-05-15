@@ -18,10 +18,6 @@ public class MapManager {
     private int islandCurrentLength;
     private float islandCurrentY;
 
-    private static final float PLATFORM_EDGE_LEFT_Y_OFFSET   = -4f;  // move left cap up/down
-    private static final float PLATFORM_EDGE_RIGHT_Y_OFFSET  =  3f;  // move right cap up/down
-    private static final float PLATFORM_EDGE_LEFT_X_OFFSET   =  20f;  // extra horizontal nudge
-    private static final float PLATFORM_EDGE_RIGHT_X_OFFSET  = 20f;  // extra horizontal nudge
 
     //grass shit
     private final boolean grassUseEdgeSize     = false;    // if true, grass dims are based on edge
@@ -48,7 +44,6 @@ public class MapManager {
     private int octaves = settings.octaves;  //#of octaves
 
     private List<TileInfo> platformTiles = new ArrayList<>();
-    private List<TileInfo> platformEdgeTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
     private List<TileInfo> borderTiles = new ArrayList<>();
     private List<TileInfo> edgeTiles = new ArrayList<>();
@@ -69,10 +64,6 @@ public class MapManager {
         for (TileInfo info : platformTiles) {
             Actor tileActor = createTileActor(info);
             stage.addActor(tileActor);
-        }
-
-        for (TileInfo info : platformEdgeTiles) {
-            stage.addActor(createTileActor(info));
         }
 
 
@@ -356,11 +347,11 @@ public class MapManager {
             if (canCreateIsland) {
                 int var = random.nextInt(15);
                 if (var > 4) {
-                    islandGoalLength    = random.nextInt(2, 4);
+                    islandGoalLength = random.nextInt(2, 4);
                     islandCurrentLength = 1;
-                    islandCurrentY      = yPos;
-                    creatingIsland      = true;
-                    canCreateIsland     = false;
+                    islandCurrentY = yPos;
+                    creatingIsland = true;
+                    canCreateIsland = false;
                 }
             } else if (!creatingIsland) {
                 if (canCreateIslandCount >= 2) {
@@ -372,55 +363,15 @@ public class MapManager {
 
             if (creatingIsland) {
                 if (islandCurrentLength <= islandGoalLength) {
-                    // FIRST platform-tile → LEFT cap
-                    if (islandCurrentLength == 1) {
-                        float edgeSize = tileWidth * 0.1f;
-                        float baseX    = i * tileWidth;
-                        float squareX  = baseX - EDGE_X_OFFSET + PLATFORM_EDGE_LEFT_X_OFFSET;
-                        float squareY  = currentIslandPlatY
-                            + 2 * tileHeight
-                            - edgeSize
-                            + PLATFORM_EDGE_LEFT_Y_OFFSET;
-
-                        platformEdgeTiles.add(new TileInfo(
-                            squareX,
-                            squareY,
-                            edgeSize,
-                            edgeSize,
-                            TileType.PLATFORM_EDGE,
-                            true,                      // flipX=true on left
-                            random.nextBoolean(),
-                            ""
-                        ));
-                    }
-
-                    // spawn the platform tile itself
+                    // just lay a normal platform tile
                     createIslandStrip(i * tileWidth, islandCurrentY);
                     islandCurrentLength++;
 
-                } else {
-                    // LAST platform-tile → RIGHT cap
-                    float edgeSize = tileWidth * 0.1f;
-                    float baseX    = (i + 1) * tileWidth - edgeSize;
-                    float squareX  = baseX + EDGE_X_OFFSET + PLATFORM_EDGE_RIGHT_X_OFFSET;
-                    float squareY  = currentIslandPlatY
-                        + 2 * tileHeight
-                        - edgeSize
-                        + PLATFORM_EDGE_RIGHT_Y_OFFSET;
-
-                    platformEdgeTiles.add(new TileInfo(
-                        squareX,
-                        squareY,
-                        edgeSize,
-                        edgeSize,
-                        TileType.PLATFORM_EDGE,
-                        false,                     // flipX=false on right
-                        random.nextBoolean(),
-                        ""
-                    ));
-
-                    creatingIsland = false;
-                    canCreateIslandCount = 0;
+                    // finished the run?
+                    if (islandCurrentLength > islandGoalLength) {
+                        creatingIsland = false;
+                        canCreateIslandCount = 0;
+                    }
                 }
             }
         }
@@ -473,9 +424,7 @@ public class MapManager {
             case DECOR:
                 int idx = Integer.parseInt(info.grassType);
                 return new DecorTile(info.x, info.y, info.width, info.height, info.flipX, idx);
-            case PLATFORM_EDGE:
-                return new PlatformEdgeTile(info.x, info.y, info.width, info.flipX, info.useAltTexture);
-            default: // PLATFORM
+           default: // PLATFORM
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
     }
