@@ -22,7 +22,7 @@ public class MiniSamuraiActor extends EnemyActor {
     private Vector2 roamTarget;
     private boolean dashing;
     private Vector2 dashDirection;
-    private float dashSpeed = 500f;
+    private float dashSpeed = 20f;
     private float normalSpeed;
     private boolean facingRight = true;
     private final Texture normalTexture;
@@ -30,6 +30,8 @@ public class MiniSamuraiActor extends EnemyActor {
     private Texture activeTexture;
     private static final float SCALE = 0.12f;
     private float previousX;
+    private static final float DASH_COOLDOWN = 3f;
+    private float timeSinceLastDash = DASH_COOLDOWN;
 
     public MiniSamuraiActor(Texture normalTexture,
                             Texture attackTexture,
@@ -61,6 +63,7 @@ public class MiniSamuraiActor extends EnemyActor {
         previousX = getX();
 
         GravitySystem.applyGravityAndPhysics(this, delta, 1f);
+        timeSinceLastDash = Math.min(DASH_COOLDOWN, timeSinceLastDash + delta);
         fsm.update(delta);
     }
 
@@ -166,6 +169,15 @@ public class MiniSamuraiActor extends EnemyActor {
     public void endDash() {
         dashing = false;
     }
+
+    public boolean canDash() {
+        return timeSinceLastDash >= DASH_COOLDOWN;
+    }
+
+    public void resetDashCooldown() {
+        timeSinceLastDash = 0f;
+    }
+
     public boolean isPlayerInCameraView() {
         PlayerActor player = findPlayer();
         if (player == null) return false;

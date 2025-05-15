@@ -7,10 +7,15 @@ public class SlashAttackState implements State<MiniSamuraiActor> {
     private float attackDuration = 0.5f; // a quick slash
     @Override
     public void enter(MiniSamuraiActor samurai) {
-        // Set up a dash or high-speed forward movement.
         samurai.playSlashAnimation();
-        samurai.startDash();
-        samurai.setAttackMode(true);
+        if (samurai.canDash()) {
+            samurai.startDash();
+            samurai.resetDashCooldown();
+            samurai.setAttackMode(true);
+        } else {
+            // skip the dash entirely
+            samurai.changeState(new RoamingState());
+        }
     }
 
     @Override
