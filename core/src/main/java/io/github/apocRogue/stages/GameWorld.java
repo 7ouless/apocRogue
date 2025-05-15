@@ -255,17 +255,18 @@ public class GameWorld {
 
     private float[] getRandomSpawnPosition() {
         Array<Actor> spawnTiles = new Array<>();
-       for (Actor a : stage.getActors()) {
-                if (a instanceof FloorTile || a instanceof PlatformTile) {
+        for (Actor a : stage.getActors()) {
+            // only ground tiles, not floating platforms
+            if (a instanceof FloorTile) {
                 spawnTiles.add(a);
-                }
             }
+        }
         if (spawnTiles.size == 0) return null;
-       Actor t = spawnTiles.random();
-       return new float[]{
+        Actor t = spawnTiles.random();
+        return new float[]{
             t.getX() + t.getWidth() * 0.5f,
             t.getY() + t.getHeight()
-       };
+        };
     }
 
     private boolean isOverlappingWithDirt(float x, float y) {
@@ -358,8 +359,38 @@ public class GameWorld {
                 return;
 
             }
+        }
+        for (WolfActor wolf : enemies) {
+            float feetX  = wolf.getX() + wolf.getWidth() * 0.5f;
+            boolean fellOff = wolf.getY() < 0;
+            boolean hitDirt = isOverlappingWithDirt(feetX, wolf.getY());
+
+            if (fellOff || hitDirt) {
+                float respawnX  = wolf.getX();
+                float groundY   = getGroundHeightAtX(respawnX);
+                float respawnY  = groundY + wolf.getHeight() + spawnOffsetY;
+
+                wolf.setPosition(respawnX, respawnY);
+                wolf.velocityX = 0;
+                wolf.velocityY = 0;
             }
         }
+        for (MiniSamuraiActor s : samuraiActorArray) {
+            float feetX  = s.getX() + s.getWidth() * 0.5f;
+            boolean fellOff = s.getY() < 0;
+            boolean hitDirt = isOverlappingWithDirt(feetX, s.getY());
+
+            if (fellOff || hitDirt) {
+                float respawnX  = s.getX();
+                float groundY   = getGroundHeightAtX(respawnX);
+                float respawnY  = groundY + s.getHeight() + spawnOffsetY;
+
+                s.setPosition(respawnX, respawnY);
+                s.velocityX = 0;
+                s.velocityY = 0;
+            }
+        }
+    }
 
 
     private float getGroundHeightAtX(float x) {

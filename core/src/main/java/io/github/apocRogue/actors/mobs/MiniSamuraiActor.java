@@ -28,15 +28,17 @@ public class MiniSamuraiActor extends EnemyActor {
     private final Texture normalTexture;
     private final Texture attackTexture;
     private Texture activeTexture;
-    private static final float SCALE = 0.9f;
+    private static final float SCALE = 0.12f;
 
 
-    public MiniSamuraiActor(Texture texture, Texture samuraiAttackTexture, float x, float y) {
-        super(texture, x, y,
+    public MiniSamuraiActor(Texture normalTexture,
+                            Texture attackTexture,
+                            float x, float y) {
+        super(normalTexture, x, y,
             new StatsComponent(250, 250, 100, 0, 400, 0, 1, 1000, 8)
         );
-        this.normalTexture = texture;
-        this.attackTexture = new Texture(Gdx.files.internal("ui/samurai-attack.png"));
+        this.normalTexture = normalTexture;
+        this.attackTexture = attackTexture;
         this.activeTexture = normalTexture;
 
         setPosition(x, y);
@@ -191,8 +193,7 @@ public class MiniSamuraiActor extends EnemyActor {
     }
 
     @Override
-    public void draw(Batch batch,float delta) {
-        super.act(delta);
+    public void draw(Batch batch, float parentAlpha) {
         batch.draw(
             activeTexture,
             getX(), getY(),
@@ -206,9 +207,4 @@ public class MiniSamuraiActor extends EnemyActor {
         );
     }
 
-    public void dispose() {
-        super.remove();
-        normalTexture.dispose();
-        attackTexture.dispose();
-    }
 }
