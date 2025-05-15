@@ -74,7 +74,7 @@ public class GameWorld {
         player = new PlayerActor(playerTexture, playerAttackTexture);
         float spawnX  = baseSpawnX + extraSpawnX;
         float groundY = getGroundHeightAtX(spawnX);
-        float spawnY  = groundY + player.getHeight() + spawnOffsetY;
+        float spawnY  = (groundY + player.getHeight() + spawnOffsetY);
         player.setPosition(spawnX, spawnY);
 
         player.setInventory(inventory);
