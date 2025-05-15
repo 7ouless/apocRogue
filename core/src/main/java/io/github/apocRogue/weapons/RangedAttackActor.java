@@ -31,17 +31,17 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         this.velocity = direction.nor().scl(500f); // example speed
         this.noiseLevel = (weapon != null ? weapon.getNoiseLevel() : 0);
     }
+
     @Override
     public void act(float delta) {
         // 1) Perform the default collision check in BaseAttackActor
+
         super.act(delta);
 
         // 2) Apply gravity
-        velocity.y += gravity * delta;
-
+        System.out.println(velocity.y);
         // 3) Move according to velocity
         setPosition(getX() + velocity.x * delta, getY() + velocity.y * delta);
-
         // 4) Optionally rotate to face movement direction
         if (velocity.len2() > 0) {
             setRotation(velocity.angleDeg());
@@ -72,22 +72,21 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         for (Actor actor : actorsCopy) {
             if (actor instanceof TileActor) {
                 TileActor tile = (TileActor) actor;
-                if (weapon != null) {
-                    SoundPhysics.emitSound(
-                        new Vector2(getX(), getY()),
-                        weapon.getImpactNoiseIntensity(),
-                        weapon.getImpactNoiseRadius(),
-                        SoundPhysics.SoundType.PROJECTILE_IMPACT,
-                        player.getStage()
-                            );
+                if (projectileRect.overlaps(tile.getBounds())) {
+                    if (weapon != null) {
+                        SoundPhysics.emitSound(
+                            new Vector2(getX(), getY()),
+                            weapon.getImpactNoiseIntensity(),
+                            weapon.getImpactNoiseRadius(),
+                            SoundPhysics.SoundType.PROJECTILE_IMPACT,
+                            player.getStage()
+                        );
                     }
+                    System.out.println("COLLIDED");
                     remove();
                     break;
                 }
             }
         }
     }
-
-
-
-
+}

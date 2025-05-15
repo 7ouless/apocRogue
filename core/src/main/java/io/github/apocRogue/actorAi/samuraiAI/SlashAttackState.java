@@ -10,6 +10,7 @@ public class SlashAttackState implements State<MiniSamuraiActor> {
         // Set up a dash or high-speed forward movement.
         samurai.playSlashAnimation();
         samurai.startDash();
+        samurai.setAttackMode(true);
     }
 
     @Override
@@ -26,6 +27,7 @@ public class SlashAttackState implements State<MiniSamuraiActor> {
 
     @Override
     public void exit(MiniSamuraiActor samurai) {
-        // Reset speed or transition back to normal movement.
+
+        samurai.setAttackMode(false);
     }
 }

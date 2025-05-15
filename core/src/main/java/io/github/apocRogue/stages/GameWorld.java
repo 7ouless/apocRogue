@@ -59,7 +59,7 @@ public class GameWorld {
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
-        flyingCreatureTexture, samuraiTexture, wolfRadNormalTexture, wolfRadAttackTexture;
+        flyingCreatureTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
         this.stage = stage;
@@ -100,7 +100,8 @@ public class GameWorld {
         wolfRadNormalTexture = new Texture("ui/radiated-wolf.png");
         wolfRadAttackTexture = new Texture("ui/radiated-wolf-attack.png");
         chestTexture = new Texture("ui/chest.png");
-        samuraiTexture = new Texture("ui/samurai.jpeg");
+        samuraiTexture = new Texture("ui/samurai.png");
+        samuraiAttackTexture = new Texture("ui/samurai-attack.png");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
         // Player & Inventory
@@ -186,20 +187,48 @@ public class GameWorld {
         // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
-            float spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
-            float groundY = getGroundHeightAtX(spawnX);
-            float spawnY = groundY + spawnOffsetY;  // Ensure correct vertical offset like player
+            float spawnX, spawnY;
+            float[] pos;
+            int attempts = 0;
 
-            boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
-            Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
-            Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
+            // Pick only floor/platform tiles, retry if it ends up in dirt
+                   do {
+                pos = getRandomSpawnPosition();
+                if (pos != null) {
+                     spawnX = pos[0];
+                    spawnY = pos[1] + spawnOffsetY;
+                    } else {
+                    // fallback to full‐width random
+                        spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
+                    float groundY = getGroundHeightAtX(spawnX);
+                    spawnY = groundY + spawnOffsetY;
+                    }
+                attempts++;
+                } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
 
-            // build with the right sprites and flag
-            WolfActor wolf = new WolfActor(norm, atk, spawnX, spawnY);
-            wolf.setRadiated(isRad);
+            // randomly choose wolf vs. samurai
+            if (MathUtils.randomBoolean(0.5f)) {
+                // — Wolf —
+                boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
+                Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
+                Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
 
-            enemies.add(wolf);
-            stage.addActor(wolf);
+                WolfActor wolf = new WolfActor(norm, atk, spawnX, spawnY);
+                wolf.setRadiated(isRad);
+                enemies.add(wolf);
+                stage.addActor(wolf);
+
+            } else {
+                // — Samurai —
+                MiniSamuraiActor samurai = new MiniSamuraiActor(
+                    samuraiTexture,
+                    samuraiAttackTexture,
+                    spawnX,
+                    spawnY
+                );
+                samuraiActorArray.add(samurai);
+                stage.addActor(samurai);
+            }
         }
 
 
@@ -439,6 +468,7 @@ public class GameWorld {
         wolfAttackTexture.dispose();
         chestTexture.dispose();
         samuraiTexture.dispose();
+        samuraiAttackTexture.dispose();
         flyingCreatureTexture.dispose();
     }
     }
