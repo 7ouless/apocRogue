@@ -424,7 +424,7 @@ public class MapManager {
             case DECOR:
                 int idx = Integer.parseInt(info.grassType);
                 return new DecorTile(info.x, info.y, info.width, info.height, info.flipX, idx);
-           default: // PLATFORM
+           default:
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
     }
