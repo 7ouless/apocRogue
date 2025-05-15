@@ -9,12 +9,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import io.github.apocRogue.actors.playerEntity.PlayerActor;
 
 
 public class Door extends Actor {
     public enum Type { CONTINUE, EXTRACT }
 
-    private static final float SCALE = 0.08f;
+    private static final float SCALE = 0.2f;
 
     private final int radiationLevel;
 
@@ -29,6 +33,9 @@ public class Door extends Actor {
 
     private static final BitmapFont FONT = new BitmapFont();
     private static final GlyphLayout LAYOUT = new GlyphLayout();
+
+    private Label pressWLabel;
+    private static final float INTERACT_RADIUS = 100f;
 
 
     public Door(Type type, Vector2 pos,int radiationLevel) {
@@ -49,10 +56,7 @@ public class Door extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         // tint by door type
-        Color tint = (type == Type.CONTINUE)
-            ? Color.RED
-            : Color.BLUE;
-        batch.setColor(tint);
+
         batch.draw(texture, getX(), getY(), getWidth(), getHeight());
         batch.setColor(Color.WHITE);
 
@@ -69,10 +73,52 @@ public class Door extends Actor {
     }
 
     @Override
+    protected void setStage(Stage stage) {
+        super.setStage(stage);
+        if (stage != null && pressWLabel == null) {
+            // You can reuse your UI skin; here I'm loading it directly
+            Skin uiSkin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+            pressWLabel = new Label("Press W to enter", uiSkin);
+            pressWLabel.setVisible(false);
+            stage.addActor(pressWLabel);
+        }
+    }
+
+
+    @Override
     public void act(float delta) {
         super.act(delta);
         bounds.setPosition(getX(), getY());
+
+        if (pressWLabel == null || getStage() == null) return;
+
+        // find the player in the stage
+        PlayerActor player = null;
+        for (Actor a : getStage().getActors()) {
+            if (a instanceof PlayerActor) {
+                player = (PlayerActor)a;
+                break;
+            }
+        }
+        if (player == null) {
+            pressWLabel.setVisible(false);
+            return;
+        }
+
+        // distance check
+        float dx = (getX() + getWidth()/2f)  - (player.getX() + player.getWidth()/2f);
+        float dy = (getY() + getHeight()/2f) - (player.getY() + player.getHeight()/2f);
+        if (dx*dx + dy*dy < INTERACT_RADIUS * INTERACT_RADIUS) {
+            pressWLabel.setVisible(true);
+            pressWLabel.setPosition(
+                getX() + getWidth()/2f - pressWLabel.getWidth()/2f,
+                getY() + getHeight() + 20f
+            );
+        } else {
+            pressWLabel.setVisible(false);
+        }
     }
+
 
     public Type getType() {
         return type;

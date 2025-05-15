@@ -20,7 +20,7 @@ public class TileCollisionHandler {
 
         // Loop through all TileActor objects in the stage.
         for (Actor stageActor : actor.getStage().getActors()) {
-            if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile || stageActor instanceof DecorTile) {
+            if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile || stageActor instanceof DecorTile|| stageActor instanceof PlatformGrassOverlayTile) {
                 continue;
             }
             if (stageActor instanceof TileActor) {

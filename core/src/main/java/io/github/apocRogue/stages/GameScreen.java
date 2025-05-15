@@ -1,6 +1,7 @@
 package io.github.apocRogue.stages;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -18,10 +19,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
-import io.github.apocRogue.map.DecorTile;
-import io.github.apocRogue.map.GrassOverlayTile;
-import io.github.apocRogue.map.MapManager;
-import io.github.apocRogue.map.TreeTile;
+import io.github.apocRogue.inventory.menuinventory.InventoryService;
+import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
@@ -35,6 +34,10 @@ import java.util.ArrayList;
 
 public class GameScreen extends ScreenAdapter {
 
+    private Music musicRad2;
+    private Music musicRad3;
+    private Music currentMusic;
+
     private stageBuilder game;
     private Stage stage;       // For gameplay
     private Stage uiStage;     // For HUD / normal UI
@@ -44,7 +47,7 @@ public class GameScreen extends ScreenAdapter {
     private ProgressBar staminaBar;
     private ProgressBar healthBar;
 
-    private static final RunManager runMgr = RunManager.getInstance();
+    private final RunManager runMgr = RunManager.getInstance();
     private Label skullLabel, worldLabel;
     private GameWorld gameWorld;
 
@@ -127,6 +130,13 @@ public class GameScreen extends ScreenAdapter {
         TreeTile.loadForRadiation(folder);
         GrassOverlayTile.loadForRadiation(folder);
         DecorTile.loadForRadiation(folder);
+        PlatformGrassOverlayTile.loadForRadiation(folder);
+
+        // load your two looping tracks
+        musicRad2 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation2.mp3"));
+        musicRad3 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation3.mp3"));
+        // helper to pick & play
+        switchMusic(rad);
 
 
         batch = new SpriteBatch();
@@ -155,11 +165,14 @@ public class GameScreen extends ScreenAdapter {
         // move all grass into the overlay stage
         List<Actor> grassActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
-            if (a instanceof GrassOverlayTile) grassActors.add(a);
+            if (a instanceof GrassOverlayTile
+                || a instanceof PlatformGrassOverlayTile) {
+                grassActors.add(a);
+            }
         }
-        for (Actor grass : grassActors) {
-            grass.remove();
-            overlayStage.addActor(grass);
+        for (Actor g : grassActors) {
+            g.remove();
+            overlayStage.addActor(g);
         }
 
         // Create normal UI or HUD elements here (if any)...
@@ -220,7 +233,7 @@ public class GameScreen extends ScreenAdapter {
         Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 128; x++) {
             for (int y = 0; y < 128; y++) {
-                // random alpha between 0 and 0.2f for low-level grain
+
                 float a = MathUtils.random() * 0.2f;
                 pix.setColor(1f, 1f, 1f, a);
                 pix.drawPixel(x, y);
@@ -230,10 +243,6 @@ public class GameScreen extends ScreenAdapter {
         grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         pix.dispose();
 
-    }
-
-    public static RunManager getRunManager() {
-        return runMgr;
     }
 
     private void loadCurrentWorld() {
@@ -259,6 +268,31 @@ public class GameScreen extends ScreenAdapter {
         }
 
     }
+
+    private void switchMusic(int rad) {
+        // stop whatever’s playing
+        if (currentMusic != null && currentMusic.isPlaying()) {
+            currentMusic.stop();
+        }
+
+        // rad == 1 or 2 → play musicRad2, rad == 3 → musicRad3
+        if (rad >= 1 && rad <= 2) {
+            currentMusic = musicRad2;
+        } else if (rad == 3) {
+            currentMusic = musicRad3;
+        } else {
+            currentMusic = null;
+        }
+
+        // kick it off at 50% volume
+        if (currentMusic != null) {
+            currentMusic.setLooping(true);
+            currentMusic.setVolume(0.05f);   // ← half-volume
+            currentMusic.play();
+        }
+    }
+
+
 
     private void initUI() {
         // 1) Root HUD table, anchored to the top
@@ -420,6 +454,9 @@ public class GameScreen extends ScreenAdapter {
         exitButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                if (currentMusic != null && currentMusic.isPlaying()) {
+                    currentMusic.stop();
+                }
                 // Return to main menu or wherever you want
                 game.setScreen(new MainScreen(game));
             }
@@ -450,9 +487,9 @@ public class GameScreen extends ScreenAdapter {
         //1.5) handle doors -- Im lazy and dont want to change the next numbers hehehe
 
         Door door = gameWorld.getOverlappingDoor();
-         if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+        if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             handleDoor(door);
-            }
+        }
 
 
         // 1.7) if the player isn’t spawned yet, skip camera + rest -- Im lazy and dont want to change the next numbers hehehe
@@ -528,9 +565,9 @@ public class GameScreen extends ScreenAdapter {
             bgSun,
             camLeft + viewportWidth * 0.2f - sunW/2,
             camBottom + viewportHeight * 0.7f - sunH/2,
-                    sunW,
-                    sunH
-                );
+            sunW,
+            sunH
+        );
 
         // 4.3) Side‐clouds
         batch.setColor(1f, 1f, 1f, 0.75f);
@@ -540,7 +577,7 @@ public class GameScreen extends ScreenAdapter {
             camLeft,
             camBottom + viewportHeight * 0f,
             -0.005f,
-             0.4f
+            0.4f
         );
         batch.setColor(1f, 1f, 1f, 1f);
 
@@ -553,35 +590,35 @@ public class GameScreen extends ScreenAdapter {
             0.5f);
 
         // 4.5) Top‐clouds
-               drawTiledLayer(
-                   batch,
-                   bgTopClouds,
-                   camLeft,
-                   camBottom + viewportHeight * 0.73f,
-                   -0.13f,
-                   0.6f
-               );
+        drawTiledLayer(
+            batch,
+            bgTopClouds,
+            camLeft,
+            camBottom + viewportHeight * 0.73f,
+            -0.13f,
+            0.6f
+        );
 
         // 4.6) Small‐clouds
-               drawTiledLayer(
-                   batch,
-                   bgSmallClouds,
-                   camLeft,
-                   camBottom + viewportHeight * 0.4f + trunkYOffset ,
-                   -0.12f,
-                   0f
-               );
+        drawTiledLayer(
+            batch,
+            bgSmallClouds,
+            camLeft,
+            camBottom + viewportHeight * 0.4f + trunkYOffset ,
+            -0.12f,
+            0f
+        );
 
         // 4.7) Big‐tree trunk
 
-                drawTiledLayer(
-                    batch,
-                    bgBigTree,
-                    camLeft,
-                    camBottom + viewportHeight * 0.1f,
-                    -0.15f,      // parallax factor
-                    0.7f
-                );
+        drawTiledLayer(
+            batch,
+            bgBigTree,
+            camLeft,
+            camBottom + viewportHeight * 0.1f,
+            -0.15f,      // parallax factor
+            0.7f
+        );
         // 4.8) Meadow (front of all background layers)
         drawTiledLayer(
             batch,
@@ -594,9 +631,9 @@ public class GameScreen extends ScreenAdapter {
 
 
         // …any further parallax layers…
-                batch.end();
-                // 5)draw the world
-                stage.draw();
+        batch.end();
+        // 5)draw the world
+        stage.draw();
 
         // 6) Any overlay Stage (e.g. grass)
         overlayStage.setViewport(stage.getViewport());
@@ -684,13 +721,17 @@ public class GameScreen extends ScreenAdapter {
 
     private void handleDoor(Door door) {
         if (door.getType() == Door.Type.EXTRACT) {
+            if (currentMusic != null && currentMusic.isPlaying()) {
+                currentMusic.stop();
+            }
+            gameWorld.extractItems();
             game.setScreen(new MainScreen(game));
-            } else {
+        } else {
             // CONTINUE door --> first record the player's choice
             CurrentDificulty.setRadiation(door.getRadiationLevel());
             // then advance or continue the run
             if (runMgr.isFinalWorld()) {
-            runMgr.continueRun();
+                runMgr.continueRun();
 
             } else {
                 runMgr.advanceWorld();
@@ -710,14 +751,16 @@ public class GameScreen extends ScreenAdapter {
             TreeTile.loadForRadiation(newFolder);
             GrassOverlayTile.loadForRadiation(newFolder);
             DecorTile.loadForRadiation(newFolder);
+            PlatformGrassOverlayTile.loadForRadiation(newFolder);
             loadCurrentWorld();
+            switchMusic(newRad);
         }
-        }
+    }
 
     private void updateHud() {
         skullLabel.setText("Skull: " + runMgr.getSkullLevel());
         worldLabel.setText("World: " + runMgr.getWorldLevel());
-        }
+    }
 
     private void drawTiledLayer(SpriteBatch batch,
                                 Texture tex,
@@ -770,6 +813,7 @@ public class GameScreen extends ScreenAdapter {
         bgSmallClouds.dispose();
         bgMeadow.dispose();
         if (grainTex != null) grainTex.dispose();
-
+        if (musicRad2   != null) musicRad2.dispose();
+        if (musicRad3   != null) musicRad3.dispose();
     }
 }

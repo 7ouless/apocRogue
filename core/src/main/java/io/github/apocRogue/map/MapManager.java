@@ -2,8 +2,6 @@ package io.github.apocRogue.map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import io.github.apocRogue.stages.GameScreen;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +17,7 @@ public class MapManager {
     private int islandGoalLength;
     private int islandCurrentLength;
     private float islandCurrentY;
+
 
     //grass shit
     private final boolean grassUseEdgeSize     = false;    // if true, grass dims are based on edge
@@ -45,6 +44,7 @@ public class MapManager {
     private int octaves = settings.octaves;  //#of octaves
 
     private List<TileInfo> platformTiles = new ArrayList<>();
+    private List<TileInfo> platformGrassTiles = new ArrayList<>();
     private List<TileInfo> dirtTiles = new ArrayList<>();
     private List<TileInfo> borderTiles = new ArrayList<>();
     private List<TileInfo> edgeTiles = new ArrayList<>();
@@ -67,6 +67,9 @@ public class MapManager {
             stage.addActor(tileActor);
         }
 
+        for (TileInfo info : platformGrassTiles) {
+            stage.addActor(createTileActor(info));
+        }
 
         for (TileInfo info : decorTiles) {
             stage.addActor(createTileActor(info));
@@ -125,11 +128,22 @@ public class MapManager {
 
         platformTiles.add(new TileInfo(
             xStart,
-            currentIslandPlatY,
+            currentIslandPlatY + tileHeight
+            ,
             tileWidth,
             tileHeight,
             TileType.PLATFORM
         ));
+
+        if (GRASS_ENABLED) {
+            platformGrassTiles.add(new TileInfo(
+                xStart,
+                currentIslandPlatY + tileHeight,
+                tileWidth,
+                tileHeight,
+                TileType.PLATFORM_GRASS_OVERLAY
+            ));
+        }
     }
 
 
@@ -189,53 +203,6 @@ public class MapManager {
                 tileHeight,
                 TileType.GROUND
             ));
-
-            if (GameScreen.getRunManager().getWorldLevel() >= 4 && i > 6) {
-                int ceilingY = (settings.roomHeight - Math.round(floorY)) - (i * 22);
-                if (ceilingY < 650) {
-                    ceilingY = 650;
-                }
-
-                platformTiles.add(new TileInfo(
-                    i * tileWidth,
-                    ceilingY,
-                    tileWidth,
-                    tileHeight,
-                    TileType.PLATFORM
-                ));
-            } else {
-                //Island-creation logic
-                if (canCreateIsland) {
-                    int var = random.nextInt(15);
-                    if (var > 4) {
-                        islandGoalLength = random.nextInt(2, 4);
-                        islandCurrentLength = 1;
-                        islandCurrentY = yPos;
-                        creatingIsland = true;
-                        canCreateIsland = false;
-                    }
-                } else if (!creatingIsland) {
-                    if (canCreateIslandCount >= 2) {
-                        canCreateIsland = true;
-                    } else {
-                        canCreateIslandCount++;
-                    }
-                }
-                if (creatingIsland) {
-                    if (islandCurrentLength <= islandGoalLength) {
-                        if (yPos < islandCurrentY - tileWidth) {
-                            islandCurrentY -= tileWidth;
-                        } else if (yPos > islandCurrentY + tileWidth) {
-                            islandCurrentY += tileWidth;
-                        }
-                        createIslandStrip(i * tileWidth, islandCurrentY);
-                        islandCurrentLength++;
-                    } else {
-                        creatingIsland = false;
-                    }
-                }
-            }
-
             if (GRASS_ENABLED) {
                 grassTiles.add(new TileInfo(
                     i * tileWidth,
@@ -389,39 +356,67 @@ public class MapManager {
 
             //Update lastTileY for next iteration
             lastTileY = yPos;
-        }
 
+            // Island-creation logic
+            if (canCreateIsland) {
+                int var = random.nextInt(15);
+                if (var > 4) {
+                    islandGoalLength = random.nextInt(2, 4);
+                    islandCurrentLength = 1;
+                    islandCurrentY = yPos;
+                    creatingIsland = true;
+                    canCreateIsland = false;
+                }
+            } else if (!creatingIsland) {
+                if (canCreateIslandCount >= 2) {
+                    canCreateIsland = true;
+                } else {
+                    canCreateIslandCount++;
+                }
+            }
+
+            if (creatingIsland) {
+                if (islandCurrentLength <= islandGoalLength) {
+                    // just lay a normal platform tile
+                    createIslandStrip(i * tileWidth, islandCurrentY);
+                    islandCurrentLength++;
+
+                    // finished the run?
+                    if (islandCurrentLength > islandGoalLength) {
+                        creatingIsland = false;
+                        canCreateIslandCount = 0;
+                    }
+                }
+            }
+        }
     }
 
-
-
-    private void fillGround(int i, float topY){
-            // 1) Fill normally down to groundMin
-            int j = 0;
-            while (topY - (tileHeight * j) >= settings.groundMin) {
-                dirtTiles.add(new TileInfo(
-                    i * tileWidth,
-                    topY - (tileHeight * j),
-                    tileWidth,
-                    tileHeight,
-                    TileType.DIRT
-                ));
-                j++;
-            }
-
-            // 2) Add 5 extra dirt layers below that
-            for (int extra = 1; extra <= 5; extra++) {
-                dirtTiles.add(new TileInfo(
-                    i * tileWidth,
-                    // continue stacking downwards
-                    topY - (tileHeight * (j + extra - 1)),
-                    tileWidth,
-                    tileHeight,
-                    TileType.DIRT
-                ));
-            }
+    private void fillGround(int i, float topY) {
+        // 1) Fill normally down to groundMin
+        int j = 0;
+        while (topY - (tileHeight * j) >= settings.groundMin) {
+            dirtTiles.add(new TileInfo(
+                i * tileWidth,
+                topY - (tileHeight * j),
+                tileWidth,
+                tileHeight,
+                TileType.DIRT
+            ));
+            j++;
         }
 
+        // 2) Add 5 extra dirt layers below that
+        for (int extra = 1; extra <= 5; extra++) {
+            dirtTiles.add(new TileInfo(
+                i * tileWidth,
+                // continue stacking downwards
+                topY - (tileHeight * (j + extra - 1)),
+                tileWidth,
+                tileHeight,
+                TileType.DIRT
+            ));
+        }
+    }
 
 
     private Actor createTileActor(TileInfo info) {
@@ -443,9 +438,12 @@ public class MapManager {
             case DECOR:
                 int idx = Integer.parseInt(info.grassType);
                 return new DecorTile(info.x, info.y, info.width, info.height, info.flipX, idx);
+            case PLATFORM_GRASS_OVERLAY:
+                return new PlatformGrassOverlayTile(info.x, info.y, info.width,info.height);
 
-            default: // PLATFORM
+            default:
                 return new PlatformTile(info.x, info.y, info.width, info.height);
         }
     }
 }
+

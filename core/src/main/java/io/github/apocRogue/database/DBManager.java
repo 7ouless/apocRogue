@@ -19,7 +19,7 @@ public class DBManager {
     private static DBManager instance;
     private final Json json = new Json();
     {json.setOutputType(JsonWriter.OutputType.minimal);}
-    private static final Gson GSON = new Gson();
+    public static final Gson GSON = new Gson();
 
     private final String baseUrl =
         "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net";

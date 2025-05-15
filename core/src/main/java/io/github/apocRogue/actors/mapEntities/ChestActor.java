@@ -16,12 +16,14 @@ import com.badlogic.gdx.utils.Array;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.actors.useClasses.ItemActor;
 import io.github.apocRogue.globals.ids.ClassDigit;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
+import io.github.apocRogue.globals.difficulty.RunManager;
+import io.github.apocRogue.stages.LootGenerateService;
 import io.github.apocRogue.weapons.WeaponTypeInfo;
 import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.weapons.Weapon;
-import java.util.Map;
-import io.github.apocRogue.shop.ShopWeaponPayload;
-import io.github.apocRogue.weapons.WeaponGenerateService;
+
+import java.util.List;
 
 /**
  * A chest that, when opened (or destroyed), rolls and spawns two weapons
@@ -36,6 +38,7 @@ public class ChestActor extends Image {
     private Label pressRLabel;
     private final Skin uiSkin;
     private final float interactRange = 80f;
+    private final RunManager runMgr = RunManager.getInstance();
 
     public ChestActor(Texture texture,
                       float x, float y,
@@ -86,12 +89,10 @@ public class ChestActor extends Image {
         }
     }
 
-    /** Called by your “E/R” listener */
     public void openByInteraction() {
         if (!opened) openChest();
     }
 
-    /** Called when the chest is attacked */
     public void takeDamage(int amount) {
         if (!opened && (health -= amount) <= 0) {
             openChest();
@@ -112,50 +113,61 @@ public class ChestActor extends Image {
     }
 
     private void spawnRandomItem() {
-        if (possibleTypeIDs.size == 0) return;
+        int diff = runMgr.getSkullLevel();
+        int sub  = runMgr.getWorldLevel();
+        int rad  = CurrentDificulty.getRadiation();
 
-        // pick one of your local type-IDs ("01","02",…)
-        String localTypeID = possibleTypeIDs.random();
+        // get chest coords as floats
+        float x = getX();
+        float y = getY();
 
-        // build the 3-char prefix: class-digit '1' + localTypeID
-        String idPrefix = ClassDigit.prefix(ClassDigit.WEAPON, localTypeID);
-
-        WeaponGenerateService svc = new WeaponGenerateService();
-        svc.generate(idPrefix, 1, 1, new WeaponGenerateService.Callback() {
-            @Override public void onSuccess(ShopWeaponPayload p) {
-                // 1) look up cosmetics by the full ID
-                WeaponTypeInfo info = typeRegistry.getByGlobalID(p.id);
-
-                // 2) pass p.id (full global ID) into your Weapon constructor
-                Weapon w = new Weapon(
-                    p.id,
-                    info.getName(),
-                    p.stats.get("damage"),
-                    new Texture(Gdx.files.internal(info.getTexturePath())),
-                    info.isProjectileType(),
-                    p.stats.get("projectileValue"),
-                    info.getAmmoTexture(),
-                    p.stats.get("animationSpeed"),
-                    p.stats.get("noiseLevel"),
-                    p.stats.get("dashSpeed"),
-                    p.stats.get("dashDuration"),
-                    p.stats.get("dashCooldown")
-                );
-
-                ItemActor drop = new ItemActor(w, getX(), getY());
-                drop.setVelocity(
-                    MathUtils.random(-100f, 100f),
-                    MathUtils.random(100f, 200f)
-                );
-                getStage().addActor(drop);
+        // now pass x and y before the callback
+        new LootGenerateService().generate(
+            diff, sub, rad,   // world params
+            1,                // count
+            x, y,             // ◀── chest position floats
+            new LootGenerateService.Callback<LootGenerateService.Res[]>() {
+                @Override
+                public void onSuccess(LootGenerateService.Res[] loot) {
+                    for (LootGenerateService.Res r : loot) {
+                        Gdx.app.postRunnable(() -> spawnDrop(r));
+                    }
+                }
+                @Override
+                public void onFailure(Throwable t) {
+                    Gdx.app.error("CHEST", "Loot gen failed", t);
+                }
             }
-
-            @Override public void onFailure(Throwable t) {
-                Gdx.app.error("CHEST", "Loot generation failed", t);
-            }
-        });
+        );
     }
 
+    private void spawnDrop(LootGenerateService.Res r) {
+        String typeID = r.itemCode.substring(2,4);
+        WeaponTypeInfo info = typeRegistry.get(typeID);
+        if (info == null) return;
+
+        Weapon w = new Weapon(
+            r.itemCode,
+            info.getName(),
+            r.stats.get("damage"),
+            new Texture(Gdx.files.internal(info.getTexturePath())),
+            info.isProjectileType(),
+            r.stats.get("projectileValue"),
+            info.getAmmoTexture(),
+            r.stats.get("animationSpeed"),
+            r.stats.get("noiseLevel"),
+            r.stats.get("dashSpeed"),
+            r.stats.get("dashDuration"),
+            r.stats.get("dashCooldown")
+        );
+
+        ItemActor drop = new ItemActor(w, getX(), getY());
+        drop.setVelocity(
+            MathUtils.random(-100f,100f),
+            MathUtils.random(100f,200f)
+        );
+        getStage().addActor(drop);
+    }
 
 
     private PlayerActor findPlayer() {
