@@ -76,7 +76,6 @@ public class CoreActor extends EnemyActor {
 
     }
 
-
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -105,7 +104,6 @@ public class CoreActor extends EnemyActor {
         );
     }
 
-    /** replace old shootTailSting */
     public void shootCoreSting(float tx, float ty) {
         if (shootCooldown > 0f) return;
         shootCooldown = 3f;

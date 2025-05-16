@@ -37,7 +37,7 @@ public class CoreProjectile extends RangedAttackActor {
         float sy = owner.getY() + owner.getHeight() + 20f;
         setPosition(cx, sy);
 
-        this.gravity = -150f;
+        this.gravity = -300f;
 
         // **use owner.isFacingRight()**
         boolean fr = owner.isFacingRight();
