@@ -39,7 +39,7 @@ public class DeathScreen extends ScreenAdapter {
         stage.addActor(rootTable);
 
         // A Label for "You Died!"
-        Label diedLabel = new Label("YOU DIED!", skin, "title");
+        Label diedLabel = new Label("YOU DIED!", skin);
         // Optional: you can change style or color
         diedLabel.setFontScale(2f); // Make it bigger
 

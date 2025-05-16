@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import io.github.apocRogue.globals.difficulty.RunManager;
 import io.github.apocRogue.actors.mapEntities.Door;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
-
+import io.github.apocRogue.stages.DeathScreen;
 
 import io.github.apocRogue.globals.physics.SoundPhysics;
 
@@ -478,6 +478,7 @@ public class GameScreen extends ScreenAdapter {
 
         staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
         healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
+        checkPlayerDeath();
         // 1) Update logic & stages
         if (!paused) {
             gameWorld.update(delta);
@@ -791,6 +792,15 @@ public class GameScreen extends ScreenAdapter {
         return null;
     }
 
+    private void checkPlayerDeath() {
+        PlayerActor p = gameWorld.getPlayer();
+        if (p != null && p.getStats().getHealth() <= 0) {
+            if (currentMusic != null && currentMusic.isPlaying()) {
+                currentMusic.stop();
+            }
+            game.setScreen(new DeathScreen(game));
+        }
+    }
 
     @Override
     public void resize(int width, int height) {
