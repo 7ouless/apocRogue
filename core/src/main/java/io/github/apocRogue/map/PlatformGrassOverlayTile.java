@@ -17,7 +17,7 @@ public class PlatformGrassOverlayTile extends TileActor {
     @Override
     public void act(float delta) {
         super.act(delta);
-        toFront();
+
     }
 
     @Override

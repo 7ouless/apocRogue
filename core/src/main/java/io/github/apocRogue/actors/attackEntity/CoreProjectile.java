@@ -13,6 +13,8 @@ import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.map.TileActor;
 import io.github.apocRogue.weapons.RangedAttackActor;
 import io.github.apocRogue.weapons.Weapon;
+import io.github.apocRogue.map.PlatformTile;
+import io.github.apocRogue.map.PlatformGrassOverlayTile;
 
 public class CoreProjectile extends RangedAttackActor {
     private static final Texture TEXTURE = new Texture("ui/scorpion-tail.png");
@@ -67,6 +69,15 @@ public class CoreProjectile extends RangedAttackActor {
             }
         }
         for (Actor a : new Array<>(getStage().getActors())) {
+            if (a instanceof TileActor) {
+                if (a instanceof PlatformTile || a instanceof PlatformGrassOverlayTile)
+                    continue;                       // ← skip platforms entirely
+
+                if (proj.overlaps(((TileActor) a).getBounds())) {
+                    remove();
+                    return;
+                }
+            }
             if (a instanceof PlayerActor) {
                 PlayerActor p = (PlayerActor) a;
                 if (proj.overlaps(p.getBounds())) {

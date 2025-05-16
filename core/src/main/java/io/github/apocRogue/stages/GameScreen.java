@@ -166,7 +166,7 @@ public class GameScreen extends ScreenAdapter {
         List<Actor> grassActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
             if (a instanceof GrassOverlayTile
-                || a instanceof PlatformGrassOverlayTile) {
+              ) {
                 grassActors.add(a);
             }
         }

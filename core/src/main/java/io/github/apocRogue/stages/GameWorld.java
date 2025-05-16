@@ -46,6 +46,8 @@ public class GameWorld {
     private MapManager mapManager;
     private GenerationSettings generationSettings;
 
+    private CoreActor coreBoss;
+
     private final boolean isFinalWorld;
     private final List<Door> doors = new ArrayList<>();
 
@@ -219,7 +221,7 @@ public class GameWorld {
             }
 
         }
-        if (CurrentDificulty.getWorldLevel() == 5) {
+        if (CurrentDificulty.getWorldLevel() == 1) {
             float midX = mapManager.settings.roomWidth * 0.5f;
             float groundY;
             float spawnY;
@@ -231,9 +233,14 @@ public class GameWorld {
                 spawnOffset += 10f;
                 attempts++;
             } while (isOverlappingWithDirt(midX, spawnY) && attempts < 10);
-
+            coreBoss = new CoreActor(coreTexture, coreTexture, midX, spawnY);
             CoreActor core = new CoreActor(coreTexture, coreTexture, midX, spawnY);
             stage.addActor(core);
+        }
+        refreshPlatformGrassOrder();
+
+        if (coreBoss != null) {
+            coreBoss.toFront();
         }
 
         // Spawn chests
@@ -257,6 +264,39 @@ public class GameWorld {
 
         doors.clear();
         spawnDoors();
+
+        if (player != null) {
+            int playerZ = player.getZIndex();
+            for (Actor a : stage.getActors()) {
+                if (a instanceof PlatformGrassOverlayTile) {
+                    a.setZIndex(playerZ + 1);
+                }
+            }
+        }
+
+        if (coreBoss != null) {
+            coreBoss.toFront();
+        }
+    }
+
+    private void refreshPlatformGrassOrder() {
+        if (player == null) return;
+
+        int baseZ = player.getZIndex();
+
+        for (Actor a : stage.getActors()) {
+
+            if (a instanceof PlayerActor ||
+                a instanceof WolfActor   ||
+                a instanceof MiniSamuraiActor) {
+                a.setZIndex(baseZ);
+            }
+
+
+            if (a instanceof PlatformGrassOverlayTile) {
+                a.setZIndex(baseZ + 1);
+            }
+        }
     }
 
     private float[] getRandomSpawnPosition() {
