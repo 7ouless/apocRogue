@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FillViewport;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.audio.Music;
 
 public class MainScreen extends ScreenAdapter {
     private Stage stage;
@@ -32,6 +33,7 @@ public class MainScreen extends ScreenAdapter {
     private State state = State.WAITING;
     private float nextTrigger, timer,  holdTimer, scareTimer, grainAlpha;
     private float bgScale = 1.2f;
+    private Music menuMusic;
 
     public MainScreen(stageBuilder game) {
         this.game = game;
@@ -43,6 +45,11 @@ public class MainScreen extends ScreenAdapter {
         normalBg = new Texture(Gdx.files.internal("ui/main-menu-bg.png"));
         deadBg   = new Texture(Gdx.files.internal("ui/main-menu-bg-dead.png"));
         bgTex    = normalBg;
+
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("audio/menu.mp3"));
+        menuMusic.setLooping(true);
+        menuMusic.setVolume(0.05f);
+        menuMusic.play();
 
         stage = new Stage(new FillViewport(1080, 720));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
@@ -111,6 +118,7 @@ public class MainScreen extends ScreenAdapter {
         deploy.pad(8f);
         deploy.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
+                stopMenuMusic();
                 game.setScreen(new GameScreen(game));
             }
         });
@@ -120,7 +128,7 @@ public class MainScreen extends ScreenAdapter {
         inv.pad(8f);
         inv.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new InventoryScreen(game));
+                stopMenuMusic(); game.setScreen(new InventoryScreen(game));
             }
         });
         window.add(inv).row();
@@ -129,7 +137,7 @@ public class MainScreen extends ScreenAdapter {
         shop.pad(8f);
         shop.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new ShopScreen(game));
+                stopMenuMusic(); game.setScreen(new ShopScreen(game));
             }
         });
         window.add(shop).row();
@@ -138,7 +146,7 @@ public class MainScreen extends ScreenAdapter {
         market.pad(8f);
         market.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new OnlineMarketScreen(game));
+                stopMenuMusic(); game.setScreen(new OnlineMarketScreen(game));
             }
         });
         window.add(market).row();
@@ -147,7 +155,7 @@ public class MainScreen extends ScreenAdapter {
         logout.pad(8f);
         logout.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent e, Actor a) {
-                game.setScreen(new LoginScreen(game));
+                stopMenuMusic(); game.setScreen(new LoginScreen(game));
             }
         });
         window.add(logout).row();
@@ -177,7 +185,11 @@ public class MainScreen extends ScreenAdapter {
         scheduleNext();
     }
 
-
+    private void stopMenuMusic () {
+        if (menuMusic != null && menuMusic.isPlaying()) {
+            menuMusic.stop();
+        }
+    }
 
     private void scheduleNext() {
         nextTrigger = MathUtils.random(5f,12f);
@@ -285,5 +297,6 @@ public class MainScreen extends ScreenAdapter {
         normalBg.dispose();
         deadBg.dispose();
         grainTex.dispose();
+        if (menuMusic != null) menuMusic.dispose();
     }
 }
