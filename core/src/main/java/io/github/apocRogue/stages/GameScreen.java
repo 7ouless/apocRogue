@@ -729,7 +729,7 @@ public class GameScreen extends ScreenAdapter {
             }
             gameWorld.extractItems();
             inventory = new Inventory(skin);
-
+            gameWorld.setSkull();
             game.setScreen(new MainScreen(game));
         } else {
             // CONTINUE door --> first record the player's choice

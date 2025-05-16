@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import com.google.gson.Gson;
 import io.github.apocRogue.database.JsonCallback;
 
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -272,16 +273,57 @@ public class DBManager {
         req.setContent(json);
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
-    public void giveMoney(Map<String,Integer> items, JsonCallback cb) {
-        String url = baseUrl + "/givemoney";
+    public void giveMoney() {
         Net.HttpRequest req = new HttpRequestBuilder()
             .newRequest()
             .method(Net.HttpMethods.POST)
-            .url(url)
-            .header("Content-Type","application/json")
-            .header("Authorization","Bearer "+ServerSingleton.getInstance().getAuthToken())
+            .url(baseUrl + "/givemoney")
+            .header("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken())
             .build();
-        Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
 
+        Gdx.net.sendHttpRequest(req, NO_OP_LISTENER);
     }
+    private static final Net.HttpResponseListener NO_OP_LISTENER =
+        new Net.HttpResponseListener() {
+            public void handleHttpResponse(HttpResponse response) {}
+
+            @Override
+            public void handleHttpResponse(Net.HttpResponse httpResponse) {
+
+            }
+
+            @Override public void failed(Throwable t)                {}
+            @Override public void cancelled()                         {}
+        };
+    public void setMS(long skull) {
+        String url  = baseUrl + "/setskull";
+        String body = Long.toString(skull);   // or String.valueOf(skull)
+
+       Net.HttpRequest req = new HttpRequestBuilder()
+           .newRequest()
+            .method(Net.HttpMethods.POST)
+            .url(url)
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken())
+            .content(body)
+           .build();
+
+        Gdx.net.sendHttpRequest(req, new Net.HttpResponseListener() {
+            public void handleHttpResponse(HttpResponse response) {
+
+            }
+
+            @Override
+            public void handleHttpResponse(Net.HttpResponse httpResponse) {
+
+            }
+
+            @Override
+            public void failed(Throwable t) {
+
+            }
+
+            @Override public void cancelled() {}
+        });    }
+
 }

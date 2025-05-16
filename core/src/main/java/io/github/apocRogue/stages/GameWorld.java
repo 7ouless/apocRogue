@@ -38,6 +38,8 @@ import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 
+import static io.github.apocRogue.globals.difficulty.CurrentDificulty.getDifficulty;
+
 
 public class GameWorld {
     private final Stage stage;
@@ -300,7 +302,9 @@ public class GameWorld {
     }
     void giveMoney() {
         DBManager.get().giveMoney();
-
+    }
+    void setSkull(){
+        DBManager.get().setMS((long)getDifficulty());
     }
 
     private float[] getRandomSpawnPosition() {
