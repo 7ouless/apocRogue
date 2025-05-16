@@ -14,6 +14,7 @@ import io.github.apocRogue.globals.stats.StatsComponent;
 
 public class WolfActor extends EnemyActor {
     private static final float SCALE = 0.09f;
+    private static final float RADIATED_ATTACK_HEIGHT_SCALE  = 0.10f;
     private final Texture normalTexture;
     private final Texture attackTexture;
     private Texture activeTexture;
@@ -22,7 +23,7 @@ public class WolfActor extends EnemyActor {
     private boolean radiated = false;
     private float shootCooldown = 0f;
 
-    // track last frame's X to compute actual movement
+
     private float previousX;
 
     public WolfActor(Texture normalTexture,
@@ -37,6 +38,8 @@ public class WolfActor extends EnemyActor {
         setSize(normalTexture.getWidth()  * SCALE,
             normalTexture.getHeight() * SCALE);
         setOrigin(getWidth()/2f, getHeight()/2f);
+
+        updateSizeAndOrigin();
         this.previousX = x;
         setAIBehavior(new WolfStateMachine());
     }
@@ -69,6 +72,7 @@ public class WolfActor extends EnemyActor {
 
     public void setAttackMode(boolean attacking) {
         activeTexture = attacking ? attackTexture : normalTexture;
+        updateSizeAndOrigin();
     }
 
 
@@ -78,8 +82,24 @@ public class WolfActor extends EnemyActor {
 
     public void setRadiated(boolean radiated) {
         this.radiated = radiated;
+        updateSizeAndOrigin();
     }
 
+    private void updateSizeAndOrigin() {
+        // default both dims to the normal uniform SCALE
+        float scaleX = SCALE;
+        float scaleY = SCALE;
+
+        if (radiated && activeTexture == attackTexture) {
+            scaleY = RADIATED_ATTACK_HEIGHT_SCALE;
+        }
+
+        setSize(
+            activeTexture.getWidth()  * scaleX,
+            activeTexture.getHeight() * scaleY
+        );
+        setOrigin(getWidth() / 2f, getHeight() / 2f);
+    }
 
     public void updateRadiationTimer(float delta) {
         if (shootCooldown > 0) shootCooldown -= delta;
