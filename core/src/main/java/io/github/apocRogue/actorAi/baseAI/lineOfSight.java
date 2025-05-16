@@ -8,11 +8,6 @@ import io.github.apocRogue.map.PlatformTile;
 
 public class lineOfSight {
 
-    /**
-     * Checks if 'self' can see 'target' within a certain range.
-     * 1) Distance <= sightRange
-     * 2) No blocking tile in the direct line between them.
-     */
     public static boolean canSeeTarget(Actor self, Actor target, float sightRange, Stage stage) {
         if (stage == null) return false;
 

@@ -180,8 +180,9 @@ public class GameWorld {
             } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
 
             // randomly choose wolf vs. samurai
-            if (MathUtils.randomBoolean(0.65f)) {
-                // — Wolf —
+            float r = MathUtils.random();
+            if (r < 0.5f) {
+                // — Wolf (50% chance) —
                 boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
                 Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
                 Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
@@ -191,8 +192,8 @@ public class GameWorld {
                 enemies.add(wolf);
                 stage.addActor(wolf);
 
-            } else {
-                // — Samurai —
+            } else if (r < 0.8f) {
+                // — Samurai (30% chance) —
                 MiniSamuraiActor samurai = new MiniSamuraiActor(
                     samuraiTexture,
                     samuraiAttackTexture,
@@ -201,6 +202,16 @@ public class GameWorld {
                 );
                 samuraiActorArray.add(samurai);
                 stage.addActor(samurai);
+
+            } else {
+                // — Bat (20% chance) —
+                FlyingEnemyActor bat = new FlyingEnemyActor(
+                    flyingCreatureTexture,
+                    spawnX,
+                    spawnY
+                );
+                flyingEnemies.add(bat);
+                stage.addActor(bat);
             }
         }
 
