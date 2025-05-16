@@ -34,7 +34,7 @@ public class LoginScreen extends ScreenAdapter {
         table.pad(15);
 
         // Title
-        Label title = new Label("Welcome to APOC Rogue", skin);
+        Label title = new Label("Welcome to Kigen", skin);
         title.setFontScale(1.3f);
         table.add(title).colspan(2).padBottom(15f).row();
 
