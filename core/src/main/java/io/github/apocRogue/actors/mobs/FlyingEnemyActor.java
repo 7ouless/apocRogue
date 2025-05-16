@@ -9,45 +9,62 @@ import io.github.apocRogue.globals.stats.StatsComponent;
 
 public class FlyingEnemyActor extends EnemyActor {
     private static final float SCALE = 0.09f;
-    private final Texture texture;
-    private float previousX;
-    private boolean facingRight = true;
+    private static final int BASE_SPEED = 80;
 
-    public FlyingEnemyActor(Texture texture, float x, float y) {
-        super(texture, x, y, new StatsComponent(50, 50, 5, 0, 80, 0, 1, 1000, 5));
-        this.texture = texture;
+    private final Texture texture;
+    private final boolean radiated;
+    private boolean facingRight = true;
+    private float previousX;
+
+
+    public FlyingEnemyActor(Texture texture, float x, float y, boolean radiated) {
+
+        super(
+            texture,
+            x, y,
+           new StatsComponent(
+                50,
+                50,
+                5,
+                0,
+                BASE_SPEED * (radiated ? 2 : 1),
+                0,
+                1,
+                1000,
+                5
+            )
+        );
+
+        this.texture    = texture;
+        this.radiated   = radiated;
         this.aiBehavior = new CompositeFlyingAIBehavior();
 
         float w = texture.getWidth()  * SCALE;
         float h = texture.getHeight() * SCALE;
         setSize(w, h);
-        setOrigin(w * 0.5f, h * 0.5f);
+        setOrigin(w * .5f, h * .5f);
 
         this.previousX = getX();
+    }
+
+    public boolean isRadiated() {
+        return radiated;
     }
 
     @Override
     public void act(float delta) {
         super.act(delta);
 
-        // Track movement to determine facing
         float dx = getX() - previousX;
-        if (dx < 0) facingRight = false;
-        else if (dx > 0) facingRight = true;
-        previousX = getX();
+        facingRight = dx > 0;
+        previousX   = getX();
 
-        // Apply zero-gravity physics
         GravitySystem.applyGravityAndPhysics(this, delta, getGravityFactor());
-
-        // Execute AI behavior
-        if (aiBehavior != null) {
-            aiBehavior.updateAI(this, delta);
-        }
+        if (aiBehavior != null) aiBehavior.updateAI(this, delta);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        // Use stored texture and flip horizontally based on facing
         batch.draw(
             texture,
             getX(), getY(),

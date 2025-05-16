@@ -12,7 +12,7 @@ public class RadiatedWolfAttackState implements WolfState {
     @Override
     public void enter(WolfStateMachine fsm, WolfActor wolf) {
         wolf.setAttackMode(true);
-        wolf.resetShootCooldown();  // ready to fire immediately
+        wolf.resetShootCooldown();
     }
 
     @Override

@@ -32,8 +32,7 @@ public class CompositeFlyingAIBehavior extends AIBehavior {
             alertBehavior.updateAI(enemy, delta);
         } else {
             // 4) No LoS, no sound => idle/wander in flyingAi or do nothing
-            // For now, just do the normal flyingAi but not chasing
-            // Possibly the same flyingAi handles idle as well.
+
             flyingBehavior.updateAI(enemy, delta);
         }
     }

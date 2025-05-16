@@ -10,7 +10,7 @@ import io.github.apocRogue.actors.superClasses.EnemyActor;
 
 public class CompositeAIBehavior extends AIBehavior {
 
-    // “Normal” chase logic when LoS is established
+    // chase logic when LoS is established
     private chaseAi chaseBehavior = new chaseAi();
     // Investigate sound if not in LoS
     private AlertAIBehavior alertBehavior = new AlertAIBehavior();
@@ -32,15 +32,15 @@ public class CompositeAIBehavior extends AIBehavior {
 
         // 3) Otherwise, if we heard a sound, investigate alert
         if (enemy.getAlertComponent().isAlerted()) {
-            // The AlertAIBehavior will move enemy toward alert position
+
             alertBehavior.updateAI(enemy, delta);
         } else {
-            // 4) No LoS, no sound: (Optional) idle/patrol or do nothing
+
             // By default, do nothing
         }
     }
 
-    // Helper: find the player actor
+
     private PlayerActor findPlayer(EnemyActor enemy) {
         if (enemy.getStage() == null) return null;
         for (Actor actor : enemy.getStage().getActors()) {

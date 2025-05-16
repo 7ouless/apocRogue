@@ -29,10 +29,7 @@ public class lineOfSight {
         return isLineClear(sx, sy, tx, ty, stage);
     }
 
-    /**
-     * Samples points along the line from (x1, y1) to (x2, y2).
-     * If any "blocking" tile is found at a sample point, we say LOS is blocked.
-     */
+
     private static boolean isLineClear(float x1, float y1, float x2, float y2, Stage stage) {
         int steps = 15;
         float stepFrac = 1f / steps;

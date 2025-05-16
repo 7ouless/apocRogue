@@ -15,7 +15,7 @@ public class chaseAi extends AIBehavior {
 
     @Override
     public void updateAI(EnemyActor enemy, float delta) {
-        // Use the enemy's own alert component instead of a local one.
+
         PlayerActor player = findPlayer(enemy);
         if (player == null) return;
 

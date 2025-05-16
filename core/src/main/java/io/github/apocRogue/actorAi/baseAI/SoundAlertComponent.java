@@ -31,7 +31,7 @@ public class SoundAlertComponent {
             // Immediately trigger alert if the sound is intense enough.
             alertPosition.set(soundPos);
             alerted = true;
-            // Optionally, set the lock-on timer so the enemy doesn't drop the alert instantly.
+
             lockOnTimer = LOCK_ON_TIMER_MAX;
             alertLevel = 1.0f;
         }

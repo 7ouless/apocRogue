@@ -59,7 +59,7 @@ public class GameWorld {
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
-        flyingCreatureTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
+        flyingCreatureTexture, flyingRadCreatureTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
         this.stage = stage;
@@ -103,6 +103,7 @@ public class GameWorld {
         samuraiTexture = new Texture("ui/samurai.png");
         samuraiAttackTexture = new Texture("ui/samurai-attack.png");
         flyingCreatureTexture = new Texture("ui/bat.png");
+        flyingRadCreatureTexture = new Texture("ui/radiated-bat.png");
 
         // Player & Inventory
         inventory = new Inventory(skin);
@@ -193,7 +194,16 @@ public class GameWorld {
                 stage.addActor(wolf);
 
             } else if (r < 0.8f) {
-                // — Samurai (30% chance) —
+                // Bat 30%
+                boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
+                Texture tex  = isRad ? flyingRadCreatureTexture : flyingCreatureTexture;
+
+                FlyingEnemyActor bat = new FlyingEnemyActor(tex, spawnX, spawnY, isRad);
+                flyingEnemies.add(bat);
+                stage.addActor(bat);
+
+            } else  {
+                // — Samurai (20% chance) —
                 MiniSamuraiActor samurai = new MiniSamuraiActor(
                     samuraiTexture,
                     samuraiAttackTexture,
@@ -203,15 +213,6 @@ public class GameWorld {
                 samuraiActorArray.add(samurai);
                 stage.addActor(samurai);
 
-            } else {
-                // — Bat (20% chance) —
-                FlyingEnemyActor bat = new FlyingEnemyActor(
-                    flyingCreatureTexture,
-                    spawnX,
-                    spawnY
-                );
-                flyingEnemies.add(bat);
-                stage.addActor(bat);
             }
         }
 

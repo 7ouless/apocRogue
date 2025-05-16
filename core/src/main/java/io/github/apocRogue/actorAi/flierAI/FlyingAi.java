@@ -12,7 +12,7 @@ public class FlyingAi extends AIBehavior {
     private float amplitude = 10f;  // Maximum offset in pixels
     private float frequency = 1f;   // Oscillations per second
 
-    // Maximum distance (in game units) for chasing the player.
+    // Maximum distance for chasing the player.
     private float chaseRange = 1000f;
 
     @Override
@@ -36,7 +36,7 @@ public class FlyingAi extends AIBehavior {
 
         // Only chase if the player is within the chase range
         if (distance > chaseRange) {
-            return; // Player is too far; enemy can idle or perform other behaviors here.
+            return;
         }
 
         // Compute the normalized direction vector towards the player
