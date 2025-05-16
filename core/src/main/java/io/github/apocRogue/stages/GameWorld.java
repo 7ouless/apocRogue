@@ -20,6 +20,7 @@ import io.github.apocRogue.actors.mobs.WolfActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
+import io.github.apocRogue.database.DBManager;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.globals.ids.ClassDigit;
@@ -65,9 +66,11 @@ public class GameWorld {
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
         flyingCreatureTexture, flyingRadCreatureTexture, coreTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
-    public GameWorld(Stage stage, boolean isFinalWorld) {
+    public GameWorld(Stage stage, boolean isFinalWorld,  Inventory existingInventory) {
         this.stage = stage;
         this.isFinalWorld = isFinalWorld;
+        inventory = existingInventory;
+
     }
 
 
@@ -323,6 +326,10 @@ public class GameWorld {
                 a.setZIndex(baseZ + 1);
             }
         }
+    }
+    void giveMoney() {
+        DBManager.get().giveMoney();
+
     }
 
     private float[] getRandomSpawnPosition() {
