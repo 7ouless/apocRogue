@@ -28,7 +28,7 @@ public class OptionsOverlay extends Window {
         TextButton backButton = new TextButton("Back", skin);
         add(backButton).row();
 
-        pack(); // shrink-wrap the Window around its contents
+        pack(); //shrink-wrap the Window around its contents
         if (getStage() != null) {
              setPosition(
                  (getStage().getWidth() - getWidth()) / 2f,
@@ -52,7 +52,6 @@ public class OptionsOverlay extends Window {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // “Back” => remove this overlay, revealing EscScreen behind it
                 listener.onCloseOptions();
             }
         });

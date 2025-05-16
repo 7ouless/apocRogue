@@ -12,12 +12,12 @@ public class RadiatedWolfAttackState implements WolfState {
     @Override
     public void enter(WolfStateMachine fsm, WolfActor wolf) {
         wolf.setAttackMode(true);
-        wolf.resetShootCooldown();  // ready to fire immediately
+        wolf.resetShootCooldown();  //ready to fire immediately
     }
 
     @Override
     public void update(WolfStateMachine fsm, WolfActor wolf, float delta) {
-        // cooldown tick
+        //cooldown tick
         wolf.updateRadiationTimer(delta);
 
         PlayerActor p = wolf.findPlayer();
@@ -34,14 +34,14 @@ public class RadiatedWolfAttackState implements WolfState {
             return;
         }
         if (dist <= SHOOT_RANGE) {
-            // chase to keep kiting
+            //chase to keep kiting
             chase.updateAI(wolf, delta);
 
-            // shoot if ready
+            //shoot if ready
             wolf.shootTailSting(p.getX(), p.getY());
             return;
         }
-            // long-range: chase like a normal wolf
+            //long-range: chase like a normal wolf
             chase.updateAI(wolf, delta);
         }
     @Override public void exit(WolfStateMachine fsm, WolfActor wolf) { }

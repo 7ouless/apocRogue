@@ -102,7 +102,7 @@ public class WolfActor extends EnemyActor {
     @Override
     public void act(float delta) {
         super.act(delta);
-        // compute how far we actually moved
+        //compute how far we actually moved
         float dx = getX() - previousX;
         if (dx < 0)      facingRight = true;
         else if (dx > 0) facingRight = false;
@@ -111,7 +111,7 @@ public class WolfActor extends EnemyActor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        // draw around our origin, flipping via scaleX = ±1
+        //draw around our origin, flipping via scaleX = ±1
         batch.draw(
             activeTexture,
             getX(), getY(),

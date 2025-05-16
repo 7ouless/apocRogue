@@ -6,31 +6,18 @@ import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import io.github.apocRogue.database.ServerSingleton;
 
-/**
- * Client-side helper that talks to the Cloud Function loot generation API.
- * Mirrors the pattern used in {@link io.github.apocRogue.shop.ShopService}.
- */
 public class LootGenerateService {
     public interface Callback<T> {
-        /**
-         * Successful response handler.
-         * @param value parsed value of type T (here an array of Res)
-         */
         void onSuccess(T value);
-        /**
-         * Failure handler.
-         * @param t exception or error cause
-         */
         void onFailure(Throwable t);
     }
 
-    // Base URL for all Cloud Functions
+    //base URL
     private static final String BASE =
         "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net";
 
     private final Json json = new Json();
 
-    /** Request DTO */
     public static class Req {
         public int difficulty;
         public int subLevel;
@@ -40,26 +27,17 @@ public class LootGenerateService {
         public float chestY;
     }
 
-    /** Response DTO */
     public static class Res {
         public String itemCode;
         // Use a concrete type so LibGDX Json can instantiate it
         public java.util.HashMap<String,Integer> stats;
     }
 
-    /**
-     * POST /generateloot
-     * @param difficulty world tier
-     * @param subLevel sub-level within tier
-     * @param radiation environmental radiation bonus
-     * @param count number of items to generate
-     * @param cb callback receiving an array of Res on success
-     */
     public void generate(int difficulty, int subLevel, int radiation,
                          int count, float chestX, float chestY, Callback<Res[]> cb) {
         String url = BASE + "/generateloot";
 
-        // Build JSON body
+        //JSON body
         Req body = new Req();
         body.difficulty = difficulty;
         body.subLevel   = subLevel;
@@ -69,7 +47,7 @@ public class LootGenerateService {
         body.chestY = chestY;
         String jsonBody = json.toJson(body);
 
-        // Prepare HTTP request
+        //prep HTML request
         Net.HttpRequest req = new HttpRequestBuilder()
             .newRequest()
             .method(Net.HttpMethods.POST)
@@ -81,13 +59,9 @@ public class LootGenerateService {
         req.setContent(jsonBody);
         req.setTimeOut(10_000);
 
-        // Send request with shared handler
         Gdx.net.sendHttpRequest(req, handler(cb, Res[].class));
     }
 
-    /**
-     * Shared response handler, identical pattern to ShopService
-     */
     private <T> Net.HttpResponseListener handler(Callback<T> cb, Class<T> typ) {
         return new Net.HttpResponseListener() {
             @Override public void handleHttpResponse(Net.HttpResponse resp) {

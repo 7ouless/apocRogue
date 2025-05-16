@@ -19,10 +19,9 @@ public class DamageNumber extends Label {
         super.act(delta);
         timeAlive += delta;
 
-        // Move up slightly
+        //offset - to remove at a later date
         setY(getY() + 20 * delta);
 
-        // Fade out over time
         float alpha = 1f - (timeAlive / maxTime);
         setColor(getColor().r, getColor().g, getColor().b, alpha);
 

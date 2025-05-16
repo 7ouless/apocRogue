@@ -31,12 +31,12 @@ public class RegisterScreen extends ScreenAdapter {
         table.setFillParent(true);
         table.pad(15);
 
-        // Title
+        //title
         Label title = new Label("Create Account", skin);
         title.setFontScale(1.3f);
         table.add(title).colspan(2).padBottom(15f).row();
 
-        // Username label + field
+        //username label + field
         table.add(new Label("Username:", skin)).left().padBottom(8f);
         TextField userField = new TextField("", skin);
         userField.getStyle().background =
@@ -44,7 +44,7 @@ public class RegisterScreen extends ScreenAdapter {
         userField.setAlignment(Align.center);
         table.add(userField).width(180f).padBottom(8f).row();
 
-        // Password label + field
+        //password label + field
         table.add(new Label("Password:", skin)).left().padBottom(8f);
         TextField passField = new TextField("", skin);
         passField.setPasswordMode(true);
@@ -54,7 +54,7 @@ public class RegisterScreen extends ScreenAdapter {
         passField.setAlignment(Align.center);
         table.add(passField).width(180f).padBottom(8f).row();
 
-        // Confirm label + field
+        //confirm
         table.add(new Label("Confirm:", skin)).left().padBottom(8f);
         TextField passConfirm = new TextField("", skin);
         passConfirm.setPasswordMode(true);
@@ -64,17 +64,15 @@ public class RegisterScreen extends ScreenAdapter {
         passConfirm.setAlignment(Align.center);
         table.add(passConfirm).width(180f).padBottom(10f).row();
 
-        // Feedback
+        //feedback
         Label feedback = new Label("", skin);
         table.add(feedback).colspan(2).padBottom(10f).row();
 
-        // Buttons
         TextButton createBtn = new TextButton("Register",     skin);
         TextButton backBtn   = new TextButton("Back to Login", skin);
         createBtn.pad(6f,12f,6f,12f);
         backBtn.pad(6f,12f,6f,12f);
 
-// inside your createBtn listener:
         createBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, Actor actor) {
                 String u = userField.getText().trim();

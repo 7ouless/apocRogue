@@ -14,11 +14,10 @@ public class ShopItem {
     }
 
     public ShopItem(String name, String description, int price, int requiredLevel) {
-        // Let’s default maxStock to 5 for all items
         this(name, description, price, requiredLevel, 5);
     }
 
-    // New constructor letting you set stock
+    //constructor
     public ShopItem(String name, String description, int price, int requiredLevel, int maxStock) {
         this.name = name;
         this.description = description;
@@ -28,14 +27,14 @@ public class ShopItem {
         this.stock = maxStock; // item starts fully stocked
     }
 
-    // Called by ShopKeeper buy logic
+    //called by ShopKeeper buy logic
     public void decrementStock() {
         if (stock > 0) {
             stock--;
         }
     }
 
-    // Called by ShopKeeper restock logic
+    //called by ShopKeeper restock logic
     public void restock() {
         stock = maxStock;
     }

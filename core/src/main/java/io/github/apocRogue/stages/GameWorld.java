@@ -47,7 +47,6 @@ public class GameWorld {
     private final boolean isFinalWorld;
     private final List<Door> doors = new ArrayList<>();
 
-    // ID system: only cosmetic registry
     private WeaponTypeRegistry typeRegistry;
 
     // Actors & textures
@@ -92,7 +91,6 @@ public class GameWorld {
         mapManager = new MapManager();
         mapManager.generateMap(stage);
 
-        //Load textures
         playerTexture = new Texture("ui/main-character.png");
         playerAttackTexture = new Texture("ui/main-character-attack.png");
         wolfNormalTexture    = new Texture("ui/wolf.png");
@@ -103,7 +101,6 @@ public class GameWorld {
         samuraiTexture = new Texture("ui/samurai.jpeg");
         flyingCreatureTexture = new Texture("ui/bat.png");
 
-        // Player & Inventory
         inventory = new Inventory(skin);
         spawnPlayer();
 
@@ -113,15 +110,14 @@ public class GameWorld {
         Set<String> idSet = typeRegistry.getAllTypeIDs();
         Array<String> allTypeIDs = new Array<>(idSet.toArray(new String[0]));
 
-        //Rehydrate saved weapons
         List<String> savedNames = InventoryPreferences.load();
         InventoryService.fetchInventory(new InventoryService.Callback<List<InventoryService.InventoryItemPayload>>() {
             @Override public void onSuccess(List<InventoryService.InventoryItemPayload> items) {
-                // ensure all Texture/Actor work happens on the render thread
+                //check they work on the render thread
                 Gdx.app.postRunnable(() -> {
                     for (String wantCode : savedNames) {
                         if (wantCode == null || wantCode.isEmpty()) continue;
-                        // find the payload whose itemCode matches the saved code
+                        //find the payload whose itemCode matches the saved code
                         for (InventoryService.InventoryItemPayload p : items) {
                             if (wantCode.equals(p.itemCode)) {
                                 Weapon w = new Weapon(
@@ -139,7 +135,7 @@ public class GameWorld {
                                     p.stats.getOrDefault("dashCooldown", 0)
                                 );
                                 inventory.addItem(w);
-                                break;  // move on to the next savedCode
+                                break;  //move on to the next savedCode
                             }
                         }
                     }
@@ -183,18 +179,18 @@ public class GameWorld {
 
 
 
-        // Spawn enemies
+        //spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
             float spawnX = MathUtils.random(100, mapManager.settings.roomWidth - 100);
             float groundY = getGroundHeightAtX(spawnX);
-            float spawnY = groundY + spawnOffsetY;  // Ensure correct vertical offset like player
+            float spawnY = groundY + spawnOffsetY;
 
             boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
             Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
             Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
 
-            // build with the right sprites and flag
+            //build with the right sprites and flag
             WolfActor wolf = new WolfActor(norm, atk, spawnX, spawnY);
             wolf.setRadiated(isRad);
 
@@ -203,7 +199,7 @@ public class GameWorld {
         }
 
 
-        // Spawn chests
+        //spawn chests
         int chestCount = DifficultyLevelGen.getChestCount();
         for (int i = 0; i < chestCount; i++) {
             float[] pos = getRandomSpawnPosition();
@@ -253,7 +249,7 @@ public class GameWorld {
         return false;
     }
       public void extractItems() {
-               // build payloads from your live Inventory
+               //build payloads from your live Inventory
                   List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
                for (InventorySlot slot : inventory.getAllSlots()) {
                       if (!slot.isEmpty()) {
@@ -262,7 +258,7 @@ public class GameWorld {
                                p.itemCode = w.getID();
                               p.typeID   = p.itemCode.substring(2,4);
                                p.stats    = new HashMap<>(w.getStats());
-                               p.count    = 1; // or slot.getCount() if you track stacks
+                               p.count    = 1; //or slot.getCount() if you track stacks
                                payloads.add(p);
                            }
                    }
@@ -279,10 +275,8 @@ public class GameWorld {
            }
 
     public void checkItems() {
-        // 1) load the hotbar codes to skip
         List<String> hotbarCodes = InventoryPreferences.load();
 
-        // 2) collect payloads for *all other* slots
         List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
         for (InventorySlot slot : inventory.getAllSlots()) {
             if (slot.isEmpty()) continue;                          // skip empty
@@ -298,7 +292,6 @@ public class GameWorld {
             payloads.add(p);
         }
 
-        // 3) invoke your new checkInventory endpoint
         InventoryService.checkInventory(payloads, new InventoryService.Callback<InventoryService.CheckResponse>() {
             @Override public void onSuccess(InventoryService.CheckResponse resp) {
                 if (resp.passed) {
@@ -367,34 +360,33 @@ public class GameWorld {
     private Vector2 findExitPosition() {
         float tileW = MapManager.settings.tileWidth;
         float x = MapManager.settings.roomWidth - tileW * 1.5f;
-        // snap to ground height at that X
         float y = getGroundHeightAtX(x);
         return new Vector2(x, y);
     }
 
     private void spawnDoors() {
         doors.clear();
-        // collect every FloorTile
+        //collect every FloorTile
         List<FloorTile> floors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
             if (a instanceof FloorTile) floors.add((FloorTile)a);
         }
         if (floors.isEmpty()) return;
 
-        // pick the rightmost floor
+        //pick the rightmost floor
         floors.sort((f1, f2) -> Float.compare(f1.getX(), f2.getX()));
         FloorTile end = floors.get(floors.size() - 1);
 
-        // base world‐position: center atop that tile
+        //base world‐position: center atop that tile
         float borderMargin = 110f;
         float baseX = end.getX() + end.getWidth() * 0.5f - borderMargin;
         float baseY = end.getY() + end.getHeight();
 
-        // separation in world‐units between the two doors
+        //separation in world‐units between the two doors
         float sep = 200f;
 
         if (!isFinalWorld) {
-            // Worlds 1–4: three different continue doors
+            //three doors should be presented in levels 1-4
                 for (int r = 1; r <= 3; r++) {
                 float x = baseX + (r - 2) * sep;
                 doors.add(new Door(Door.Type.CONTINUE,
@@ -402,14 +394,12 @@ public class GameWorld {
                  r));
                             }
             } else {
-            // World 5: exactly one continue + one extract
-                // Continue door – center‐left
+            //world 5 - 1 contnue and 1 extract door
             Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
             doors.add(new Door(Door.Type.CONTINUE,
                 contPos,
                 CurrentDificulty.getRadiation()));
 
-            // Extract door – center‐right
             Vector2 exitPos = new Vector2(baseX + sep * 0.5f, baseY);
             doors.add(new Door(Door.Type.EXTRACT,
                 exitPos));

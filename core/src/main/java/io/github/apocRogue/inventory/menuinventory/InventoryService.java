@@ -22,7 +22,6 @@ public class InventoryService {
     // TODO: Point this at your real Cloud Function URL (or inject via config)
     private static final String BASE_URL = "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net";
 
-    /** Matches the JSON structure returned by InventoryPull */
     public static class InventoryItemPayload {
         public String              itemCode;
         public String              typeID;
@@ -71,11 +70,10 @@ public class InventoryService {
         });
     }
 
-    /** Fetch the full inventory for the current player. */
      public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
         HttpRequest req = new HttpRequest(HttpMethods.GET);
         req.setUrl(BASE_URL + "/inventorypull");
-        // If you require auth:
+        //if auth is required
         req.setHeader("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken());
 
         Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
@@ -88,7 +86,6 @@ public class InventoryService {
                     System.out.println(jsonText);
                     Gdx.app.log("InventoryService", "InventoryPull HTTP " + code + " → " + jsonText);
                     if (code != 200) {
-                        // propagate the failure so onFailure() is invoked, and skip parsing
                         cb.onFailure(new RuntimeException("InventoryPull HTTP " + code));
                         return;
                     }
@@ -113,12 +110,11 @@ public class InventoryService {
         });
     }
 
-    /** Push an updated inventory list back to the server. */
     public static void pushInventory(
         List<InventoryItemPayload> items,
         Callback<Void> cb
     ) {
-        // Wrap in the expected "inventory" field
+        //wrap i the inventory field
         class PushRequest { List<InventoryItemPayload> inventory;
             PushRequest(List<InventoryItemPayload> inv){ inventory=inv; }
         }
@@ -135,7 +131,6 @@ public class InventoryService {
         Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
             @Override
             public void handleHttpResponse(HttpResponse response) {
-                // you could parse {"status":"OK"} here
                 cb.onSuccess(null);
             }
 

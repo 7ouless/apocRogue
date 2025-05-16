@@ -25,7 +25,7 @@ public class WeaponTypeRegistry {
 
         Json json = new Json();
         for (JsonValue entry = root.child; entry != null; entry = entry.next) {
-            // entry.name() is the "01", "02"... essentially the weapon type id
+            //entry.name() is the "01", "02"... essentially the weapon type id
             WeaponTypeInfo info = json.readValue(WeaponTypeInfo.class, entry);
             infoByTypeID.put(entry.name(), info);
         }

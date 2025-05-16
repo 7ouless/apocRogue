@@ -46,19 +46,18 @@ public class MainScreen extends ScreenAdapter {
         stage = new Stage(new FillViewport(1080, 720));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // 1) Add a big centered title at the top
+        //top-title
         float vw = stage.getViewport().getWorldWidth();
         Label title = new Label("KIGEN", skin);
         title.setFontScale(3f);
         title.setAlignment(Align.center);
         float topMargin = 320f;
-        float rightShift = 35f;  // tweak this until it’s where you like
+        float rightShift = 35f;
         float x = (vw - title.getWidth()*title.getFontScaleX())/2f + rightShift;
         float y = stage.getViewport().getWorldHeight() - topMargin;
         title.setPosition(x, y);
         stage.addActor(title);
 
-        // 2) Build your vertical button container (no grey background or border)
         Window window = new Window("", skin);
         window.setBackground((Drawable)null);
         final float BUTTON_WIDTH = 200f;
@@ -66,7 +65,7 @@ public class MainScreen extends ScreenAdapter {
         window.columnDefaults(0).width(BUTTON_WIDTH);
 
 
-        // bump up the default padding so buttons are more spread out:
+        //bump up the default padding so buttons are more spread out:
         window.defaults().pad(12f);
         TextButton deploy = new TextButton("DEPLOY!", skin);
         deploy.pad(8f);
@@ -113,7 +112,6 @@ public class MainScreen extends ScreenAdapter {
         });
         window.add(logout).row();
 
-        // 3) Position the window at the bottom‐center
         window.pack();
         float wx = (vw - window.getWidth()) / 2f;
         float wy = 120f;               // 20px above the bottom edge
@@ -122,7 +120,7 @@ public class MainScreen extends ScreenAdapter {
         stage.addActor(window);
         Gdx.input.setInputProcessor(stage);
 
-        // prepare a simple repeating noise texture
+        //prepare a simple repeating noise texture
         Pixmap pix = new Pixmap(64,64,Pixmap.Format.RGBA8888);
         for(int ix = 0; ix < 64; ix++){
             for(int iy = 0; iy < 64; iy++){
@@ -135,7 +133,7 @@ public class MainScreen extends ScreenAdapter {
         grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         pix.dispose();
 
-        // schedule first scare in 10–20s
+        //schedule first scare in 10–20s
         scheduleNext();
     }
 
@@ -152,24 +150,19 @@ public class MainScreen extends ScreenAdapter {
         float vw = stage.getViewport().getWorldWidth();
         float vh = stage.getViewport().getWorldHeight();
 
-        // 1) Original pixel size of your texture
         float texW = bgTex.getWidth();
         float texH = bgTex.getHeight();
 
-        // 2) Figure out the scale so that BOTH width and height are >= viewport
         float scaleX = vw / texW;
         float scaleY = vh / texH;
         float coverScale = Math.max(scaleX, scaleY);
 
-        // 3) Optional extra zoom factor (1.0 = exact cover, >1 = zoom in more)
-        float zoom = bgScale;  // e.g. 1.0f or 1.2f
+        float zoom = bgScale;
         float finalScale = coverScale * zoom;
 
-        // 4) Compute drawn size
         float w = texW * finalScale;
         float h = texH * finalScale;
 
-        // 5) Center the image so overflow is equal on both sides
         float x = (vw - w) / 2f;
         float y = (vh - h) / 2f + 50f;
         timer += delta;
@@ -184,8 +177,8 @@ public class MainScreen extends ScreenAdapter {
                 break;
 
             case FLASHING:
-                // ramp grain up more slowly:
-                grainAlpha = Math.min(1f, grainAlpha + delta * 1f);  // try 1f instead of 5f
+                //ramp grain up more slowly:
+                grainAlpha = Math.min(1f, grainAlpha + delta * 1f);  //try 1f instead of 5f
                 if (grainAlpha >= 1f) {
                     holdTimer = 0f;
                     state     = State.HOLD;
@@ -195,7 +188,7 @@ public class MainScreen extends ScreenAdapter {
             case HOLD:
                 holdTimer += delta;
                 if (holdTimer >= 0.5f) {
-                    // after 1 second at full grain, switch to dead BG and clear grain
+                    //after 1 second at full grain, switch to dead BG and clear grain
                     bgTex      = deadBg;
                     grainAlpha = 0f;
                     scareTimer = 0f;

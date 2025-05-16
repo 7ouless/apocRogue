@@ -25,23 +25,20 @@ public class ShopScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        // Set up the stage & skin
         stage = new Stage(new FitViewport(1080, 720));
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
 
-        // Initialise & draw the player inventory UI
         Inventory inv = new Inventory(skin);
         inv.draw(stage);
 
-        // Build the ShopUI
         shopUI = new ShopUI(
             stage,
             skin,
             game
         );
 
-        // Set input to this stage
+        //good job
         Gdx.input.setInputProcessor(stage);
     }
 

@@ -13,16 +13,12 @@ import io.github.apocRogue.globals.physics.KnockbackProcessor;
 import io.github.apocRogue.globals.physics.PhysicalActor;
 import io.github.apocRogue.globals.stats.StatsComponent;
 
-/**
- * A base class for any AI-driven enemy/mob in your game.
- * It holds common fields like stats, velocity, collision, etc.
- */
 
 public class EnemyActor extends PhysicalActor implements DamageableActor {
     protected StatsComponent stats;
     protected AIBehavior aiBehavior;
 
-    // The “alert” system
+    //alert system
     private SoundAlertComponent alertComponent;
 
     public float velocityX = 0f;
@@ -38,7 +34,6 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         setSize(texture.getWidth(), texture.getHeight());
         this.stats = stats;
 
-        // For example, set hearingThreshold = 0.2f
         this.alertComponent = new SoundAlertComponent(0.00000001f);
     }
 
@@ -46,18 +41,17 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
     public void act(float delta) {
         super.act(delta);
 
-        // Apply gravity
+        //gravity
         GravitySystem.applyGravityAndPhysics(this, delta, getGravityFactor());
 
-        // Update sound alert logic
+        //updating sound alert object
         alertComponent.update(delta);
 
-        // AI logic
         if (aiBehavior != null) {
             aiBehavior.updateAI(this, delta);
         }
 
-        // Possibly check collisions with Player
+        //check for player collisions
         checkCollisionWithPlayer();
     }
 
@@ -65,7 +59,7 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         return 1f;
     }
 
-    // The “alert” calls
+    //alert calls
     public void alert(Vector2 position, float noiseLevel) {
         alertComponent.triggerAlert(position, noiseLevel);
     }
@@ -82,7 +76,6 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         return alertComponent.getAlertPosition();
     }
 
-    // ... other stuff: jump, collisions, stats, etc. ...
 
     @Override
     public void takeDamage(int amount) {
@@ -121,14 +114,6 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
     }
 
 
-
-
-    /**
-     * Method to update the enemy's alert state.
-     * Increase alertness based on noise level and record the position.
-     */
-
-    // In EnemyActor.java
     protected float lockOnTimer = 10f;
     protected final float lockOnTimerMax = 10f;
 
@@ -137,7 +122,6 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         if (player != null) {
             boolean canSee = lineOfSight.canSeeTarget(this, player, stats.sightSens(), getStage());
             if (canSee) {
-                // Calls your new setAlertPosition(...) forwarder
                 alertComponent.setAlertPosition(new Vector2(player.getX(), player.getY()));
                 alertComponent.setAlerted(true);
                 lockOnTimer = lockOnTimerMax;
@@ -164,14 +148,12 @@ public class EnemyActor extends PhysicalActor implements DamageableActor {
         for (Actor actor : getStage().getActors()) {
             if (actor instanceof PlayerActor) {
                 PlayerActor player = (PlayerActor) actor;
-                // Assuming both EnemyActor and PlayerActor have a proper getBounds() method
                 if (getBounds().overlaps(player.getBounds())) {
                     int damage = stats.getStrength();
-                    // 1) apply damage
                     player.takeDamage(damage);
-                    // 2) apply knockback impulse
+                    //applying knockback
                     float dir   = player.getX() < getX() ? -1f : 1f;
-                    float forceX = dir * 5000f;   // tweak magnitude as you like
+                    float forceX = dir * 5000f;   //magnitude
                     float forceY = 800f;
                     KnockbackProcessor.applyKnockback(player, forceX, forceY);
                     player.startKnockback();

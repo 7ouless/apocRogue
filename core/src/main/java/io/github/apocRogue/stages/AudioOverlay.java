@@ -10,29 +10,26 @@ public class AudioOverlay extends Window {
     private final OptionsOverlay previousOverlay;
 
     public AudioOverlay(Skin skin, OptionsOverlay previousOverlay) {
-        // Window title, using the same Skin
+        //window title, same skin
         super("Audio Settings", skin);
         this.previousOverlay = previousOverlay;
 
-        // Make the overlay fill the screen and block clicks behind it
+        //overlay fill screen
         setModal(true);
         setFillParent(true);
 
-        // A semi‐transparent black background
+        //black backround
         setBackground(skin.newDrawable("white", 0, 0, 0, 0.7f));
 
-        // Create a “content” table that we center within the full screen
+        //creating and centering a 'content table'
         Table content = new Table();
-        // You can also add an optional background or pad if desired
         content.defaults().pad(10);
-        // Place content table in the center
         add(content).expand().fill();
 
-        // 1) Label row
         content.row();
         content.add(new Label("Master Volume", skin)).center();
 
-        // 2) Volume slider row
+        //volume slider
         content.row();
         final Slider volumeSlider = new Slider(0f, 1f, 0.01f, false, skin);
         volumeSlider.setValue(userSettingsManager.getInstance().getMasterVolume());
@@ -45,16 +42,14 @@ public class AudioOverlay extends Window {
         });
         content.add(volumeSlider).width(300).center();
 
-        // 3) Back button row
+        //back button
         content.row();
         TextButton backButton = new TextButton("Back", skin);
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                remove();  // remove THIS overlay
+                remove();
                 if (previousOverlay != null) {
-                    // Instead of using previousOverlay.getStage(), just use getStage()
-                    // so we re-add the previous overlay to the same Stage we’re on now.
                     Stage currentStage = getStage();
                     if (currentStage != null) {
                         currentStage.addActor(previousOverlay);
@@ -65,17 +60,11 @@ public class AudioOverlay extends Window {
         content.add(backButton).center();
     }
 
-
-    /**
-     * Called automatically when this window is added/removed from a stage.
-     * We override it to center the window on the new stage if not null.
-     */
     @Override
     public void setStage(Stage stage) {
         super.setStage(stage);
         if (stage != null) {
-            // After we’re actually added to a stage, center ourselves:
-            pack(); // ensure correct size
+            pack();
             float stageWidth  = stage.getViewport().getWorldWidth();
             float stageHeight = stage.getViewport().getWorldHeight();
             setPosition(

@@ -33,12 +33,12 @@ public class LoginScreen extends ScreenAdapter {
         table.setFillParent(true);
         table.pad(15);
 
-        // Title
+        //title
         Label title = new Label("Welcome to APOC Rogue", skin);
         title.setFontScale(1.3f);
         table.add(title).colspan(2).padBottom(15f).row();
 
-        // Username
+        //username
         table.add(new Label("Username:", skin)).left().padBottom(8f);
         TextField userField = new TextField("", skin);
         userField.getStyle().background =
@@ -46,7 +46,7 @@ public class LoginScreen extends ScreenAdapter {
         userField.setAlignment(Align.center);
         table.add(userField).width(180f).padBottom(8f).row();
 
-        // Password
+        //password
         table.add(new Label("Password:", skin)).left().padBottom(8f);
         TextField passField = new TextField("", skin);
         passField.setPasswordMode(true);
@@ -56,11 +56,10 @@ public class LoginScreen extends ScreenAdapter {
         passField.setAlignment(Align.center);
         table.add(passField).width(180f).padBottom(10f).row();
 
-        // Feedback
+        //feedback
         Label feedback = new Label("", skin);
         table.add(feedback).colspan(2).padBottom(10f).row();
 
-        // Buttons
         TextButton loginBtn    = new TextButton("Login",         skin);
         TextButton registerBtn = new TextButton("Create Account", skin);
         loginBtn.pad(6f,12f,6f,12f);
@@ -84,10 +83,9 @@ public class LoginScreen extends ScreenAdapter {
                             Gdx.app.postRunnable(() -> feedback.setText("Bad username or password"));
                             return;
                         }
-                        // Extract and store the token
+                        //extract + store token
                         String token = data.getString("token");
                         ServerSingleton.getInstance().setAuthToken(token);
-                        // Proceed to main screen
                         Gdx.app.postRunnable(() -> game.setScreen(new MainScreen(game)));
                     }
 

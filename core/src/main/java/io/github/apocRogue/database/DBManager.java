@@ -32,18 +32,12 @@ public class DBManager {
         return instance;
     }
 
-    /**
-     * Registers a new user; cb.onSuccess receives the raw JSON response.
-     */
     public void register(String user, String pass, JsonCallback cb) {
         System.out.println("Registering user " + user + " with password " + pass);
         post("/registrationSystem", user, pass, cb);
         System.out.println("Registration finished");
     }
 
-    /**
-     * Logs in an existing user; cb.onSuccess receives the raw JSON response.
-     */
     public void login(String user, String pass, JsonCallback cb) {
         System.out.println("Login called");
         post("/loginSystem", user, pass, cb);
@@ -53,9 +47,6 @@ public class DBManager {
     private static final String HEALTH_URL =
         "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net/healthCheckFunction";
 
-    /**
-     * Performs a health check; cb.onSuccess receives the raw response body.
-     */
     public void healthCheck(final JsonCallback cb) {
         Net.HttpRequest req = new Net.HttpRequest(Net.HttpMethods.GET);
         req.setUrl(HEALTH_URL);
@@ -103,7 +94,7 @@ public class DBManager {
                 String body = resp.getResultAsString();
                 System.out.println("HTTP " + status + " → " + body);
 
-                // 1) Success path
+                //success
                 if (status >= 200 && status < 300) {
                     try {
                         JsonValue parsed = new JsonReader().parse(body);
@@ -114,13 +105,12 @@ public class DBManager {
                     return;
                 }
 
-                // 2) Error path
+                //error
                 String message;
                 try {
-                    // if you wrap errors as JSON: {"error":"…"}
                     message = new JsonReader().parse(body).getString("error");
                 } catch (Exception e) {
-                    // fallback to raw body
+                    //fallback
                     message = body;
                 }
                 cb.onError(new RuntimeException("HTTP " + status + ": " + message));
@@ -151,7 +141,7 @@ public class DBManager {
             .header("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken())
             .build();
 
-        // send an empty JSON object as body (no filters)
+        //send empty JSON object as body
         req.setContent("{}");
         req.setTimeOut(10_000);
 
@@ -202,9 +192,6 @@ public class DBManager {
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
 
-    /**
-     * Buy the given listingID.  Expects { listingID } and returns { status:"PURCHASED" }.
-     */
     public void buy(long listingID, JsonCallback cb) {
         String url = baseUrl + "/marketBuy";
         Map<String,Object> bodyMap = new HashMap<>();
@@ -224,7 +211,6 @@ public class DBManager {
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
 
-    /** shared listener that handles 2xx vs errors, exactly like your other methods */
     private static class DefaultListener implements Net.HttpResponseListener {
         private final JsonCallback cb;
         DefaultListener(JsonCallback cb) { this.cb = cb; }

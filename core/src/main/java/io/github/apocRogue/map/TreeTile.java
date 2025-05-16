@@ -19,7 +19,7 @@ public class TreeTile extends TileActor {
         super(x, y, width, height, null);
         this.flipX = flipX;
         this.useAlt = useAlt;
-        // setBounds so the actor's position/size is correct
+        //setBounds so the actor's position/size is correct
         setBounds(x, y, width, height);
     }
 
@@ -27,7 +27,7 @@ public class TreeTile extends TileActor {
     public void draw(Batch batch, float parentAlpha) {
         Texture t = useAlt ? TREE2 : TREE1;
 
-        // lowering tree for rad 3 (sorry jimmy)
+        //lowering tree for rad 3 (sorry jimmy)
         float yPos = getY();
         if (CurrentDificulty.getRadiation() == 3) {
             yPos -= 10f;    //
@@ -45,7 +45,7 @@ public class TreeTile extends TileActor {
 
     @Override
     public Rectangle getBounds() {
-        // zero‐sized so you walk right through it
+        //zero‐sized so you walk right through it
         return new Rectangle(0, 0, 0, 0);
     }
 

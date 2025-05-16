@@ -16,7 +16,7 @@ public class WolfAttackState implements WolfState {
     public void update(WolfStateMachine fsm, WolfActor wolf, float delta) {
         if (!done) {
             PlayerActor p = wolf.findPlayer();
-            // only attack if player still in range
+            //only attack if player still in range
             if (p != null && wolf.distanceToPlayer(p) <= ATTACK_RANGE) {
 
                     }

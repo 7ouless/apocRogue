@@ -13,14 +13,13 @@ public class SoundPhysics {
         MELEE_NOISE, GUNSHOT_MUZZLE, PROJECTILE_IMPACT, PROJECTILE_FLIGHT, ENVIRONMENTAL
     }
 
-    /** Holds data for one debug ring that will be drawn on screen. */
     public static class SoundDebugEvent {
-        public Vector2 center;        // Where the sound was emitted
-        public float maxRadius;       // The maximum radius
-        public float currentRadius;   // Current radius (shrinks or grows over time)
-        public float duration;        // Total lifetime for the ring
-        public float timeAlive;       // How long it has existed
-        public Color color;           // Color of the ring
+        public Vector2 center;
+        public float maxRadius;
+        public float currentRadius;
+        public float duration;
+        public float timeAlive;
+        public Color color;
 
         public SoundDebugEvent(Vector2 center, float radius, float duration, Color color) {
             this.center = center.cpy();
@@ -32,22 +31,17 @@ public class SoundPhysics {
         }
     }
 
-    // A static list to track all debug rings currently visible
+    //stores debug rings
     public static Array<SoundDebugEvent> debugEvents = new Array<>();
 
-    /**
-     * Emits a sound “event” into the game.
-     * - Adds a debug ring for visualization
-     * - Alerts nearby enemies based on distance & noise intensity
-     */
+    //emits an in-game sound event
     public static void emitSound(Vector2 pos, float intensity, float radius, SoundType type, Stage stage) {
-        // 1) Create a debug ring so we can visualize the sound
         Color ringColor = pickColorForSoundType(type);
-        float ringDuration = 2.0f;  // e.g. 2 seconds
+        float ringDuration = 2.0f;
         SoundDebugEvent evt = new SoundDebugEvent(pos, radius, ringDuration, ringColor);
         debugEvents.add(evt);
 
-        // 2) Check each enemy in the stage to see if it’s within “radius”
+        //is enemy in radius
         for (Actor actor : stage.getActors()) {
             if (!(actor instanceof EnemyActor)) continue;
             EnemyActor enemy = (EnemyActor) actor;
@@ -58,19 +52,16 @@ public class SoundPhysics {
             float dist = pos.dst(enemy.getX(), enemy.getY());
             if (dist > radius) continue; // out of range
 
-            // Attenuate the noise based on distance
+            //basing the precision on noise level
             float effectiveIntensity = intensity * (1 - dist / radius);
 
-            // If above the enemy’s hearing threshold, alert it
+            //alert the enemy if the noise level is exceeded
             if (effectiveIntensity >= alertComp.hearingThreshold) {
                 enemy.alert(pos, effectiveIntensity);
             }
         }
     }
 
-    /**
-     * Called each frame (in GameWorld’s update) to animate or remove debug rings.
-     */
     public static void updateDebugEvents(float delta) {
         for (int i = debugEvents.size - 1; i >= 0; i--) {
             SoundDebugEvent evt = debugEvents.get(i);
@@ -78,7 +69,6 @@ public class SoundPhysics {
 
             float t = evt.timeAlive / evt.duration;
 
-            // Example: shrink from maxRadius down to 0
             evt.currentRadius = evt.maxRadius * (1f - t);
 
             if (evt.timeAlive >= evt.duration) {

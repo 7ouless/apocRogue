@@ -31,7 +31,7 @@ public class StatsComponent {
     }
 
     public void takeDamage(int amount) {
-        // Possibly factor in defense
+        //future implementation - defense?
         health -= amount;
         if (health < 0) health = 0;
     }
@@ -70,8 +70,6 @@ public class StatsComponent {
     public float getAggression() {
         return aggression;
     }
-
-    // getters, setters, etc.
 
     public boolean spendStamina(float cost) {
         if (stamina < cost) return false;

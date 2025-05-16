@@ -16,10 +16,10 @@ import io.github.apocRogue.map.TileActor;
 
 public abstract class RangedAttackActor extends BaseAttackActor {
     protected Vector2 velocity = new Vector2(0, 0);
-    protected float gravity = -300f; // downward acceleration
-    protected int noiseLevel; // Added field to store the noise level
+    protected float gravity = -300f;
+    protected int noiseLevel;
     private Weapon weapon;
-    private float timeSinceLastSound = 0f;  // for periodic flight sound
+    private float timeSinceLastSound = 0f;  //for periodic flight sound
     private PlayerActor player;
 
 
@@ -28,21 +28,17 @@ public abstract class RangedAttackActor extends BaseAttackActor {
         this.weapon = weapon;
         this.player = player;
         setPosition(player.getX(), player.getY());
-        this.velocity = direction.nor().scl(500f); // example speed
+        this.velocity = direction.nor().scl(500f);
         this.noiseLevel = (weapon != null ? weapon.getNoiseLevel() : 0);
     }
     @Override
     public void act(float delta) {
-        // 1) Perform the default collision check in BaseAttackActor
         super.act(delta);
 
-        // 2) Apply gravity
         velocity.y += gravity * delta;
 
-        // 3) Move according to velocity
         setPosition(getX() + velocity.x * delta, getY() + velocity.y * delta);
 
-        // 4) Optionally rotate to face movement direction
         if (velocity.len2() > 0) {
             setRotation(velocity.angleDeg());
         }
@@ -57,14 +53,12 @@ public abstract class RangedAttackActor extends BaseAttackActor {
                 player.getStage()
             );
         }
-        // 5) Collide with the map
         checkCollisionWithTile();
     }
 
     protected void checkCollisionWithTile() {
         if (stage == null) return;
 
-        // Make a copy of the actor list to avoid nested iteration conflicts.
         Array<Actor> actorsCopy = new Array<>(stage.getActors());
 
         Rectangle projectileRect = new Rectangle(getX(), getY(), getWidth(), getHeight());

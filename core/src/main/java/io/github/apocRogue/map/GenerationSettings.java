@@ -23,12 +23,12 @@ public class GenerationSettings {
     public float decorDensity   = 0.75f;
     public int   decorGap       = 0;
 
-    // default “global” size (fallback)
+    //default “global” size (fallback)
     public float decorWidth     = 120f;
     public float decorHeight    = 100f;
     public float decorYOffset   = 35f;
 
-    // per-variant overrides:
+    //per-variant overrides
     public float rockWidth      = 100f;
     public float rockHeight     =  70f;
     public float rockYOffset  =  45f;
@@ -43,7 +43,6 @@ public class GenerationSettings {
 
     public float platformDensity;
 
-    // 1) A default constructor (no arguments)
     public GenerationSettings() {
         // Provide sensible defaults:
         this.roomWidth = worldGetters.getWorldOneWidth();
@@ -55,7 +54,6 @@ public class GenerationSettings {
         this.platformDensity = 5;
     }
 
-    // 2) The existing 9-arg constructor
     public GenerationSettings(
         int roomWidth,
         int roomHeight,

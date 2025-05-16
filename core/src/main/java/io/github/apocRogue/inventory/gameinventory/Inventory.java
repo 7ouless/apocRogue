@@ -34,7 +34,6 @@ public class Inventory {
         hotbarSlots = new Array<InventorySlot>();
         inventorySlots = new Array<InventorySlot>();
         dragAndDrop = new DragAndDrop();
-        // Further reduce tap square size to force drag even with small movement
         dragAndDrop.setTapSquareSize(20);
         createHotbar();
         createInventory();
@@ -42,7 +41,7 @@ public class Inventory {
 
     }
 
-    // Create a hotbar with 5 slots positioned at the bottom left.
+    //create a hotbar with 5 total slots
     private void createHotbar() {
         hotbarTable = new Table();
         hotbarTable.setFillParent(true);
@@ -50,7 +49,7 @@ public class Inventory {
 
         for (int i = 0; i < HOTBAR_SIZE; i++) {
             InventorySlot slot = new InventorySlot(skin);
-            // Enable touchable explicitly (should be enabled by default)
+            //explicitly enabling touchable
             slot.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
             if (i == selectedHotbarIndex) {
                 slot.setHighlighted(true);
@@ -61,18 +60,18 @@ public class Inventory {
     }
     public List<InventorySlot> getAllSlots() {
         List<InventorySlot> all = new ArrayList<>();
-        // Add hotbar slots
+        //add hotbar slot
         for (InventorySlot slot : hotbarSlots) {
             all.add(slot);
         }
-        // Add main inventory slots
+        //add main inv slot
         for (InventorySlot slot : inventorySlots) {
             all.add(slot);
         }
         return all;
     }
 
-    // Create an inventory grid with 18 slots (6 columns x 3 rows).
+    //creates a 6x3 inventory grid
     private void createInventory() {
         inventoryTable = new Table(skin);
         inventoryTable.setVisible(false);
@@ -91,7 +90,7 @@ public class Inventory {
         );
     }
 
-    // Setup DragAndDrop for all slots.
+    //drag and drop
     private void setupDragAndDrop() {
         Array<InventorySlot> allSlots = new Array<InventorySlot>();
         allSlots.addAll(hotbarSlots);
@@ -107,14 +106,12 @@ public class Inventory {
                     }
                     Gdx.app.log("DragAndDrop", "Drag started from slot");
 
-                    // Create the Payload
                     Payload payload = new Payload();
 
-                    // Pack the source slot and the weapon together
                     DragData dragData = new DragData(slot, slot.getWeapon());
                     payload.setObject(dragData);
 
-                    // Prepare the drag image
+                    //prepare the image
                     Drawable drawable = slot.getItemDrawable();
                     if (drawable == null) {
                         Gdx.app.log("DragAndDrop", "No drawable found, aborting drag");
@@ -123,7 +120,7 @@ public class Inventory {
                     Image dragImage = new Image(drawable);
                     payload.setDragActor(dragImage);
 
-                    // Clear the slot while dragging
+                    //clear slot
                     slot.clearItem();
 
                     return payload;
@@ -131,24 +128,22 @@ public class Inventory {
 
                 @Override
                 public void dragStop(InputEvent event, float x, float y, int pointer, Payload payload, Target target) {
-                    // If target == null, the item was dropped on "nothing"
+                    //if the item was dropped on nothing
                     if (target == null) {
                         DragData dragData = (DragData) payload.getObject();
                         if (dragData != null && dragData.sourceSlot != null) {
-                            // Snap back to original slot
+                            //snap to original slot
                             dragData.sourceSlot.setItem(dragData.weapon);
                         }
                     }
-                    // If target != null, the drop(...) method of the Target handles placing or swapping
                 }
             });
 
 
-            // Create a drop target for each slot.
+            //create a drop target for each slot
             dragAndDrop.addTarget(new Target(slot) {
                 @Override
                 public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
-                    // Log dragging over a slot
                     Gdx.app.log("DragAndDrop", "Dragging over slot");
                     return true;
                 }
@@ -156,22 +151,20 @@ public class Inventory {
                 public void drop(Source source, Payload payload, float x, float y, int pointer) {
                     Gdx.app.log("DragAndDrop", "Dropped on slot");
 
-                    // Retrieve the dragged data
+                    //retrieve the data dragged
                     DragData dragData = (DragData) payload.getObject();
                     if (dragData == null) return;
 
-                    // The weapon the user was dragging
+                    //dragged weapon
                     Weapon draggedWeapon = dragData.weapon;
-                    // The target slot where we are dropping
+                    //target dropping slot
                     Weapon targetWeapon = slot.getWeapon();
 
-                    // Place the dragged weapon in the new slot
+                    //place weapon to new spot
                     slot.setItem(draggedWeapon);
 
-                    // If the target slot had a weapon, swap
+                    //swap if target spot previously contained a weapon
                     if (targetWeapon != null) {
-                        // The Source's actor is the original slot
-                        // but we can also get it from dragData.sourceSlot
                         InventorySlot sourceSlot = (InventorySlot) source.getActor();
                         sourceSlot.setItem(targetWeapon);
                     }
@@ -180,7 +173,7 @@ public class Inventory {
         }
     }
 
-    // Add the hotbar and inventory tables to the provided stage.
+    //add to stage
     public void draw(Stage stage) {
         stage.addActor(hotbarTable);
         stage.addActor(hotbarTable);   // Must add to stage first
@@ -191,12 +184,12 @@ public class Inventory {
         stage.addActor(inventoryTable);
     }
 
-    // Toggle the visibility of the full inventory.
+    //toggle full inventory visibility
     public void toggleInventory() {
         inventoryTable.setVisible(!inventoryTable.isVisible());
     }
 
-    // Set the currently selected hotbar slot and update highlighting.
+    //update highlighting to new selected spot in hotbar
     public void setSelectedHotbarIndex(int index) {
         if (index < 0 || index >= HOTBAR_SIZE) return;
         hotbarSlots.get(selectedHotbarIndex).setHighlighted(false);
@@ -204,7 +197,7 @@ public class Inventory {
         hotbarSlots.get(selectedHotbarIndex).setHighlighted(true);
     }
 
-    // Scroll the hotbar selection (direction can be positive or negative).
+    //scroll hotbar selection
     public void scrollHotbar(int direction) {
         int newIndex = (selectedHotbarIndex + direction + HOTBAR_SIZE) % HOTBAR_SIZE;
         setSelectedHotbarIndex(newIndex);
@@ -214,21 +207,19 @@ public class Inventory {
     }
 
     public boolean addItem(Weapon weapon) {
-        // First try hotbar
         for (InventorySlot slot : hotbarSlots) {
             if (slot.isEmpty()) {
                 slot.setItem(weapon);
                 return true;
             }
         }
-        // If hotbar is full, try main inventory
+        //if hotbar is full, try the main inventory
         for (InventorySlot slot : inventorySlots) {
             if (slot.isEmpty()) {
                 slot.setItem(weapon);
                 return true;
             }
         }
-        // If everything is full, return false
         return false;
     }
 }

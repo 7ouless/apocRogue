@@ -20,7 +20,7 @@ public class WolfRoamState implements WolfState {
 
     @Override
     public void update(WolfStateMachine fsm, WolfActor wolf, float delta) {
-        // see if we spot the player
+        //see if we spot the player
         PlayerActor p = wolf.findPlayer();
         if (p != null && lineOfSight.canSeeTarget(
             wolf, p, wolf.getStats().sightSens(), wolf.getStage())) {
@@ -32,7 +32,7 @@ public class WolfRoamState implements WolfState {
             return;
         }
 
-        // pick a new random roam target every INTERVAL seconds
+        // pick a new random roam target every (timer -= delta) seconds
         timer -= delta;
         if (timer <= 0f) {
             float ang = (float)(Math.random() * Math.PI * 2);

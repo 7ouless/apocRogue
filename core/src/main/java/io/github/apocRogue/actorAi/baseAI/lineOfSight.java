@@ -16,7 +16,7 @@ public class lineOfSight {
     public static boolean canSeeTarget(Actor self, Actor target, float sightRange, Stage stage) {
         if (stage == null) return false;
 
-        // 1) Distance check
+        //check distance
         float sx = self.getX() + self.getWidth() / 2f;
         float sy = self.getY() + self.getHeight() / 2f;
         float tx = target.getX() + target.getWidth() / 2f;
@@ -30,14 +30,10 @@ public class lineOfSight {
             return false;
         }
 
-        // 2) Check if there's a clear line-of-sight (no blocking tile)
+        //checking for line of sight (LOS)
         return isLineClear(sx, sy, tx, ty, stage);
     }
 
-    /**
-     * Samples points along the line from (x1, y1) to (x2, y2).
-     * If any "blocking" tile is found at a sample point, we say LOS is blocked.
-     */
     private static boolean isLineClear(float x1, float y1, float x2, float y2, Stage stage) {
         int steps = 15;
         float stepFrac = 1f / steps;
@@ -57,11 +53,8 @@ public class lineOfSight {
                         float bottom = tile.getY();
                         float top = tile.getY() + tile.getHeight();
 
-                        // If we consider them blocking only if we’re below their top
-                        // i.e. it's effectively a wall, not just the ground we stand on
                         if (sampleX >= left && sampleX <= right &&
                             sampleY >= bottom && sampleY <= top) {
-                            // But let's skip if sampleY is above tile's top by a small margin
                             if (sampleY < top + 1f) {
                                 return false;
                             }

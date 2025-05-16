@@ -13,7 +13,6 @@ import io.github.apocRogue.weapons.Weapon;
  * We set velocity in the constructor based on a target location.
  */
 public class ArrowActor extends RangedAttackActor {
-    // You can now use the inherited noiseLevel field from RangedAttackActor.
     public ArrowActor(Texture texture,
                       float startX, float startY,
                       float targetX, float targetY,
@@ -29,16 +28,16 @@ public class ArrowActor extends RangedAttackActor {
             SoundPhysics.SoundType.PROJECTILE_FLIGHT,
             player.getStage()
         );
-        // Set the noise level from the weapon.
+        //set noise level
         this.noiseLevel = noiseLevel;
         setPosition(startX, startY);
 
-        // Compute direction from start to target
+        //direction from start to target
         Vector2 dir = new Vector2(targetX - startX, targetY - startY).nor();
         projectileValue = projectileValue * 1000;
         velocity = dir.scl(projectileValue);
 
-        // Rotate the arrow to face that direction
+        //rotate arrow to direction
         setRotation(velocity.angleDeg());
     }
 }

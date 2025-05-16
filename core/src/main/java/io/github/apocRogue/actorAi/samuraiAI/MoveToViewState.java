@@ -9,7 +9,6 @@ import io.github.apocRogue.actors.playerEntity.PlayerActor;
 public class MoveToViewState implements State<MiniSamuraiActor> {
     @Override
     public void enter(MiniSamuraiActor samurai) {
-        // Optionally set an animation.
     }
 
     @Override

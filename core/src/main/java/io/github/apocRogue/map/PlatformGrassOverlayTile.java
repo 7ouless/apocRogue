@@ -25,7 +25,7 @@ public class PlatformGrassOverlayTile extends TileActor {
         float pad = 0.01f;
         float drawX = Math.round(getX());
         float drawW = getWidth();
-        // flip texture vertically by swapping the v coordinates
+        //flip texture vertically by swapping the v coordinates
         float u = pad;
         float v = 1 - pad;
         float u2 = 1 - pad;

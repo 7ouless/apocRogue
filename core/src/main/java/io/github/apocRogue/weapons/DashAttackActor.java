@@ -53,7 +53,6 @@ public class DashAttackActor extends BaseAttackActor {
             return;
         }
 
-        //Broken, doesnt go to player
         float dx = dashVel * delta;
         player.moveBy(dx, 0f);
         player.velocityX = dashVel;

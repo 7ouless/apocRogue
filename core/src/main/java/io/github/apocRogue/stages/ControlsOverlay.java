@@ -14,7 +14,6 @@ public class ControlsOverlay extends Window {
     private final Skin skin;
     private final OptionsOverlay previousOverlay;
 
-    // Labels for current bindings
     private Label moveLeftLabel;
     private Label moveRightLabel;
     private Label jumpLabel;
@@ -27,20 +26,18 @@ public class ControlsOverlay extends Window {
         this.skin = skin;
         this.previousOverlay = previousOverlay;
 
-        // Fill entire screen, block clicks behind
         setModal(true);
         setFillParent(true);
         setBackground(skin.newDrawable("white", 0, 0, 0, 0.7f));
 
-        // Create a content table for the controls UI
+        //content table for control UI
         Table content = new Table();
         content.defaults().pad(10);
         add(content).expand().fill();
 
-        // Build the control labels & rebind buttons
         updateLabels();
 
-        // 1) Move Left row
+        //leftMove
         content.row();
         content.add(new Label("Move Left:", skin));
         content.add(moveLeftLabel);
@@ -48,7 +45,7 @@ public class ControlsOverlay extends Window {
         rebindMoveLeft.addListener(new RebindListener("moveLeft"));
         content.add(rebindMoveLeft);
 
-        // 2) Move Right
+        //right move
         content.row();
         content.add(new Label("Move Right:", skin));
         content.add(moveRightLabel);
@@ -56,7 +53,7 @@ public class ControlsOverlay extends Window {
         rebindMoveRight.addListener(new RebindListener("moveRight"));
         content.add(rebindMoveRight);
 
-        // 3) Jump
+        //jump
         content.row();
         content.add(new Label("Jump:", skin));
         content.add(jumpLabel);
@@ -64,7 +61,7 @@ public class ControlsOverlay extends Window {
         rebindJump.addListener(new RebindListener("jump"));
         content.add(rebindJump);
 
-        // 4) Dash Left
+        //left dash
         content.row();
         content.add(new Label("Dash Left:", skin));
         content.add(dashLeftLabel);
@@ -72,7 +69,7 @@ public class ControlsOverlay extends Window {
         rebindDashLeft.addListener(new RebindListener("dashLeft"));
         content.add(rebindDashLeft);
 
-        // 5) Dash Right
+        //right dash
         content.row();
         content.add(new Label("Dash Right:", skin));
         content.add(dashRightLabel);
@@ -80,7 +77,6 @@ public class ControlsOverlay extends Window {
         rebindDashRight.addListener(new RebindListener("dashRight"));
         content.add(rebindDashRight);
 
-        // 6) Interact
         content.row();
         content.add(new Label("Interact:", skin));
         content.add(interactLabel);
@@ -88,7 +84,6 @@ public class ControlsOverlay extends Window {
         rebindInteract.addListener(new RebindListener("interact"));
         content.add(rebindInteract);
 
-        // 7) Back button row
         content.row();
         TextButton backButton = new TextButton("Back", skin);
         backButton.addListener(new ChangeListener() {
@@ -134,9 +129,9 @@ public class ControlsOverlay extends Window {
         };
         dialog.text("Press a new key for " + control);
         dialog.button("Cancel", -1);
-        dialog.show(getStage()); // show on the same stage as this overlay
+        dialog.show(getStage());
 
-        // Temporarily override the input processor to capture the key press
+        //capture key press
         Gdx.input.setInputProcessor(new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
@@ -151,7 +146,6 @@ public class ControlsOverlay extends Window {
                 }
                 dialog.hide();
                 updateLabels();
-                // Restore original input
                 Gdx.input.setInputProcessor(getStage());
                 return true;
             }

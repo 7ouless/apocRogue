@@ -15,67 +15,63 @@ public class TileCollisionHandler {
     public static void resolveCollisions(PhysicalActor actor, float oldX, float oldY) {
         if (actor.getStage() == null) return;
 
-        // Create actor's bounding box.
+        //creating actors bounding box
         Rectangle actorRect = new Rectangle(actor.getX(), actor.getY(), actor.getWidth(), actor.getHeight());
 
-        // Loop through all TileActor objects in the stage.
+        //loops through all TileActor objects in the stage
         for (Actor stageActor : actor.getStage().getActors()) {
             if (stageActor instanceof GrassOverlayTile || stageActor instanceof TreeTile || stageActor instanceof DecorTile|| stageActor instanceof PlatformGrassOverlayTile) {
                 continue;
             }
             if (stageActor instanceof TileActor) {
                 TileActor tile = (TileActor)stageActor;
-                // Inflate the tile rectangle slightly for extra sensitivity.
                 Rectangle tileRect = new Rectangle(tile.getX() - BUFFER, tile.getY() - BUFFER,
                     tile.getWidth() + 2 * BUFFER, tile.getHeight() + 2 * BUFFER);
 
                 if (actorRect.overlaps(tileRect)) {
-                    // Compute overlaps on all four sides.
                     float overlapLeft = (actorRect.x + actorRect.width) - tileRect.x;
                     float overlapRight = (tileRect.x + tileRect.width) - actorRect.x;
                     float overlapBottom = (actorRect.y + actorRect.height) - tileRect.y;
                     float overlapTop = (tileRect.y + tileRect.height) - actorRect.y;
 
-                    // Find the minimum overlap.
+                    //min overlap
                     float minOverlap = Math.min(Math.min(overlapLeft, overlapRight),
                         Math.min(overlapBottom, overlapTop));
 
-                    // Resolve collision along that axis.
+                    //collision resolution
                     if (minOverlap == overlapLeft) {
                         if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
-                                       // Auto-step: climb up one standard tile
+                                       //auto-step - climb up one standard tile
                                            float step = ((TileActor)stageActor).getHeight();
                                        actor.setY(actor.getY() + step);
                                        actor.velocityY = 0f;
                                        actor.isOnGround = true;
                                     } else {
-                                        // Regular wall collision
+                                        //a regular wall collision
                                             actor.setX(tileRect.x - actorRect.width);
                                     }
                     } else if (minOverlap == overlapRight) {
                         if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile ) {
-                                       // Auto-step: climb up one standard tile
                             float step = ((TileActor)stageActor).getHeight();
                                        actor.setY(actor.getY() + step);
                                        actor.velocityY = 0f;
                                        actor.isOnGround = true;
                                    } else {
-                                       // Regular wall collision
                                            actor.setX(tileRect.x + tileRect.width);
                                    }
                     } else if (minOverlap == overlapBottom) {
-                        // Push actor down.
+                        //actor down
                         actor.setY(tileRect.y - actorRect.height);
                         actor.velocityY = 0f;
                         actor.isOnGround = true;
                     } else if (minOverlap == overlapTop) {
-                        // Push actor up.
+                        //actor up
                         actor.setY(tileRect.y + tileRect.height);
                         actor.velocityY = 0f;
                         actor.isOnGround = true;
                     }
 
-                    // Update the actor's bounding rectangle.
+                    //update bounding rectangle
                     actorRect.setPosition(actor.getX(), actor.getY());
                 }
             }

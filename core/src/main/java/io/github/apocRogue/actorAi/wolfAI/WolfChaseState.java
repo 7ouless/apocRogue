@@ -17,7 +17,7 @@ public class WolfChaseState implements WolfState {
 
     @Override
     public void update(WolfStateMachine fsm, WolfActor wolf, float delta) {
-        // perform the chase
+        //chase
         chase.updateAI(wolf, delta);
 
         PlayerActor p = wolf.findPlayer();

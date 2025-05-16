@@ -38,13 +38,12 @@ public class OnlineMarketScreen extends ScreenAdapter {
         title.setFontScale(1.5f);
         root.add(title).colspan(3).padBottom(20f).row();
 
-        // Header row
         root.add(new Label("Item", skin)).width(200);
         root.add(new Label("Price", skin)).width(100);
         root.add(new Label("Action", skin)).width(100).row();
 
 
-        // Fetch market data
+        //fetch the market data
         DBManager.get().fetchMarket(new JsonCallback() {
             @Override
             public void onSuccess(String json) {
@@ -54,14 +53,13 @@ public class OnlineMarketScreen extends ScreenAdapter {
             @Override
             public void onSuccess(JsonValue data) {
                 Gdx.app.postRunnable(() -> {
-                    // Clear existing rows
                     root.clearChildren();
                     root.add(title).colspan(3).padBottom(20f).row();
                     root.add(new Label("Item", skin)).width(200);
                     root.add(new Label("Price", skin)).width(100);
                     root.add(new Label("Action", skin)).width(100).row();
 
-                    // Populate new rows
+                    //populate new rows
                     for (JsonValue item : data.get("listings")) {
                         String code = item.getString("itemCode");
                         long price = item.getLong("price");
@@ -75,7 +73,7 @@ public class OnlineMarketScreen extends ScreenAdapter {
                                 // TODO: call DBManager.get().buy(listingId,...)
                             }
                         });
-                        // inside your existing loop over data.get("listings"):
+                        //inside your existing loop over data.get("listings"):
 
                         long listingId = item.getLong("listingID");
 
@@ -84,7 +82,7 @@ public class OnlineMarketScreen extends ScreenAdapter {
 
                         buyBtn.addListener(new ChangeListener() {
                             @Override public void changed(ChangeEvent event, Actor actor) {
-                                // disable the button until done
+                                //disable the button until done
                                 buyBtn.setDisabled(true);
 
                                 // call your new buy(...)
@@ -96,8 +94,8 @@ public class OnlineMarketScreen extends ScreenAdapter {
                                             d.text("Purchased!");
                                             d.button("OK");
                                             d.show(stage);
-                                            // refresh the market list
-                                            show();  // re-run show() to re-fetch & redraw
+                                            //refresh the market list
+                                            show();  //re-run show() to re-fetch & redraw
                                         });
                                     }
                                     @Override public void onError(Throwable t) {

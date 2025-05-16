@@ -21,17 +21,15 @@ public abstract class BaseAttackActor extends Image {
 
     @Override
     public void act(float delta) {
-        // Ensure the base logic is done first. This also calls draw, etc.
         super.act(delta);
 
-        // By default, we run a collision check each frame for damageable targets
+        //default collision checks
         checkCollisionWithDamageables();
     }
 
     protected void checkCollisionWithDamageables() {
         if (stage == null) return;
 
-        // Copy the actor list
         Array<Actor> copy = new Array<>(stage.getActors());
 
         Rectangle bounds = new Rectangle(getX(), getY(), getWidth(), getHeight());

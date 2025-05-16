@@ -63,11 +63,11 @@ public class GameScreen extends ScreenAdapter {
     private float viewportWidth, viewportHeight;
     private Texture grainTex;
 
-    private boolean paused = false; // Tracks if the game is paused
+    private boolean paused = false;
 
     // Pause overlay members
-    private Table pauseOverlay;    // We'll add this table to uiStage and toggle visibility
-    private Skin skin;             // We assume you load a Skin for UI
+    private Table pauseOverlay;
+    private Skin skin;
     private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
@@ -75,7 +75,6 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void loadBackgrounds(String folder){
-        //dispose old BG textures
         if (bgSky != null) bgSky.dispose();
         if (bgMountains != null) bgMountains.dispose();
         if (bgSun != null) bgSun.dispose();
@@ -85,7 +84,6 @@ public class GameScreen extends ScreenAdapter {
         if (bgBigTree != null) bgBigTree.dispose();
         if (bgMeadow != null) bgMeadow.dispose();
 
-        // load the new ones
         bgSky        = new Texture(Gdx.files.internal("ui/"+folder+"/sky.png"));
         bgMountains  = new Texture(Gdx.files.internal("ui/"+folder+"/mountains.png"));
         bgSun        = new Texture(Gdx.files.internal("ui/"+folder+"/sun.png"));
@@ -123,7 +121,7 @@ public class GameScreen extends ScreenAdapter {
         minCameraX = halfVW;
         maxCameraX = MapManager.settings.roomWidth - halfVW;
 
-        // load the correct BGs for our current radiation level
+        //load the correct BGs for our current radiation level
         int rad = CurrentDificulty.getRadiation();
         String folder = (rad == 2 ? "med" : rad == 3 ? "high" : "low");
         loadBackgrounds(folder);
@@ -132,7 +130,7 @@ public class GameScreen extends ScreenAdapter {
         DecorTile.loadForRadiation(folder);
         PlatformGrassOverlayTile.loadForRadiation(folder);
 
-        // load your two looping tracks
+        //load your two looping tracks
         musicRad2 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation2.mp3"));
         musicRad3 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation3.mp3"));
         // helper to pick & play
@@ -141,16 +139,13 @@ public class GameScreen extends ScreenAdapter {
 
         batch = new SpriteBatch();
 
-        // Load a skin for UI. If you already do this in GameWorld, that is fine
-        // but typically the game screen or the UI system loads the skin:
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        // 1) Init our run HUD
         loadCurrentWorld();
         initUI();
 
 
-        // move all decor into the overlay stage
+        //move all decor into the overlay stage
         List<Actor> decorActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
             if (a instanceof DecorTile) {
@@ -158,11 +153,11 @@ public class GameScreen extends ScreenAdapter {
             }
         }
         for (Actor d : decorActors) {
-            d.remove();              // detach from main stage
+            d.remove();              //detach from main stage
             overlayStage.addActor(d);
         }
 
-        // move all grass into the overlay stage
+        //move all grass into the overlay stage
         List<Actor> grassActors = new ArrayList<>();
         for (Actor a : stage.getActors()) {
             if (a instanceof GrassOverlayTile
@@ -175,15 +170,10 @@ public class GameScreen extends ScreenAdapter {
             overlayStage.addActor(g);
         }
 
-        // Create normal UI or HUD elements here (if any)...
-
-        // Create the pause overlay but keep it hidden initially
         createPauseOverlay();
 
-        // Set up input
         InputMultiplexer multiplexer = new InputMultiplexer(uiStage, stage);
 
-        // Optionally, you can also add a listener for ESC from here if you prefer:
         multiplexer.addProcessor(new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
@@ -205,8 +195,6 @@ public class GameScreen extends ScreenAdapter {
         multiplexer.addProcessor(new InputAdapter() {
             @Override
             public boolean scrolled(float amountX, float amountY) {
-                // If user scrolls up/down, call inventory.scrollHotbar
-                // “amountY” is positive or negative depending on scroll direction
                 gameWorld.getInventory().scrollHotbar((int) amountY);
                 return false;
             }
@@ -217,7 +205,7 @@ public class GameScreen extends ScreenAdapter {
                 if (button == Input.Buttons.LEFT) {
                     PlayerActor p = gameWorld.getPlayer();
                     Weapon w       = gameWorld.getInventory().getSelectedWeapon();
-                    p.startAttack();             // flip to attack sprite
+                    p.startAttack();             //flip to attack sprite
                     if (w != null) w.use(p, stage);
                     return true;
                 }
@@ -225,10 +213,8 @@ public class GameScreen extends ScreenAdapter {
             }
         });
 
-// Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
 
-        // --- generate a small repeating noise texture (128×128) ---
         if (grainTex != null) grainTex.dispose();
         Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 128; x++) {
@@ -247,8 +233,8 @@ public class GameScreen extends ScreenAdapter {
 
     private void loadCurrentWorld() {
         if (gameWorld != null) {
-            gameWorld.dispose();        // clears main stage
-            overlayStage.clear();       // also wipe the old decor/grass
+            gameWorld.dispose();        //clears main stage
+            overlayStage.clear();       //also wipe the old decor/grass
         }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
@@ -260,9 +246,9 @@ public class GameScreen extends ScreenAdapter {
         Actor[] actors = stage.getActors().toArray(Actor.class);
         for (Actor a : actors) {
             if (a instanceof DecorTile || a instanceof GrassOverlayTile) {
-                // detach from the main stage
+                //detach from the main stage
                 a.remove();
-                // add into the overlay stage
+                //add into the overlay stage
                 overlayStage.addActor(a);
             }
         }
@@ -295,37 +281,30 @@ public class GameScreen extends ScreenAdapter {
 
 
     private void initUI() {
-        // 1) Root HUD table, anchored to the top
         Table hud = new Table();
         hud.setFillParent(true);
         hud.top().padTop(20);
         uiStage.addActor(hud);
 
-        // 2) Clone the skin’s real default-horizontal style
         ProgressBar.ProgressBarStyle baseStyle =
             skin.get("default-horizontal", ProgressBar.ProgressBarStyle.class);
         ProgressBar.ProgressBarStyle staminaStyle =
             new ProgressBar.ProgressBarStyle(baseStyle);
 
-        // 3) Recolor just the filled part (knobBefore) to yellow
         staminaStyle.knobBefore =
             skin.newDrawable("progress-bar-square-knob", Color.YELLOW);
 
-        // 4) (Optional) Keep the empty track dark grey
         staminaStyle.background =
             skin.newDrawable("progress-bar-square", Color.DARK_GRAY);
 
-        // 5) Force the drawables to a taller height (8 px)
         staminaStyle.background .setMinHeight(8f);
         staminaStyle.knobBefore  .setMinHeight(8f);
 
-        // 6) Create your difficulty labels
         skullLabel = new Label("Skull: " + runMgr.getSkullLevel(), skin);
         skullLabel.setFontScale(1.5f);
         worldLabel = new Label("World: " + runMgr.getWorldLevel(), skin);
         worldLabel.setFontScale(1.2f);
 
-        // 7) Instantiate the stamina and health bar with the custom style
         staminaBar = new ProgressBar(0, 100, 1, false, staminaStyle);
         staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
         staminaBar.setAnimateDuration(0.1f);
@@ -337,7 +316,6 @@ public class GameScreen extends ScreenAdapter {
 
         healthBar.setAnimateDuration(0.1f);
 
-        // 8) Left column for the bar
         Table leftTable = new Table();
         leftTable.padLeft(20);
         leftTable.add(healthBar)
@@ -348,7 +326,6 @@ public class GameScreen extends ScreenAdapter {
             .width(180)
             .left();
 
-        // 9) Right column for skull/world
         Table rightTable = new Table();
         rightTable.padRight(20);
         rightTable.add(skullLabel)
@@ -358,23 +335,19 @@ public class GameScreen extends ScreenAdapter {
         rightTable.add(worldLabel)
             .left();
 
-        // 10) Place them side-by-side in the HUD
         hud.add(leftTable).expandX().left();
         hud.add(rightTable).expandX().right();
     }
 
     private void createPauseOverlay() {
-        // This Table covers the entire screen and darkens the background
         pauseOverlay = new Table();
         pauseOverlay.setFillParent(true);
 
-        // A semi-transparent background (dark overlay)
         pauseOverlay.setBackground(skin.newDrawable("white", 0, 0, 0, 0.7f));
 
-        // Add table to the uiStage
         uiStage.addActor(pauseOverlay);
 
-        // create an inner table to hold the actual menu buttons
+        //create an inner table to hold the actual menu buttons
         Table menuTable = new Table();
         //center it
         menuTable.center();
@@ -385,7 +358,7 @@ public class GameScreen extends ScreenAdapter {
         TextButton optionsButton = new TextButton("Options", skin);
         TextButton exitButton = new TextButton("Exit to Main Menu", skin);
 
-        // Add all to menuTable
+        //add all to menuTable
         menuTable.row();
         menuTable.add(resumeButton).pad(10);
         menuTable.row();
@@ -393,7 +366,6 @@ public class GameScreen extends ScreenAdapter {
         menuTable.row();
         menuTable.add(exitButton).pad(10);
 
-        // Add click listeners
         resumeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -457,12 +429,10 @@ public class GameScreen extends ScreenAdapter {
                 if (currentMusic != null && currentMusic.isPlaying()) {
                     currentMusic.stop();
                 }
-                // Return to main menu or wherever you want
+                //return to main menu
                 game.setScreen(new MainScreen(game));
             }
         });
-
-        // Hide it by default
         pauseOverlay.setVisible(false);
     }
 
@@ -476,7 +446,7 @@ public class GameScreen extends ScreenAdapter {
 
         staminaBar.setValue(gameWorld.getPlayer().getStats().getStamina());
         healthBar.setValue(gameWorld.getPlayer().getStats().getHealth());
-        // 1) Update logic & stages
+
         if (!paused) {
             gameWorld.update(delta);
             stage.act(delta);
@@ -507,7 +477,7 @@ public class GameScreen extends ScreenAdapter {
         // clamp so camera never goes beyond the left/right border
         float camX = MathUtils.clamp(playerCenterX, minCameraX, maxCameraX);
 
-        // compute vertical (you already have this)
+        //compute vertical (you already have this)
         float playerCenterY = gameWorld.getPlayer().getY()
             + gameWorld.getPlayer().getHeight() / 2f;
         float desiredYOffset = MathUtils.clamp(
@@ -526,11 +496,9 @@ public class GameScreen extends ScreenAdapter {
 
         stage.getViewport().apply();
 
-// 3) Clear screen
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-// 4) Parallax pass
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         float camLeft   = camera.position.x - viewportWidth  / 2f;
@@ -630,23 +598,19 @@ public class GameScreen extends ScreenAdapter {
         );
 
 
-        // …any further parallax layers…
         batch.end();
-        // 5)draw the world
         stage.draw();
 
-        // 6) Any overlay Stage (e.g. grass)
         overlayStage.setViewport(stage.getViewport());
         overlayStage.draw();
 
-        // 7) Your debug‐shape passes
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        // filled‐shape pass
+        //filled‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.end();
 
-        // line‐shape pass
+        //line‐shape pass
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         for (SoundPhysics.SoundDebugEvent evt : SoundPhysics.debugEvents) {
             float t     = evt.timeAlive / evt.duration;
@@ -671,16 +635,14 @@ public class GameScreen extends ScreenAdapter {
                 break;
         }
 
-        // 8) Simple dark-pink full-screen tint
         Gdx.gl.glEnable(GL20.GL_BLEND);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         shapeRenderer.setColor(tintColor);
-        // compute the bottom-left corner of the camera’s view in world coords
+        //compute the bottom-left corner of the camera’s view in world coords
         float tintX = camera.position.x - viewportWidth  / 2f;
         float tintY = camera.position.y - viewportHeight / 2f;
-        // draw a rectangle that exactly covers the screen
         shapeRenderer.rect(tintX, tintY, viewportWidth, viewportHeight);
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -688,7 +650,6 @@ public class GameScreen extends ScreenAdapter {
         if (rad >= 2) {
             batch.begin();
 
-            // Pick a grain‐opacity per radiation level
             float grainAlpha;
             if (rad == 2) {
                 grainAlpha = 0.25f;
@@ -697,7 +658,6 @@ public class GameScreen extends ScreenAdapter {
             }
             batch.setColor(1f, 1f, 1f, grainAlpha);
 
-            // Tile your noise texture over the screen
             float tileW = grainTex.getWidth();
             float tileH = grainTex.getHeight();
             for (float x = camLeft; x < camLeft + viewportWidth; x += tileW) {
@@ -713,7 +673,6 @@ public class GameScreen extends ScreenAdapter {
         float currentStam = gameWorld.getPlayer().getStats().getStamina();
         staminaBar.setValue(currentStam);
 
-        // 9) Finally the UI
         uiStage.act(delta);
         uiStage.draw();
 
@@ -727,9 +686,8 @@ public class GameScreen extends ScreenAdapter {
             gameWorld.extractItems();
             game.setScreen(new MainScreen(game));
         } else {
-            // CONTINUE door --> first record the player's choice
             CurrentDificulty.setRadiation(door.getRadiationLevel());
-            // then advance or continue the run
+            //then advance or continue the run
             if (runMgr.isFinalWorld()) {
                 runMgr.continueRun();
 
@@ -738,13 +696,11 @@ public class GameScreen extends ScreenAdapter {
 
             }
 
-            //Updates global difficulty
             int newDiff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
             CurrentDificulty.setDifficulty(newDiff);
 
             updateHud();
 
-            // reload all themed assets & rebuild the world
             int newRad = CurrentDificulty.getRadiation();
             String newFolder = (newRad == 2 ? "med" : newRad == 3 ? "high" : "low");
             loadBackgrounds(newFolder);

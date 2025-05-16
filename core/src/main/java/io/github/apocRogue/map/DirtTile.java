@@ -18,21 +18,21 @@ public class DirtTile extends TileActor {
 
     public DirtTile(float x, float y, float width, float height) {
         super(x, y, width, height, Color.BROWN);
-        this.flipX = MathUtils.randomBoolean();  // random flip
+        this.flipX = MathUtils.randomBoolean();  //random flip
         this.tex    = VARIANTS[ MathUtils.random(VARIANTS.length - 1) ];
         setSize(width, height);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        float pad = 0.01f; // prevent bleeding
+        float pad = 0.01f; //prevent bleeding
         float drawX = getX();
         float drawW = getWidth();
         if (flipX) {
             drawX += drawW;
             drawW = -drawW;
         }
-        // flipped negative-width still respects UV pad parameters
+        //flipped negative-width still respects UV pad parameters
         batch.draw(
             tex,
             drawX, getY(), drawW, getHeight(),

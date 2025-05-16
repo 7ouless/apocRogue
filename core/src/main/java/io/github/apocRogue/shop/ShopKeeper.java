@@ -4,9 +4,9 @@ package io.github.apocRogue.shop;
 import java.util.List;
 
 
-public class ShopKeeper {    private final String sellerID;        // "A", "B", "C"
-    private final String displayName;     // e.g. "Bartholomew the Bold"
-    private final String portraitKey;     // "traderA"  (maps to file)
+public class ShopKeeper {    private final String sellerID;
+    private final String displayName;
+    private final String portraitKey;
 
     private final String[] greetingLines;
     private final String[] thankYouLines;

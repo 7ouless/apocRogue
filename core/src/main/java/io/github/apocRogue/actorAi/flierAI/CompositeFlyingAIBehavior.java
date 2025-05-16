@@ -14,26 +14,24 @@ public class CompositeFlyingAIBehavior extends AIBehavior {
 
     @Override
     public void updateAI(EnemyActor enemy, float delta) {
-        // 1) Check LoS to player
+        // 1)line of sight (LOS)
         PlayerActor player = findPlayer(enemy);
         boolean hasLoS = false;
         if (player != null) {
             hasLoS = lineOfSight.canSeeTarget(enemy, player, enemy.getStats().sightSens(), enemy.getStage());
         }
 
-        // 2) If LoS is valid, do normal “flying chase”
+        // 2)follow/chase
         if (hasLoS) {
             flyingBehavior.updateAI(enemy, delta);
             return;
         }
 
-        // 3) Otherwise, if alerted by sound, investigate
+        // 3)investigate sound
         if (enemy.getAlertComponent().isAlerted()) {
             alertBehavior.updateAI(enemy, delta);
         } else {
-            // 4) No LoS, no sound => idle/wander in flyingAi or do nothing
-            // For now, just do the normal flyingAi but not chasing
-            // Possibly the same flyingAi handles idle as well.
+            //idle
             flyingBehavior.updateAI(enemy, delta);
         }
     }

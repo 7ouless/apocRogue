@@ -107,7 +107,7 @@ public class ChestActor extends Image {
         // spawn two items
         for (int i = 0; i < 2; i++) spawnRandomItem();
 
-        // show “open” texture
+        //show “open” texture
         Texture openTex = new Texture("ui/openChest.png");
         setDrawable(new TextureRegionDrawable(new TextureRegion(openTex)));
     }
@@ -117,15 +117,14 @@ public class ChestActor extends Image {
         int sub  = runMgr.getWorldLevel();
         int rad  = CurrentDificulty.getRadiation();
 
-        // get chest coords as floats
+        //get chest coords
         float x = getX();
         float y = getY();
 
-        // now pass x and y before the callback
         new LootGenerateService().generate(
-            diff, sub, rad,   // world params
-            1,                // count
-            x, y,             // ◀── chest position floats
+            diff, sub, rad,
+            1,
+            x, y,
             new LootGenerateService.Callback<LootGenerateService.Res[]>() {
                 @Override
                 public void onSuccess(LootGenerateService.Res[] loot) {

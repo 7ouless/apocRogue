@@ -11,6 +11,5 @@ public class ShopEntry {
     public int    price;
     public int    remaining;
 
-    /** rolled or base stats sent by the server, e.g. {"damage":15,"cooldown":96} */
-    public LinkedHashMap<String,Integer> stats;   // concrete type — Json can build it
+    public LinkedHashMap<String,Integer> stats;
 }

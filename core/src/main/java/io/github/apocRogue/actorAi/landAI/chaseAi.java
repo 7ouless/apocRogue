@@ -15,14 +15,13 @@ public class chaseAi extends AIBehavior {
 
     @Override
     public void updateAI(EnemyActor enemy, float delta) {
-        // Use the enemy's own alert component instead of a local one.
         PlayerActor player = findPlayer(enemy);
         if (player == null) return;
 
-        // Perform line-of-sight check.
+        //line of sight (LOS)
         boolean canSeePlayer = lineOfSight.canSeeTarget(enemy, player, enemy.getStats().sightSens(), enemy.getStage());
         if (canSeePlayer) {
-            // Update the enemy's alert position directly.
+            //updates the position of the enemies alert
             enemy.getAlertComponent().setAlertPosition(new Vector2(player.getX(), player.getY()));
             lockedOn = true;
             enemy.getAlertComponent().setAlerted(true);
@@ -35,7 +34,7 @@ public class chaseAi extends AIBehavior {
             }
         }
 
-        // If locked on, move toward the stored alert position.
+        //if locked, move to locked position
         if (lockedOn) {
             Vector2 enemyPos = new Vector2(enemy.getX(), enemy.getY());
             Vector2 targetPos = enemy.getAlertComponent().getAlertPosition().cpy();

@@ -19,7 +19,7 @@ public class MovementProcessor {
             actor.facingRight  = true;
         }
 
-        // clamp horizontal speed
+        //clamp horizontal speed
         if (actor.velocityX >  speed) actor.velocityX =  speed;
         if (actor.velocityX < -speed) actor.velocityX = -speed;
     }

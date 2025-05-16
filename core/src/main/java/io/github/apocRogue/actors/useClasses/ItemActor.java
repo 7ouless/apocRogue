@@ -8,9 +8,9 @@ public class ItemActor extends Image {
     private Weapon weapon;
     private float velocityX = 0f;
     private float velocityY = 0f;
-    private float gravity = -600f;  // downward acceleration (pixels/sec^2)
+    private float gravity = -600f;  //downward acceleration (pixels/sec^2)
     private boolean isOnGround = false;
-    private float groundLevel = 0;  // assume y=0 is the floor; adjust as needed
+    private float groundLevel = 0;
 
     public ItemActor(Weapon weapon, float x, float y) {
         super(weapon.getTexture());
@@ -23,13 +23,13 @@ public class ItemActor extends Image {
     public void act(float delta) {
         super.act(delta);
 
-        // If not on the ground, apply gravity
+        //if not on ground, apply gravity
         if (!isOnGround) {
             velocityY += gravity * delta;
             float newY = getY() + velocityY * delta;
             float newX = getX() + velocityX * delta;
 
-            // Simple floor check: if below groundLevel, clamp to ground
+            //if below ground, place on ground
             if (newY <= groundLevel) {
                 newY = groundLevel;
                 velocityY = 0;
@@ -39,11 +39,11 @@ public class ItemActor extends Image {
         }
     }
 
-    // Optionally let other code set velocities
+
     public void setVelocity(float vx, float vy) {
         this.velocityX = vx;
         this.velocityY = vy;
-        this.isOnGround = false;  // so it will start falling again
+        this.isOnGround = false;
     }
 
     public Weapon getWeapon() {

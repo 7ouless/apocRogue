@@ -71,31 +71,30 @@ public class TailProjectile extends RangedAttackActor {
         float angleDeg = fr
             ? ARC_DEG
             : 180f - ARC_DEG;
-        // build the unit vector from that angle
+        //build the unit vector from that angle
         Vector2 dir = new Vector2(
             MathUtils.cosDeg(angleDeg),
             MathUtils.sinDeg(angleDeg)
         );
-        // set velocity and visual rotation
+        //set velocity and visual rotation
         this.velocity = dir.scl(SPEED);
         setRotation(angleDeg);
 
-        // (optional) log it
         Gdx.app.log("TailProjectile",
             "spawned at "+centerX+","+spawnY+" dir="+dir);
     }
 
     @Override
     public void act(float delta) {
-        // 1) gravity + move
+        //gravity + movement
         velocity.y += gravity * delta;
         setPosition(getX() + velocity.x * delta,
             getY() + velocity.y * delta);
 
-        // 2) rotate to face travel dir
+        //rotate to face travel dir
         if (velocity.len2() > 0) setRotation(velocity.angleDeg());
 
-        // 3) tile collision => disappear
+        //tile collision, disappear
         if (getStage() != null) {
             Rectangle proj = new Rectangle(getX(), getY(), getWidth(), getHeight());
             for (Actor a : new Array<>(getStage().getActors())) {
@@ -108,7 +107,7 @@ public class TailProjectile extends RangedAttackActor {
             }
         }
 
-        // 4) player collision => damage & disappear
+        // 4) player collision, damage & disappear
         if (getStage() != null) {
             Rectangle proj = new Rectangle(getX(), getY(), getWidth(), getHeight());
             for (Actor a : new Array<>(getStage().getActors())) {
