@@ -25,10 +25,6 @@ import io.github.apocRogue.weapons.Weapon;
 
 import java.util.List;
 
-/**
- * A chest that, when opened (or destroyed), rolls and spawns two weapons
- * using your pseudo-hex ID system.
- */
 public class ChestActor extends Image {
     private static final float SCALE = 0.11f;
     private boolean opened = false;
@@ -121,11 +117,11 @@ public class ChestActor extends Image {
         float x = getX();
         float y = getY();
 
-        // now pass x and y before the callback
+
         new LootGenerateService().generate(
             diff, sub, rad,   // world params
             1,                // count
-            x, y,             // ◀── chest position floats
+            x, y,             // chest position floats
             new LootGenerateService.Callback<LootGenerateService.Res[]>() {
                 @Override
                 public void onSuccess(LootGenerateService.Res[] loot) {

@@ -35,7 +35,6 @@ public class CompositeAIBehavior extends AIBehavior {
 
             alertBehavior.updateAI(enemy, delta);
         } else {
-
             // By default, do nothing
         }
     }

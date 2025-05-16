@@ -71,7 +71,6 @@ public class StatsComponent {
         return aggression;
     }
 
-    // getters, setters, etc.
 
     public boolean spendStamina(float cost) {
         if (stamina < cost) return false;

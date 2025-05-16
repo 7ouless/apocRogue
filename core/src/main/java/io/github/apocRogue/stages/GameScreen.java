@@ -66,8 +66,8 @@ public class GameScreen extends ScreenAdapter {
     private boolean paused = false; // Tracks if the game is paused
 
     // Pause overlay members
-    private Table pauseOverlay;    // We'll add this table to uiStage and toggle visibility
-    private Skin skin;             // We assume you load a Skin for UI
+    private Table pauseOverlay;
+    private Skin skin;
     private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
@@ -94,7 +94,7 @@ public class GameScreen extends ScreenAdapter {
         bgSmallClouds= new Texture(Gdx.files.internal("ui/"+folder+"/small-clouds.png"));
 
         String bigTreeAsset = "/big-tree.png";
-        if ("high".equals(folder)) {                            // radiation 3
+        if ("high".equals(folder)) {                           // radiation 3
             bigTreeAsset = "/big-tree2.png";
         }
         bgBigTree    = new Texture(Gdx.files.internal("ui/"+folder+ bigTreeAsset));
@@ -123,7 +123,7 @@ public class GameScreen extends ScreenAdapter {
         minCameraX = halfVW;
         maxCameraX = MapManager.settings.roomWidth - halfVW;
 
-        // load the correct BGs for our current radiation level
+        // load the correct BGs for current radiation level
         int rad = CurrentDificulty.getRadiation();
         String folder = (rad == 2 ? "med" : rad == 3 ? "high" : "low");
         loadBackgrounds(folder);
@@ -141,8 +141,6 @@ public class GameScreen extends ScreenAdapter {
 
         batch = new SpriteBatch();
 
-        // Load a skin for UI. If you already do this in GameWorld, that is fine
-        // but typically the game screen or the UI system loads the skin:
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // 1) Init our run HUD
@@ -183,7 +181,7 @@ public class GameScreen extends ScreenAdapter {
         // Set up input
         InputMultiplexer multiplexer = new InputMultiplexer(uiStage, stage);
 
-        // Optionally, you can also add a listener for ESC from here if you prefer:
+
         multiplexer.addProcessor(new InputAdapter() {
             @Override
             public boolean keyDown(int keycode) {
@@ -230,7 +228,7 @@ public class GameScreen extends ScreenAdapter {
 // Then set the multiplexer
         Gdx.input.setInputProcessor(multiplexer);
 
-        // --- generate a small repeating noise texture (128×128) ---
+        //Grain
         if (grainTex != null) grainTex.dispose();
         Pixmap pix = new Pixmap(128, 128, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 128; x++) {
@@ -277,7 +275,7 @@ public class GameScreen extends ScreenAdapter {
             currentMusic.stop();
         }
 
-        // rad == 1 or 2 → play musicRad2, rad == 3 → musicRad3
+        // rad == 1 or 2 --> play musicRad2, rad == 3 --> musicRad3
         if (rad >= 1 && rad <= 2) {
             currentMusic = musicRad2;
         } else if (rad == 3) {
@@ -286,10 +284,10 @@ public class GameScreen extends ScreenAdapter {
             currentMusic = null;
         }
 
-        // kick it off at 50% volume
+
         if (currentMusic != null) {
             currentMusic.setLooping(true);
-            currentMusic.setVolume(0.05f);   // ← half-volume
+            currentMusic.setVolume(0.05f);
             currentMusic.play();
         }
     }
@@ -313,7 +311,7 @@ public class GameScreen extends ScreenAdapter {
         staminaStyle.knobBefore =
             skin.newDrawable("progress-bar-square-knob", Color.YELLOW);
 
-        // 4) (Optional) Keep the empty track dark grey
+        // 4) Keep the empty track dark grey
         staminaStyle.background =
             skin.newDrawable("progress-bar-square", Color.DARK_GRAY);
 
@@ -487,7 +485,7 @@ public class GameScreen extends ScreenAdapter {
         }
         gameWorld.getInventory().draw(uiStage);
 
-        //1.5) handle doors -- Im lazy and dont want to change the next numbers hehehe
+        //1.5) handle doors
 
         Door door = gameWorld.getOverlappingDoor();
         if (door != null && Gdx.input.isKeyJustPressed(Input.Keys.W)) {
@@ -495,7 +493,7 @@ public class GameScreen extends ScreenAdapter {
         }
 
 
-        // 1.7) if the player isn’t spawned yet, skip camera + rest -- Im lazy and dont want to change the next numbers hehehe
+        // 1.7) if the player isn’t spawned yet, skip camera + rest
         if (gameWorld.getPlayer() == null) {
             // still loading/spawning
             // draw UI and bail out early:
@@ -510,7 +508,7 @@ public class GameScreen extends ScreenAdapter {
         // clamp so camera never goes beyond the left/right border
         float camX = MathUtils.clamp(playerCenterX, minCameraX, maxCameraX);
 
-        // compute vertical (you already have this)
+        // compute vertical
         float playerCenterY = gameWorld.getPlayer().getY()
             + gameWorld.getPlayer().getHeight() / 2f;
         float desiredYOffset = MathUtils.clamp(
@@ -529,11 +527,11 @@ public class GameScreen extends ScreenAdapter {
 
         stage.getViewport().apply();
 
-// 3) Clear screen
+        // 3) Clear screen
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-// 4) Parallax pass
+        // 4) Parallax pass
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         float camLeft   = camera.position.x - viewportWidth  / 2f;
@@ -541,16 +539,15 @@ public class GameScreen extends ScreenAdapter {
 
         float cloudVFactor  = 0.1f;
         float trunkVFactor  = 0.2f;
-        // maximum pixels up/down we ever allow
         float maxVOffset = 50f;
 
         // how far we’ve moved from rest
         float deltaY     = camera.position.y - initialCamY;
 
-        // 4.1) Sky (stationary relative to camera)
+        // 4.1) Sky
         batch.draw(bgSky, camLeft, camBottom, viewportWidth, viewportHeight);
 
-        // 4.2) Sun (almost stationary; slight horizontal drift if you like)
+        // 4.2) Sun
         float sunScale = 0.5f; // adjust size
         float sunW = bgSun.getWidth() * sunScale;
         float sunH = bgSun.getHeight() * sunScale;
@@ -619,26 +616,24 @@ public class GameScreen extends ScreenAdapter {
             bgBigTree,
             camLeft,
             camBottom + viewportHeight * 0.1f,
-            -0.15f,      // parallax factor
+            -0.15f,
             0.7f
         );
-        // 4.8) Meadow (front of all background layers)
+        // 4.8) Meadow
         drawTiledLayer(
             batch,
             bgMeadow,
             camLeft,
             camBottom + viewportHeight * -0.05f,
-            -0.2f,      // parallaxFactor
+            -0.2f,
             0.225f
         );
 
-
-        // …any further parallax layers…
         batch.end();
         // 5)draw the world
         stage.draw();
 
-        // 6) Any overlay Stage (e.g. grass)
+        // 6) Any overlay Stage
         overlayStage.setViewport(stage.getViewport());
         overlayStage.draw();
 

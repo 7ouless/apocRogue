@@ -1,4 +1,3 @@
-// BaseDamageableActor.java
 package io.github.apocRogue.actors.superClasses;
 
 import com.badlogic.gdx.graphics.Texture;
@@ -11,7 +10,7 @@ public abstract class BaseDamageableActor extends PhysicalActor implements Damag
     protected int maxHealth;
 
     public BaseDamageableActor(Texture texture, int health, int maxHealth) {
-        super(texture);  // OK now, because PhysicalActor extends Image
+        super(texture);
         this.health = health;
         this.maxHealth = maxHealth;
     }

@@ -65,7 +65,7 @@ public class Door extends Actor {
             LAYOUT.setText(FONT, text);
             float textX = getX() + (getWidth()  - LAYOUT.width)  * 0.5f;
             float textY = getY() + getHeight() + LAYOUT.height + 4;
-            // draw in white so it stands out on red
+
             FONT.setColor(Color.WHITE);
             FONT.draw(batch, LAYOUT, textX, textY);
         }
@@ -76,8 +76,9 @@ public class Door extends Actor {
     protected void setStage(Stage stage) {
         super.setStage(stage);
         if (stage != null && pressWLabel == null) {
-            // You can reuse your UI skin; here I'm loading it directly
             Skin uiSkin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+
+            //Tutorial label
             pressWLabel = new Label("Press W to enter", uiSkin);
             pressWLabel.setVisible(false);
             stage.addActor(pressWLabel);

@@ -15,7 +15,7 @@ public class WeaponGenerateService {
         void onFailure(Throwable t);
     }
 
-    /** POST /weapon/generate  body:{typeID,skullLevel,skullSub} */
+
     public void generate(String idPrefix, int skullLevel, int skullSub, Callback cb) {
         Json json = new Json();
         String body = json.toJson(new Object() {

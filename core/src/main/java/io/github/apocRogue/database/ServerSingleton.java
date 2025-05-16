@@ -21,7 +21,6 @@ public final class ServerSingleton {
         this.baseUrl = "https://roetgeninstitute-48091364328.europe-west2.run.app";
     }
 
-    /** thread-safe lazy init */
     public static synchronized ServerSingleton getInstance() {
         if (instance == null) {
             instance = new ServerSingleton();
@@ -41,8 +40,8 @@ public final class ServerSingleton {
         attachAuth(req);
         Gdx.net.sendHttpRequest(req, new DefaultListener(cb));
     }
-    /** Shared response listener that just proxies to your callback */
-    private class DefaultListener implements Net.HttpResponseListener {
+
+     private class DefaultListener implements Net.HttpResponseListener {
         private final JsonCallback cb;
         DefaultListener(JsonCallback cb) { this.cb = cb; }
 

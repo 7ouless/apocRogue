@@ -10,7 +10,7 @@ public class AudioOverlay extends Window {
     private final OptionsOverlay previousOverlay;
 
     public AudioOverlay(Skin skin, OptionsOverlay previousOverlay) {
-        // Window title, using the same Skin
+        // Window title, using Skin
         super("Audio Settings", skin);
         this.previousOverlay = previousOverlay;
 
@@ -23,7 +23,6 @@ public class AudioOverlay extends Window {
 
         // Create a “content” table that we center within the full screen
         Table content = new Table();
-        // You can also add an optional background or pad if desired
         content.defaults().pad(10);
         // Place content table in the center
         add(content).expand().fill();
@@ -39,7 +38,6 @@ public class AudioOverlay extends Window {
         volumeSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Update the user settings volume
                 userSettingsManager.getInstance().setMasterVolume(volumeSlider.getValue());
             }
         });
@@ -51,10 +49,9 @@ public class AudioOverlay extends Window {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                remove();  // remove THIS overlay
+                remove();
                 if (previousOverlay != null) {
-                    // Instead of using previousOverlay.getStage(), just use getStage()
-                    // so we re-add the previous overlay to the same Stage we’re on now.
+
                     Stage currentStage = getStage();
                     if (currentStage != null) {
                         currentStage.addActor(previousOverlay);
@@ -66,16 +63,12 @@ public class AudioOverlay extends Window {
     }
 
 
-    /**
-     * Called automatically when this window is added/removed from a stage.
-     * We override it to center the window on the new stage if not null.
-     */
     @Override
     public void setStage(Stage stage) {
         super.setStage(stage);
         if (stage != null) {
             // After we’re actually added to a stage, center ourselves:
-            pack(); // ensure correct size
+            pack();
             float stageWidth  = stage.getViewport().getWorldWidth();
             float stageHeight = stage.getViewport().getWorldHeight();
             setPosition(

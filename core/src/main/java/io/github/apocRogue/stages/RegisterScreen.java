@@ -76,7 +76,7 @@ public class RegisterScreen extends ScreenAdapter {
         createBtn.pad(6f,12f,6f,12f);
         backBtn.pad(6f,12f,6f,12f);
 
-// inside your createBtn listener:
+        // inside your createBtn listener:
         createBtn.addListener(new ChangeListener() {
             @Override public void changed(ChangeEvent event, Actor actor) {
                 String u = userField.getText().trim();

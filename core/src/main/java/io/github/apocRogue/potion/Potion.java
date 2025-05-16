@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Potion {
-    private final String id;                      // global 3xx+
+    private final String id;
     private final Map<String,Integer> stats = new LinkedHashMap<>();
 
     private String  name;
@@ -31,7 +31,7 @@ public class Potion {
         stats.put("maxStack",  maxStack);
     }
 
-    // ---------- getters ----------
+
     public String  getID()        { return id; }
     public String  getName()      { return name; }
     public Texture getTexture()   { return texture; }
@@ -39,9 +39,8 @@ public class Potion {
     public int     getMaxStack()  { return maxStack; }
     public Map<String,Integer> getStats() { return stats; }
 
-    // ---------- behaviour (stub – implement effect) ----------
+
     public void use(PlayerActor player, Stage stage) {
         System.out.println("Using potion " + name + " on player " + player);
-        // TODO: apply heal, buff, etc. based on stats
     }
 }

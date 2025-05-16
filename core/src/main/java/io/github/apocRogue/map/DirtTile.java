@@ -32,7 +32,6 @@ public class DirtTile extends TileActor {
             drawX += drawW;
             drawW = -drawW;
         }
-        // flipped negative-width still respects UV pad parameters
         batch.draw(
             tex,
             drawX, getY(), drawW, getHeight(),

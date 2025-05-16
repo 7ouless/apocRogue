@@ -28,7 +28,8 @@ public class SoundAlertComponent {
 
     public void triggerAlert(Vector2 soundPos, float noise) {
         if (noise >= hearingThreshold) {
-            // Immediately trigger alert if the sound is intense enough.
+
+            // Immediately trigger alert if the sound is intense enough
             alertPosition.set(soundPos);
             alerted = true;
 

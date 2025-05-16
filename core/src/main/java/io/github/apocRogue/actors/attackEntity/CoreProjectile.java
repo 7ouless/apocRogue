@@ -1,4 +1,3 @@
-// CoreProjectile.java
 package io.github.apocRogue.actors.attackEntity;
 
 import com.badlogic.gdx.Gdx;
@@ -41,7 +40,6 @@ public class CoreProjectile extends RangedAttackActor {
 
         this.gravity = -300f;
 
-        // **use owner.isFacingRight()**
         boolean fr = owner.isFacingRight();
         float angle = fr ? ARC_DEG : 180f - ARC_DEG;
         Vector2 dir = new Vector2(
@@ -71,7 +69,7 @@ public class CoreProjectile extends RangedAttackActor {
         for (Actor a : new Array<>(getStage().getActors())) {
             if (a instanceof TileActor) {
                 if (a instanceof PlatformTile || a instanceof PlatformGrassOverlayTile)
-                    continue;                       // ← skip platforms entirely
+                    continue;
 
                 if (proj.overlaps(((TileActor) a).getBounds())) {
                     remove();

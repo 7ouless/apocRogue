@@ -1,4 +1,3 @@
-// frontend/src/io/github/apocRogue/shop/ui/TraderUI.java
 package io.github.apocRogue.shop;
 
 import com.badlogic.gdx.Gdx;

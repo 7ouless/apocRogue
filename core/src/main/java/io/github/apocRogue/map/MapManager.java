@@ -20,19 +20,19 @@ public class MapManager {
 
 
     //grass shit
-    private final boolean grassUseEdgeSize     = false;    // if true, grass dims are based on edge
+    private final boolean grassUseEdgeSize     = false;
     private final float   grassWidthMultiplier  =0.10f;
     private final float   grassHeightMultiplier = 0.8f;
 
     private int tileWidth = settings.tileWidth;
     private int tileHeight = settings.tileHeight;
 
-    private float lastTileY = 0; //!!!when created should be assigned to the entrance's floor height!!!//
+    private float lastTileY = 0;
 
     private float islandYPos = 600;
     private float yPos = 300;
 
-    private final float EDGE_X_OFFSET = settings.tileWidth * 0.05f; //Jimmy is going to kill me
+    private final float EDGE_X_OFFSET = settings.tileWidth * 0.05f;
 
     private boolean platform = false;
     private final float minPlatformY = settings.tileHeight * 5;    //start 5 tiles up
@@ -120,7 +120,7 @@ public class MapManager {
 
         if (islandCurrentLength == 1) {
             float centerY = baseY + 600;
-            float jitter  = tileHeight * 6;  // ±1 tile
+            float jitter  = tileHeight * 6;
             float rawY    = centerY + (random.nextFloat()*2*jitter - jitter);
             currentIslandPlatY = Math.max(minPlatformY,
                 Math.min(maxPlatformY, rawY));
@@ -147,7 +147,7 @@ public class MapManager {
     }
 
 
-    private void createGround() { // used to join the long platforms using procedurally generated terrain
+    private void createGround() {
         int seed = random.nextInt(99999999);
         pg.generatePermutationTable(seed);
         int tilesSinceLastTree = settings.treeGap;

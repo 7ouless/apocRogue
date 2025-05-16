@@ -28,7 +28,7 @@ public class ProcGen {
         //Copy permutation table twice to avoid overflow issues
         for (int i = 0; i < SIZE; i++) {
             permutation[i] = p[i];
-            permutation[i + SIZE] = p[i]; // Duplicate values for indexing
+            permutation[i + SIZE] = p[i];
         }
         return permutation;
     }

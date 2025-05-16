@@ -8,10 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import io.github.apocRogue.weapons.Weapon;
 import java.util.Map;
 
-/**
- * A single inventory slot that displays a Weapon’s icon,
- * and on hover shows a tooltip with its ID and stats.
- */
 public class InventorySlot extends Table {
     private final Skin skin;
     private final Image itemImage;
@@ -41,7 +37,7 @@ public class InventorySlot extends Table {
         addListener(tooltip);
     }
 
-    /** Updates the slot’s weapon, its icon, and tooltip text. */
+
     public void setItem(Weapon weapon) {
         this.weapon = weapon;
 

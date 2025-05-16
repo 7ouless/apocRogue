@@ -11,8 +11,6 @@ public class ShopItemPayload {
 
     public Map<String,Integer> stats;
 
-    /* ---------- convenience helpers (not serialised) ---------- */
-
     public char   getClassDigit() { return ClassDigit.classDigit(id); }
     public String getTypeID()     { return ClassDigit.typeID(id); }
     public String getStatBits()   { return ClassDigit.statBits(id); }

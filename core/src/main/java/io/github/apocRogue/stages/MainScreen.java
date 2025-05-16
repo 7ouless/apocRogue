@@ -91,13 +91,13 @@ public class MainScreen extends ScreenAdapter {
         title.setFontScale(3f);
         title.setAlignment(Align.center);
         float topMargin = 320f;
-        float rightShift = 35f;  // tweak this until it’s where you like
+        float rightShift = 35f;
         float x = (vw - title.getWidth()*title.getFontScaleX())/2f + rightShift;
         float y = stage.getViewport().getWorldHeight() - topMargin;
         title.setPosition(x, y);
         stage.addActor(title);
 
-        // 2) Build your vertical button container (no grey background or border)
+        // 2) Build your vertical button container
         Window window = new Window("", skin);
         window.setBackground((Drawable)null);
         final float BUTTON_WIDTH = 200f;
@@ -155,7 +155,7 @@ public class MainScreen extends ScreenAdapter {
         // 3) Position the window at the bottom‐center
         window.pack();
         float wx = (vw - window.getWidth()) / 2f;
-        float wy = 120f;               // 20px above the bottom edge
+        float wy = 120f;
         window.setPosition(wx, wy);
 
         stage.addActor(window);
@@ -174,7 +174,6 @@ public class MainScreen extends ScreenAdapter {
         grainTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         pix.dispose();
 
-        // schedule first scare in 10–20s
         scheduleNext();
     }
 
@@ -200,8 +199,8 @@ public class MainScreen extends ScreenAdapter {
         float scaleY = vh / texH;
         float coverScale = Math.max(scaleX, scaleY);
 
-        // 3) Optional extra zoom factor (1.0 = exact cover, >1 = zoom in more)
-        float zoom = bgScale;  // e.g. 1.0f or 1.2f
+        // 3)  extra zoom factor
+        float zoom = bgScale;
         float finalScale = coverScale * zoom;
 
         // 4) Compute drawn size
@@ -224,7 +223,7 @@ public class MainScreen extends ScreenAdapter {
 
             case FLASHING:
                 // ramp grain up more slowly:
-                grainAlpha = Math.min(1f, grainAlpha + delta * 1f);  // try 1f instead of 5f
+                grainAlpha = Math.min(1f, grainAlpha + delta * 1f);
                 if (grainAlpha >= 1f) {
                     holdTimer = 0f;
                     state     = State.HOLD;

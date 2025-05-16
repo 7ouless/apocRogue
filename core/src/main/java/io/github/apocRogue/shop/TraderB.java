@@ -1,4 +1,3 @@
-// File: TraderB.java
 package io.github.apocRogue.shop;
 
 import java.util.List;

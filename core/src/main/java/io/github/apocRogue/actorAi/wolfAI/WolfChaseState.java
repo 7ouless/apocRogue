@@ -1,4 +1,3 @@
-// WolfChaseState.java
 package io.github.apocRogue.actorAi.wolfAI;
 
 import io.github.apocRogue.actorAi.landAI.chaseAi;

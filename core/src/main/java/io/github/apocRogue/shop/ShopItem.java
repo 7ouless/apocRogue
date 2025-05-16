@@ -14,11 +14,10 @@ public class ShopItem {
     }
 
     public ShopItem(String name, String description, int price, int requiredLevel) {
-        // Let’s default maxStock to 5 for all items
+        //default maxStock to 5 for all items
         this(name, description, price, requiredLevel, 5);
     }
 
-    // New constructor letting you set stock
     public ShopItem(String name, String description, int price, int requiredLevel, int maxStock) {
         this.name = name;
         this.description = description;

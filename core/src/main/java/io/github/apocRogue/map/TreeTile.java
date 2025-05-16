@@ -27,7 +27,6 @@ public class TreeTile extends TileActor {
     public void draw(Batch batch, float parentAlpha) {
         Texture t = useAlt ? TREE2 : TREE1;
 
-        // lowering tree for rad 3 (sorry jimmy)
         float yPos = getY();
         if (CurrentDificulty.getRadiation() == 3) {
             yPos -= 10f;    //

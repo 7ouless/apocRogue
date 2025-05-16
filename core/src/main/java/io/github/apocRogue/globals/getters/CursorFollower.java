@@ -23,7 +23,6 @@ public class CursorFollower extends Actor {
         float mouseY = Gdx.input.getY();
 
         // Convert screen coordinates to stage coordinates.
-        // This assumes the actor is added to a Stage.
         Vector2 stageCoords = getStage().screenToStageCoordinates(new Vector2(mouseX, mouseY));
 
         // Optionally center the actor on the cursor:

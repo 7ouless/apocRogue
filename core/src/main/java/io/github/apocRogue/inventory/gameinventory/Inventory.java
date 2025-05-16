@@ -34,7 +34,6 @@ public class Inventory {
         hotbarSlots = new Array<InventorySlot>();
         inventorySlots = new Array<InventorySlot>();
         dragAndDrop = new DragAndDrop();
-        // Further reduce tap square size to force drag even with small movement
         dragAndDrop.setTapSquareSize(20);
         createHotbar();
         createInventory();
@@ -42,7 +41,7 @@ public class Inventory {
 
     }
 
-    // Create a hotbar with 5 slots positioned at the bottom left.
+    // Creates a hotbar with 5 slots positioned at the bottom left.
     private void createHotbar() {
         hotbarTable = new Table();
         hotbarTable.setFillParent(true);
@@ -50,7 +49,7 @@ public class Inventory {
 
         for (int i = 0; i < HOTBAR_SIZE; i++) {
             InventorySlot slot = new InventorySlot(skin);
-            // Enable touchable explicitly (should be enabled by default)
+            // Enable touchable explicitly
             slot.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
             if (i == selectedHotbarIndex) {
                 slot.setHighlighted(true);
@@ -139,7 +138,7 @@ public class Inventory {
                             dragData.sourceSlot.setItem(dragData.weapon);
                         }
                     }
-                    // If target != null, the drop(...) method of the Target handles placing or swapping
+                    // If target != null, the drop method of the Target handles placing or swapping
                 }
             });
 
@@ -171,7 +170,6 @@ public class Inventory {
                     // If the target slot had a weapon, swap
                     if (targetWeapon != null) {
                         // The Source's actor is the original slot
-                        // but we can also get it from dragData.sourceSlot
                         InventorySlot sourceSlot = (InventorySlot) source.getActor();
                         sourceSlot.setItem(targetWeapon);
                     }

@@ -48,7 +48,7 @@ public class OnlineMarketScreen extends ScreenAdapter {
         DBManager.get().fetchMarket(new JsonCallback() {
             @Override
             public void onSuccess(String json) {
-                // Not used
+
             }
 
             @Override
@@ -72,10 +72,9 @@ public class OnlineMarketScreen extends ScreenAdapter {
                         TextButton buyBtn = new TextButton("Buy", skin);
                         buyBtn.addListener(new ChangeListener() {
                             @Override public void changed(ChangeEvent event, com.badlogic.gdx.scenes.scene2d.Actor actor) {
-                                // TODO: call DBManager.get().buy(listingId,...)
                             }
                         });
-                        // inside your existing loop over data.get("listings"):
+
 
                         long listingId = item.getLong("listingID");
 
@@ -87,7 +86,6 @@ public class OnlineMarketScreen extends ScreenAdapter {
                                 // disable the button until done
                                 buyBtn.setDisabled(true);
 
-                                // call your new buy(...)
                                 DBManager.get().buy(listingId, new JsonCallback() {
                                     @Override public void onSuccess(String json) {}
                                     @Override public void onSuccess(JsonValue data) {

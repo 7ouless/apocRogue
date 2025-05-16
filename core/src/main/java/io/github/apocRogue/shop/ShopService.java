@@ -12,13 +12,7 @@ import java.util.Map;
 
 import static io.github.apocRogue.database.DBManager.GSON;
 
-/**
- * Client‑side helper that talks to the Cloud‑Functions shop API.
- * <p>
- * Mirrors the style used in {@link io.github.apocRogue.database.DBManager} so the
- * <strong>Authorization: Bearer &lt;token&gt;</strong> header is automatically sent on every
- * request, exactly the way your other services already do.
- */
+
 public class ShopService {
     public interface Callback<T> {
         void onSuccess(T value);
@@ -30,9 +24,9 @@ public class ShopService {
 
     private final Json json = new Json();
 
-    /* ────────────────────────────────
-     *  GET /dailyshop?seller=NPC_ID
-     * ──────────────────────────────── */
+
+     //GET dailyshop seller=NPC_ID
+
     public void fetchSeller(String sellerId, Callback<SellerInfo> cb) {
         String url = BASE + "/dailyshop?seller=" + sellerId;
 
@@ -47,9 +41,9 @@ public class ShopService {
         Gdx.net.sendHttpRequest(req, handler(cb, SellerInfo.class));
     }
 
-    /* ────────────────────────────────
-     *  POST /buyshopitem { sellerID, itemCode, count }
-     * ──────────────────────────────── */
+
+     // POST /buyshopitem { sellerID, itemCode, count }
+
     public void buyItem(String sellerId, String itemCode, int count, Callback<Void> cb) {
         String url = BASE + "/buyshopitem";
 
@@ -72,7 +66,6 @@ public class ShopService {
         Gdx.net.sendHttpRequest(req, handler(cb, Void.class));
     }
 
-    /* ---------- shared response handler ---------- */
     private <T> Net.HttpResponseListener handler(Callback<T> cb, Class<T> typ) {
         return new Net.HttpResponseListener() {
             @Override public void handleHttpResponse(Net.HttpResponse resp) {

@@ -52,7 +52,6 @@ public class OptionsOverlay extends Window {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // “Back” => remove this overlay, revealing EscScreen behind it
                 listener.onCloseOptions();
             }
         });

@@ -18,7 +18,6 @@ import com.badlogic.gdx.Gdx;
 
 public class MiniSamuraiActor extends EnemyActor {
     private FiniteStateMachine<MiniSamuraiActor> fsm;
-    // Roam target is now only an X target (Y remains constant).
     private Vector2 roamTarget;
     private boolean dashing;
     private Vector2 dashDirection;
@@ -88,7 +87,7 @@ public class MiniSamuraiActor extends EnemyActor {
 
         } else {
             Vector2 direction = roamTarget.cpy().sub(pos).nor();
-            // Ensure only horizontal movement.
+            // only horizontal movement.
             direction.y = 0;
 
             moveBy(direction.x * normalSpeed * delta, 0);
@@ -107,7 +106,7 @@ public class MiniSamuraiActor extends EnemyActor {
         // Get the tile in which the center lies.
         float centerX = getX() + getWidth() / 2;
         int tileColumn = (int)(centerX / tileSize);
-        // Assume the platform spans, say, 3 tiles for a wider roaming area.
+
         float minX = (tileColumn - 1) * tileSize;
         float maxX = (tileColumn + 2) * tileSize;
         return new Vector2(minX, maxX);
@@ -122,7 +121,7 @@ public class MiniSamuraiActor extends EnemyActor {
         float dx = playerCenterX - myCenterX;
         float distance = Math.abs(dx);
 
-        // just use a simple vision radius (e.g. 200 units)
+        //Vision radius
         if (distance < 200f) {
             // face the player
             facingRight = dx > 0;
@@ -142,10 +141,10 @@ public class MiniSamuraiActor extends EnemyActor {
         velocityY = 0;
     }
     public void playReadyAnimation() {
-        System.out.println("Samurai: Ready Up!");
+        System.out.println("Samurai: ready up");
     }
     public void playSlashAnimation() {
-        System.out.println("Samurai: SLASH!");
+        System.out.println("Samurai: attack");
     }
 
     public void startDash() {
@@ -195,12 +194,11 @@ public class MiniSamuraiActor extends EnemyActor {
 
         Camera cam = stage.getCamera();
         if (!(cam instanceof OrthographicCamera)) {
-            // if you ever use a different camera type, handle it here
             return false;
         }
         OrthographicCamera ocam = (OrthographicCamera)cam;
 
-        // world-units half-width/height of what the camera sees
+
         float halfW = (ocam.viewportWidth * ocam.zoom) / 2f;
         float halfH = (ocam.viewportHeight * ocam.zoom) / 2f;
 

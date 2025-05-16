@@ -10,7 +10,7 @@ public class ItemActor extends Image {
     private float velocityY = 0f;
     private float gravity = -600f;  // downward acceleration (pixels/sec^2)
     private boolean isOnGround = false;
-    private float groundLevel = 0;  // assume y=0 is the floor; adjust as needed
+    private float groundLevel = 0;
 
     public ItemActor(Weapon weapon, float x, float y) {
         super(weapon.getTexture());
@@ -39,7 +39,7 @@ public class ItemActor extends Image {
         }
     }
 
-    // Optionally let other code set velocities
+
     public void setVelocity(float vx, float vy) {
         this.velocityX = vx;
         this.velocityY = vy;

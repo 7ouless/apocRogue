@@ -5,9 +5,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.weapons.MeleeAttackActor;
 
-/**
- * A concrete slash that uses the MeleeAttackActor base logic.
- */
 public class SlashActor extends MeleeAttackActor {
 
     public SlashActor(Texture texture, PlayerActor player, int damage, Stage stage) {

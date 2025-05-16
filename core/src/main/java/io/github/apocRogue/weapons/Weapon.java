@@ -74,8 +74,6 @@ public class Weapon {
         return stats;
     }
 
-    //your original getters
-
     public String getName()              { return name; }
     public int    getDamage()            { return damage; }
     public Texture getTexture()          { return texture; }

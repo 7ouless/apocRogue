@@ -8,12 +8,8 @@ import io.github.apocRogue.globals.physics.SoundPhysics;
 import io.github.apocRogue.weapons.RangedAttackActor;
 import io.github.apocRogue.weapons.Weapon;
 
-/**
- * A concrete arrow that uses the RangedAttackActor base logic.
- * We set velocity in the constructor based on a target location.
- */
+
 public class ArrowActor extends RangedAttackActor {
-    // You can now use the inherited noiseLevel field from RangedAttackActor.
     public ArrowActor(Texture texture,
                       float startX, float startY,
                       float targetX, float targetY,

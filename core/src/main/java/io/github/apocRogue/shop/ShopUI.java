@@ -36,7 +36,7 @@ public class ShopUI {
     public ShopUI(Stage stage, Skin skin, stageBuilder game) {
         this.stage = stage; this.skin = skin; this.game = game;
 
-        /* ---------- layout ---------- */
+        //layout
         Table root = new Table(skin); root.setFillParent(true); stage.addActor(root);
 
         spentLabel = new Label("Reputation: --", skin);
@@ -46,7 +46,7 @@ public class ShopUI {
 
         Table main = new Table(skin); root.add(main).expand().fill().colspan(3); main.row();
 
-        /* Traders column */
+       //Traders column
         Table left = new Table(skin);
         for (ShopKeeper t : traders) {
             TextButton b = new TextButton(t.getDisplayName(), skin);
@@ -55,12 +55,12 @@ public class ShopUI {
         }
         main.add(left).width(200).fillY().pad(5);
 
-        /* Items grid */
+        //Items grid
         itemsTable = new Table(skin); itemsTable.defaults().size(100,100).pad(4);
         ScrollPane scroll = new ScrollPane(itemsTable, skin);
         main.add(scroll).expand().fill().pad(5);
 
-        /* Detail column */
+        //Detail column
         Table right = new Table(skin);
         portraitImage = new Image();
         Label nameLbl = new Label("", skin);
@@ -79,7 +79,7 @@ public class ShopUI {
 
 
 
-        /* load first */
+        //Load first
         if(!traders.isEmpty()) selectTrader(traders.get(0));
     }
 
@@ -112,9 +112,9 @@ public class ShopUI {
 
         int col = 0;
         for (ShopEntry e : currentInfo.items) {
-            final ShopEntry local = e;                 // ← safe capture
+            final ShopEntry local = e;
             Table cell = new Table(skin);
-            cell.setBackground(skin.newDrawable("white",   // + new line
+            cell.setBackground(skin.newDrawable("white",
                 Color.GRAY));
 
 
@@ -131,7 +131,7 @@ public class ShopUI {
 
             cell.addListener(new ClickListener() {
                 @Override public void clicked(InputEvent ev,float x,float y) {
-                    selectEntry(local);                // each tile keeps its own entry
+                    selectEntry(local);
                 }
             });
             itemsTable.add(cell).pad(4);

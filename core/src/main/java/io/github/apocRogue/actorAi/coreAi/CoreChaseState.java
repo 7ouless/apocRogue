@@ -19,7 +19,7 @@ public class CoreChaseState implements CoreState {
     @Override
     public void update(CoreStateMachine fsm, CoreActor core, float delta) {
         // cooldown tick
-        // (handled in core.act())
+
 
         PlayerActor p = core.findPlayer();
         if (p == null || !core.canSeePlayer(p)) {

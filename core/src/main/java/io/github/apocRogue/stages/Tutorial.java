@@ -45,15 +45,12 @@ public class Tutorial extends Dialog {
         // Add close button
         button("Close");
 
-        // Optionally pack just to update layout
-        // pack();
     }
 
     @Override
     public Dialog show(Stage stage) {
         super.show(stage);
 
-        // Force dialog to fixed size
         setSize(600, 400);
 
         // Center dialog on screen

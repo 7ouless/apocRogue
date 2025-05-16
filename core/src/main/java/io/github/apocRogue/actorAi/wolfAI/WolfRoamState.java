@@ -1,4 +1,3 @@
-// WolfRoamState.java
 package io.github.apocRogue.actorAi.wolfAI;
 
 import com.badlogic.gdx.math.Vector2;

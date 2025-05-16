@@ -80,9 +80,6 @@ public class TailProjectile extends RangedAttackActor {
         this.velocity = dir.scl(SPEED);
         setRotation(angleDeg);
 
-        // (optional) log it
-        Gdx.app.log("TailProjectile",
-            "spawned at "+centerX+","+spawnY+" dir="+dir);
     }
 
     @Override

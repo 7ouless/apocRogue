@@ -30,12 +30,7 @@ import io.github.apocRogue.inventory.menuinventory.InventoryService.InventoryIte
 import java.util.*;
 import java.util.stream.IntStream;
 
-/**
- * Inventory UI that synchronises with the remote Cloud-Functions back-end.
- * All items and stats are loaded directly from the server;
- * if no saved layout exists, items appear in a random order.
- * UI updates occur on the render thread via postRunnable.
- */
+
 public class InventoryUI {
 
     private final Stage stage;
@@ -121,11 +116,7 @@ public class InventoryUI {
         content.add(rightCol).width(300).expandY().fillY();
     }
 
-    /**
-     * Downloads the authoritative inventory list and populates hotbar and stash.
-     * If no saved preferences exist, items appear in random order.
-     * Ensures GL operations run on the render thread.
-     */
+
     private void syncWithServerInventory() {
         List<String> saved = InventoryPreferences.load();
         boolean noPrefs = saved.isEmpty() || saved.stream().allMatch(String::isEmpty);
@@ -147,7 +138,7 @@ public class InventoryUI {
                     }
                     if (noPrefs) Collections.shuffle(flat);
 
-                    // populate hotbar (up to equipSlots.size)
+                    // populate hotbar
                     Iterator<InventoryItemPayload> it = flat.iterator();
                     for (int i = 0; i < equipSlots.size() && it.hasNext(); i++) {
                         InventoryItemPayload p = it.next();

@@ -8,7 +8,7 @@ public class ReadyUpState implements State<MiniSamuraiActor> {
     private float readyTime = 1.5f; // ready for one second
     @Override
     public void enter(MiniSamuraiActor samurai) {
-        // Play a ready-up or wind-up animation.
+        // Play a ready-up animation.
         samurai.setAttackMode(true);
         samurai.playReadyAnimation();
         samurai.stopMovement();

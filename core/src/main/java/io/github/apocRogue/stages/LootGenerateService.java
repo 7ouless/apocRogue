@@ -6,10 +6,6 @@ import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import io.github.apocRogue.database.ServerSingleton;
 
-/**
- * Client-side helper that talks to the Cloud Function loot generation API.
- * Mirrors the pattern used in {@link io.github.apocRogue.shop.ShopService}.
- */
 public class LootGenerateService {
     public interface Callback<T> {
 
@@ -24,7 +20,7 @@ public class LootGenerateService {
 
     private final Json json = new Json();
 
-    /** Request DTO */
+    //Request DTO
     public static class Req {
         public int difficulty;
         public int subLevel;
@@ -34,7 +30,7 @@ public class LootGenerateService {
         public float chestY;
     }
 
-    /** Response DTO */
+    //Request DTO
     public static class Res {
         public String itemCode;
         // Use a concrete type so LibGDX Json can instantiate it
@@ -71,9 +67,6 @@ public class LootGenerateService {
         Gdx.net.sendHttpRequest(req, handler(cb, Res[].class));
     }
 
-    /**
-     * Shared response handler, identical pattern to ShopService
-     */
     private <T> Net.HttpResponseListener handler(Callback<T> cb, Class<T> typ) {
         return new Net.HttpResponseListener() {
             @Override public void handleHttpResponse(Net.HttpResponse resp) {

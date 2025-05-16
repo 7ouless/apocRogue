@@ -94,10 +94,9 @@ public class ControlsOverlay extends Window {
         backButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                remove();  // remove THIS overlay
+                remove();
                 if (previousOverlay != null) {
-                    // Instead of using previousOverlay.getStage(), just use getStage()
-                    // so we re-add the previous overlay to the same Stage we’re on now.
+
                     Stage currentStage = getStage();
                     if (currentStage != null) {
                         currentStage.addActor(previousOverlay);

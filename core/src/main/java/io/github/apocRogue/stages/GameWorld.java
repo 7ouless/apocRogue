@@ -147,7 +147,7 @@ public class GameWorld {
                                 );
                                 inventory.addItem(w);
 
-                                break;  // move on to the next savedCode
+                                break;
                             }
                         }
                     }
@@ -164,14 +164,12 @@ public class GameWorld {
 
 
 
-        // Spawn enemies (wolves OR samurai)
+        // Spawn enemies
         int enemyCount = DifficultyLevelGen.getEnemyCount();
         for (int i = 0; i < enemyCount; i++) {
             float spawnX, spawnY;
             float[] pos;
             int attempts = 0;
-
-            // find a non‐dirt spot
             do {
                 pos = getRandomSpawnPosition();
                 if (pos != null) {
@@ -185,10 +183,9 @@ public class GameWorld {
                 attempts++;
             } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
 
-            // randomly choose wolf vs. samurai
             float r = MathUtils.random();
             if (r < 0.5f) {
-                // — Wolf (50% chance) —
+                // Wolf 50%
                 boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
                 Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
                 Texture atk  = isRad ? wolfRadAttackTexture : wolfAttackTexture;
@@ -302,7 +299,6 @@ public class GameWorld {
     private float[] getRandomSpawnPosition() {
         Array<Actor> spawnTiles = new Array<>();
         for (Actor a : stage.getActors()) {
-            // only ground tiles, not floating platforms
             if (a instanceof FloorTile) {
                 spawnTiles.add(a);
             }
@@ -336,7 +332,7 @@ public class GameWorld {
                                p.itemCode = w.getID();
                               p.typeID   = p.itemCode.substring(2,4);
                                p.stats    = new HashMap<>(w.getStats());
-                               p.count    = 1; // or slot.getCount() if you track stacks
+                               p.count    = 1;
                                payloads.add(p);
                            }
                    }

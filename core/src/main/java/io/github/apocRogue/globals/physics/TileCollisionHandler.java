@@ -48,7 +48,7 @@ public class TileCollisionHandler {
                     // Resolve collision along that axis.
                     if (minOverlap == overlapLeft) {
                         if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
-                            // Auto-step: climb up one standard tile
+                            // Auto-step
                             float step = ((TileActor) stageActor).getHeight();
                             actor.setY(actor.getY() + step);
                             actor.velocityY = 0f;
@@ -59,7 +59,7 @@ public class TileCollisionHandler {
                         }
                     } else if (minOverlap == overlapRight) {
                         if (stageActor instanceof EdgeTile || stageActor instanceof FloorTile) {
-                            // Auto-step: climb up one standard tile
+                            // Auto-step
                             float step = ((TileActor) stageActor).getHeight();
                             actor.setY(actor.getY() + step);
                             actor.velocityY = 0f;

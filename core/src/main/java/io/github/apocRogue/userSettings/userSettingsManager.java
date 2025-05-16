@@ -9,7 +9,7 @@ public class userSettingsManager {
     private Preferences prefs;
     private static userSettingsManager instance;
 
-    // Default keys for custom controls (hotbar keys remain fixed)
+    // Default keys for custom controls
     private static final int DEFAULT_MOVE_LEFT    = Input.Keys.A;
     private static final int DEFAULT_MOVE_RIGHT   = Input.Keys.D;
     private static final int DEFAULT_JUMP         = Input.Keys.SPACE;

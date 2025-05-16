@@ -13,11 +13,10 @@ public class SoundPhysics {
         MELEE_NOISE, GUNSHOT_MUZZLE, PROJECTILE_IMPACT, PROJECTILE_FLIGHT, ENVIRONMENTAL
     }
 
-    /** Holds data for one debug ring that will be drawn on screen. */
     public static class SoundDebugEvent {
         public Vector2 center;        // Where the sound was emitted
         public float maxRadius;       // The maximum radius
-        public float currentRadius;   // Current radius (shrinks or grows over time)
+        public float currentRadius;   // Current radius
         public float duration;        // Total lifetime for the ring
         public float timeAlive;       // How long it has existed
         public Color color;           // Color of the ring

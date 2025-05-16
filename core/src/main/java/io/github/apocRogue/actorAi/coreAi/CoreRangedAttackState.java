@@ -37,7 +37,7 @@ public class CoreRangedAttackState implements CoreState {
             core.shootCoreSting(p.getX(), p.getY());
         }
         else {
-            // too far—just chase
+            // too far-just chase
             chase.updateAI(core, delta);
         }
     }

@@ -15,7 +15,7 @@ public class PotionGenerateService {
         void onFailure(Throwable t);
     }
 
-    /** POST /potion/generate  body:{idPrefix,level,sub} */
+
     public void generate(String idPrefix, int level, int sub, Callback cb) {
         Json json = new Json();
         String body = json.toJson(new Object() {

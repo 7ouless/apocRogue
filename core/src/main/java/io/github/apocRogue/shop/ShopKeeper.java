@@ -4,9 +4,9 @@ package io.github.apocRogue.shop;
 import java.util.List;
 
 
-public class ShopKeeper {    private final String sellerID;        // "A", "B", "C"
-    private final String displayName;     // e.g. "Bartholomew the Bold"
-    private final String portraitKey;     // "traderA"  (maps to file)
+public class ShopKeeper {    private final String sellerID;
+    private final String displayName;
+    private final String portraitKey;
 
     private final String[] greetingLines;
     private final String[] thankYouLines;
@@ -32,7 +32,7 @@ public class ShopKeeper {    private final String sellerID;        // "A", "B", 
         this.lowLevel = lowLevel;
     }
 
-    /* ---------- getters used by ShopUI ---------- */
+    //getters used by ShopUI
     public String   getSellerID()     { return sellerID; }
     public String   getDisplayName()  { return displayName; }
     public String   getPortraitPath() { return "ui/portraits/" + portraitKey + ".png"; }
@@ -41,7 +41,6 @@ public class ShopKeeper {    private final String sellerID;        // "A", "B", 
     public String   getThankYou()     { return thankYouLines.length>0 ? thankYouLines[0] : "Thanks!"; }
     public String   getSoldOutLine()  { return soldOutLines.length>0 ? soldOutLines[0] : "Sold out"; }
 
-    /* expose full arrays if UI ever wants variation */
     public String[] getGreetingLines() { return greetingLines; }
     public String[] getThankYouLines() { return thankYouLines; }
     public String[] getSoldOutLines()  { return soldOutLines; }

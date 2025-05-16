@@ -3,13 +3,11 @@ package io.github.apocRogue.globals.ids;
 
 public final class ClassDigit {
 
-
     public static final char WEAPON = '1';
     public static final char ITEM   = '2';
     public static final char POTION = '3';
 
     private ClassDigit() {}
-
 
 
     public static char classDigit(String id) {

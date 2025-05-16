@@ -15,11 +15,6 @@ public class StepUpProcessor {
     // Adjust this if your sprite's getY() is not exactly at the feet.
     private static final float FOOT_OFFSET = 24.0f;
 
-    /**
-     * Attempts to step the actor up onto an adjacent tile if that tile is one grid cell higher,
-     * has no tile directly above it, and if the actor’s center is within its horizontal bounds.
-     * This method only triggers if the actor is not falling.
-     */
     public static void attemptStepUp(PhysicalActor actor) {
         Stage stage = actor.getStage();
         if (stage == null) return;
@@ -42,10 +37,9 @@ public class StepUpProcessor {
         // Compute the actor's grid row using its feet (adjusted by FOOT_OFFSET).
         float actorFeetY = actor.getY() + FOOT_OFFSET;
         int actorGridRow = (int)(actorFeetY / TILE_SIZE);
-        // Candidate tile should be exactly one cell higher.
         int targetRow = actorGridRow + 1;
 
-        // Check overhead: if there's a tile directly above the candidate tile, don't step up.
+        // if there's a tile directly above the candidate tile, don't step up.
         if (getTileAt(targetCol, targetRow + 1, stage) != null) return;
 
         // Get the candidate tile at (targetCol, targetRow)
@@ -65,10 +59,6 @@ public class StepUpProcessor {
         }
     }
 
-    /**
-     * Helper: Returns the TileActor at a given grid column and row in the stage, or null if none exists.
-     * Uses index-based iteration to avoid nested iterators.
-     */
     private static TileActor getTileAt(int col, int row, Stage stage) {
         Array<Actor> actors = stage.getActors();
         for (int i = 0; i < actors.size; i++) {
