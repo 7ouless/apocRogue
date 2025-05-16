@@ -128,14 +128,20 @@ public class InventoryService {
         HttpRequest req = new HttpRequest(HttpMethods.POST);
         req.setUrl(BASE_URL + "/inventorypush");
         req.setHeader("Content-Type", "application/json");
-
+        req.setHeader("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken());
         req.setContent(body);
 
         Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
             @Override
             public void handleHttpResponse(HttpResponse response) {
-
-                cb.onSuccess(null);
+                int status = response.getStatus().getStatusCode();
+                if (status == 200) {
+                    cb.onSuccess(null);
+                } else {
+                    cb.onFailure(new RuntimeException(
+                        "Inventory push failed: HTTP " + status + " – " + response.getResultAsString()
+                    ));
+                }
             }
 
             @Override

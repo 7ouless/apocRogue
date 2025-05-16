@@ -255,12 +255,12 @@ public class GameScreen extends ScreenAdapter {
             gameWorld.dispose();        // clears main stage
             overlayStage.clear();       // also wipe the old decor/grass
         }
-
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
         CurrentDificulty.setDifficulty(diff);
 
         gameWorld = new GameWorld(stage, runMgr.isFinalWorld(), inventory);
         gameWorld.initialize();
+        gameWorld.extractItems();
 
         Actor[] actors = stage.getActors().toArray(Actor.class);
         for (Actor a : actors) {
