@@ -74,6 +74,7 @@ public class GameScreen extends ScreenAdapter {
     private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         this.inventory = new Inventory(skin);
 
         this.game = game;
@@ -146,8 +147,6 @@ public class GameScreen extends ScreenAdapter {
 
 
         batch = new SpriteBatch();
-
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // 1) Init our run HUD
         loadCurrentWorld();
@@ -729,7 +728,7 @@ public class GameScreen extends ScreenAdapter {
             }
             gameWorld.extractItems();
             inventory = new Inventory(skin);
-
+            gameWorld.setSkull();
             game.setScreen(new MainScreen(game));
         } else {
             // CONTINUE door --> first record the player's choice

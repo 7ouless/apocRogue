@@ -38,6 +38,8 @@ import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 
+import static io.github.apocRogue.globals.difficulty.CurrentDificulty.getDifficulty;
+
 
 public class GameWorld {
     private final Stage stage;
@@ -67,6 +69,7 @@ public class GameWorld {
         flyingCreatureTexture, flyingRadCreatureTexture, coreTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld,  Inventory existingInventory) {
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         this.stage = stage;
         this.isFinalWorld = isFinalWorld;
         inventory = existingInventory;
@@ -329,7 +332,9 @@ public class GameWorld {
     }
     void giveMoney() {
         DBManager.get().giveMoney();
-
+    }
+    void setSkull(){
+        DBManager.get().setMS((long)getDifficulty());
     }
 
     private float[] getRandomSpawnPosition() {
