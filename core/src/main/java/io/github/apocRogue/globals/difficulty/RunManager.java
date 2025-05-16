@@ -36,4 +36,10 @@ public class RunManager {
     public boolean isFinalWorld() {
         return worldLevel == 5;
     }
+
+    public void resetRun() {
+        skullLevel  = 1;     // first skull
+        worldLevel  = 1;     // first world
+
+    }
 }

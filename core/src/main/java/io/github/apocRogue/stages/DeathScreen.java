@@ -10,6 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
+import io.github.apocRogue.globals.difficulty.RunManager;
 
 public class DeathScreen extends ScreenAdapter {
 
@@ -45,6 +47,8 @@ public class DeathScreen extends ScreenAdapter {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 // Return to a fresh GameScreen
+                RunManager.getInstance().resetRun();
+                CurrentDificulty.setRadiation(1);
                 game.setScreen(new GameScreen(game));
             }
         });
