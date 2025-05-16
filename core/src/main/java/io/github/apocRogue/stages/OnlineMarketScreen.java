@@ -19,10 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * A full-screen market interface with buy/sell tabs and integrated MarketService.
- * Always visible, even when empty: shows header and a placeholder row when no items.
- */
+
 public class OnlineMarketScreen extends ScreenAdapter {
     private final stageBuilder game;
     private Stage stage;
@@ -35,13 +32,29 @@ public class OnlineMarketScreen extends ScreenAdapter {
 
     @Override
     public void show() {
-        // Initialize Stage & Skin
+        // Initialise Stage & Skin
         stage = new Stage(new FitViewport(1080, 720));
         skin  = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // Build the Market UI
         marketUI = new MarketUI(stage, skin, game);
         marketUI.build();
+
+
+        TextButton backButton = new TextButton("Back", skin);
+        backButton.pad(10f);
+        // place 20 px from the top‑left corner of the virtual viewport
+        backButton.setPosition(
+            stage.getViewport().getWorldWidth() - backButton.getWidth() - 20,
+            stage.getViewport().getWorldHeight() - backButton.getHeight() - 20);
+
+        backButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.setScreen(new MainScreen(game));
+            }
+        });
+        stage.addActor(backButton);
 
         // Route input to our UI
         Gdx.input.setInputProcessor(stage);
