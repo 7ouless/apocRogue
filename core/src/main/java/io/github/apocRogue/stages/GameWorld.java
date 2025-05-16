@@ -218,7 +218,7 @@ public class GameWorld {
             }
 
         }
-        if (CurrentDificulty.getWorldLevel() == 1) {
+        if (isFinalWorld) {
             float midX = mapManager.settings.roomWidth * 0.5f;
             float groundY;
             float spawnY;

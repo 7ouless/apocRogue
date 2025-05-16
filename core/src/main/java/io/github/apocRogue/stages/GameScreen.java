@@ -36,6 +36,7 @@ public class GameScreen extends ScreenAdapter {
 
     private Music musicRad2;
     private Music musicRad3;
+    private Music bossMusic;
     private Music currentMusic;
 
     private stageBuilder game;
@@ -135,6 +136,7 @@ public class GameScreen extends ScreenAdapter {
         // load your two looping tracks
         musicRad2 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation2.mp3"));
         musicRad3 = Gdx.audio.newMusic(Gdx.files.internal("audio/radiation3.mp3"));
+        bossMusic  = Gdx.audio.newMusic(Gdx.files.internal("audio/boss-music.mp3"));
         // helper to pick & play
         switchMusic(rad);
 
@@ -275,8 +277,10 @@ public class GameScreen extends ScreenAdapter {
             currentMusic.stop();
         }
 
-        // rad == 1 or 2 --> play musicRad2, rad == 3 --> musicRad3
-        if (rad >= 1 && rad <= 2) {
+        // rad == 1 or 2 --> play musicRad2, rad == 3 --> musicRad3, if world level5 --> boss-music
+        if  (runMgr.isFinalWorld()) {
+            currentMusic = bossMusic;
+        } else if (rad >= 1 && rad <= 2) {
             currentMusic = musicRad2;
         } else if (rad == 3) {
             currentMusic = musicRad3;
@@ -822,5 +826,6 @@ public class GameScreen extends ScreenAdapter {
         if (grainTex != null) grainTex.dispose();
         if (musicRad2   != null) musicRad2.dispose();
         if (musicRad3   != null) musicRad3.dispose();
+        if (bossMusic != null)  bossMusic.dispose();
     }
 }
