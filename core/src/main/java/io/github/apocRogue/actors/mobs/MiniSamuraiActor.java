@@ -116,13 +116,18 @@ public class MiniSamuraiActor extends EnemyActor {
 
     public boolean detectPlayer() {
         PlayerActor player = findPlayer();
-        if (player != null) {
-            float dx = (player.getX() + player.getWidth()/2) - (getX() + getWidth()/2);
-            // Consider detection range (adjust the threshold as needed)
-            double distance = Math.abs(dx);
-            Vector2 bounds = getCurrentPlatformBounds();
-            float playerCenterX = player.getX() + player.getWidth()/2;
-            return (distance < 100 && playerCenterX >= bounds.x && playerCenterX <= bounds.y);
+        if (player == null) return false;
+
+        float myCenterX = getX() + getWidth()/2f;
+        float playerCenterX = player.getX() + player.getWidth()/2f;
+        float dx = playerCenterX - myCenterX;
+        float distance = Math.abs(dx);
+
+        // just use a simple vision radius (e.g. 200 units)
+        if (distance < 200f) {
+            // face the player
+            facingRight = dx > 0;
+            return true;
         }
         return false;
     }
@@ -176,6 +181,10 @@ public class MiniSamuraiActor extends EnemyActor {
 
     public void resetDashCooldown() {
         timeSinceLastDash = 0f;
+    }
+
+    public void setFacingRight(boolean facingRight) {
+        this.facingRight = facingRight;
     }
 
     public boolean isPlayerInCameraView() {

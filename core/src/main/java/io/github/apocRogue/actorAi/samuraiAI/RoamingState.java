@@ -17,7 +17,7 @@ public class RoamingState implements State<MiniSamuraiActor> {
         // Check if the player is within detection range using line-of-sight or distance.
         if (samurai.detectPlayer()) {
             // Transition to the ready-up state.
-            samurai.changeState(new ReadyUpState());
+            samurai.changeState(new MoveToViewState());
         }
     }
 
