@@ -83,15 +83,14 @@ public class MiniSamuraiActor extends EnemyActor {
     public void roam(float delta) {
         Vector2 pos = new Vector2(getX(), getY());
         float distance = pos.dst(roamTarget);
-        System.out.println("Roaming: current pos = " + pos + ", roamTarget = " + roamTarget + ", distance = " + distance);
         if (distance < 5f) {
             roamTarget = getRandomRoamTarget();
-            System.out.println("New roam target set: " + roamTarget);
+
         } else {
             Vector2 direction = roamTarget.cpy().sub(pos).nor();
             // Ensure only horizontal movement.
             direction.y = 0;
-            System.out.println("Moving in direction: " + direction);
+
             moveBy(direction.x * normalSpeed * delta, 0);
         }
     }

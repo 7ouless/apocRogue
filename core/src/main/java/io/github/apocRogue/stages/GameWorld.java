@@ -180,7 +180,7 @@ public class GameWorld {
             } while (isOverlappingWithDirt(spawnX, spawnY) && attempts < 10);
 
             // randomly choose wolf vs. samurai
-            if (MathUtils.randomBoolean(0.5f)) {
+            if (MathUtils.randomBoolean(0.65f)) {
                 // — Wolf —
                 boolean isRad = Math.random() < CurrentDificulty.getRadiationChance();
                 Texture norm = isRad ? wolfRadNormalTexture : wolfNormalTexture;
