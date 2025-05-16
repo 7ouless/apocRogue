@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * MarketService with detailed debug logging.
- */
+
 public class MarketService {
     private static final Gson GSON = new GsonBuilder()
         .registerTypeAdapter(Instant.class, new JsonDeserializer<Instant>() {
@@ -42,9 +40,6 @@ public class MarketService {
 
     private static final Json json = new Json();
 
-    /**
-     * Fetch a page of market listings.
-     */
 
     public static void pullListings(int page,
                                     int size,
@@ -69,7 +64,7 @@ public class MarketService {
         // use Gson instead of libGDX Json
         String payload = GSON.toJson(body);
         Gdx.app.log("MarketService", "pullListings payload: " + payload);
-        // → {"page":0,"size":50,...}
+
 
         try {
             Net.HttpRequest request = new HttpRequestBuilder()
@@ -146,9 +141,7 @@ public class MarketService {
         }
     }
 
-    /**
-     * Place a new listing for sale.
-     */
+
     public static void sellItem(String itemCode,
                                 long price,
                                 Callback<Void> callback) {
@@ -199,11 +192,9 @@ public class MarketService {
         }
     }
 
-    /**
-     * Buy a listing by its ID.
-     */
+
     public static void buyItem(long listingId,
-                              Callback<Void> callback) {
+                               Callback<Void> callback) {
         Gdx.app.log("MarketService", "buyItem() start: listingId=" + listingId);
         String url = BASE + "/marketbuy";
 

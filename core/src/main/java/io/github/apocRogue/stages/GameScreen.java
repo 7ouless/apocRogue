@@ -252,7 +252,8 @@ public class GameScreen extends ScreenAdapter {
 
     private void loadCurrentWorld() {
         if (gameWorld != null) {
-            gameWorld.dispose();
+            gameWorld.dispose();        // clears main stage
+            overlayStage.clear();       // also wipe the old decor/grass
         }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
@@ -264,7 +265,9 @@ public class GameScreen extends ScreenAdapter {
         Actor[] actors = stage.getActors().toArray(Actor.class);
         for (Actor a : actors) {
             if (a instanceof DecorTile || a instanceof GrassOverlayTile) {
+                // detach from the main stage
                 a.remove();
+                // add into the overlay stage
                 overlayStage.addActor(a);
             }
         }

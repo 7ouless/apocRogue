@@ -33,18 +33,14 @@ public class DBManager {
         return instance;
     }
 
-    /**
-     * Registers a new user; cb.onSuccess receives the raw JSON response.
-     */
+
     public void register(String user, String pass, JsonCallback cb) {
         System.out.println("Registering user " + user + " with password " + pass);
         post("/registrationSystem", user, pass, cb);
         System.out.println("Registration finished");
     }
 
-    /**
-     * Logs in an existing user; cb.onSuccess receives the raw JSON response.
-     */
+
     public void login(String user, String pass, JsonCallback cb) {
         System.out.println("Login called");
         post("/loginSystem", user, pass, cb);
@@ -54,9 +50,7 @@ public class DBManager {
     private static final String HEALTH_URL =
         "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net/healthCheckFunction";
 
-    /**
-     * Performs a health check; cb.onSuccess receives the raw response body.
-     */
+
     public void healthCheck(final JsonCallback cb) {
         Net.HttpRequest req = new Net.HttpRequest(Net.HttpMethods.GET);
         req.setUrl(HEALTH_URL);
@@ -95,7 +89,7 @@ public class DBManager {
             .header("Content-Type", "application/json")
             .build();
         req.setContent(body);
-        req.setTimeOut(10_000);    // <<< give it 10 seconds to connect/read
+        req.setTimeOut(10_000);
 
         Gdx.net.sendHttpRequest(req, new Net.HttpResponseListener() {
             @Override

@@ -41,7 +41,7 @@ public class Inventory {
 
     }
 
-    // Creates a hotbar with 5 slots positioned at the bottom left.
+    // Create a hotbar with 5 slots positioned at the bottom left.
     private void createHotbar() {
         hotbarTable = new Table();
         hotbarTable.setFillParent(true);
@@ -71,7 +71,7 @@ public class Inventory {
         return all;
     }
 
-    // Create an inventory grid with 18 slots (6 columns x 3 rows).
+    // Create an inventory grid
     private void createInventory() {
         inventoryTable = new Table(skin);
         inventoryTable.setVisible(false);
@@ -138,7 +138,7 @@ public class Inventory {
                             dragData.sourceSlot.setItem(dragData.weapon);
                         }
                     }
-                    // If target != null, the drop method of the Target handles placing or swapping
+                    // If target != null, the drop(...) method of the Target handles placing or swapping
                 }
             });
 
@@ -178,11 +178,11 @@ public class Inventory {
         }
     }
 
-    // Add the hotbar and inventory tables to the provided stage.
+
     public void draw(Stage stage) {
         stage.addActor(hotbarTable);
-        stage.addActor(hotbarTable);   // Must add to stage first
-        stage.act(0f);                 // Force one layout pass
+        stage.addActor(hotbarTable);
+        stage.act(0f);
         for (int i = 0; i < hotbarSlots.size; i++) {
             InventorySlot s = hotbarSlots.get(i);
         }

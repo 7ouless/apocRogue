@@ -19,9 +19,9 @@ public class InventoryService {
         void onFailure(Throwable t);
     }
 
-
     private static final String BASE_URL = "https://europe-west2-studious-camp-458516-f5.cloudfunctions.net";
 
+    // Matches the JSON structure returned by InventoryPull
     public static class InventoryItemPayload {
         public String              itemCode;
         public String              typeID;
@@ -35,8 +35,8 @@ public class InventoryService {
         public String message;
     }
     public static void checkInventory(
-            List<InventoryItemPayload> items,
-            Callback<CheckResponse> cb
+        List<InventoryItemPayload> items,
+        Callback<CheckResponse> cb
     ) {
         class CheckRequest { List<InventoryItemPayload> inventory;
             CheckRequest(List<InventoryItemPayload> inv){ inventory = inv; }
@@ -70,8 +70,8 @@ public class InventoryService {
         });
     }
 
-
-     public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
+    // Fetch the full inventory for the current player
+    public static void fetchInventory(Callback<List<InventoryItemPayload>> cb) {
         HttpRequest req = new HttpRequest(HttpMethods.GET);
         req.setUrl(BASE_URL + "/inventorypull");
 
@@ -87,7 +87,7 @@ public class InventoryService {
                     System.out.println(jsonText);
                     Gdx.app.log("InventoryService", "InventoryPull HTTP " + code + " → " + jsonText);
                     if (code != 200) {
-                        // propagate the failure so onFailure() is invoked, and skip parsing
+
                         cb.onFailure(new RuntimeException("InventoryPull HTTP " + code));
                         return;
                     }
@@ -112,12 +112,12 @@ public class InventoryService {
         });
     }
 
-
+    // Push an updated inventory list back to the server
     public static void pushInventory(
         List<InventoryItemPayload> items,
         Callback<Void> cb
     ) {
-        // Wrap in the inventory field
+        // Wrap in the expected "inventory" field
         class PushRequest { List<InventoryItemPayload> inventory;
             PushRequest(List<InventoryItemPayload> inv){ inventory=inv; }
         }
@@ -128,12 +128,13 @@ public class InventoryService {
         HttpRequest req = new HttpRequest(HttpMethods.POST);
         req.setUrl(BASE_URL + "/inventorypush");
         req.setHeader("Content-Type", "application/json");
-        // req.setHeader("Authorization", "Bearer " + ServerSingleton.getInstance().getAuthToken());
+
         req.setContent(body);
 
         Gdx.net.sendHttpRequest(req, new HttpResponseListener() {
             @Override
             public void handleHttpResponse(HttpResponse response) {
+
                 cb.onSuccess(null);
             }
 
@@ -149,8 +150,8 @@ public class InventoryService {
         });
     }
     public static void wipeInventory(
-            List<InventoryItemPayload> items,
-            Callback<Void> cb
+        List<InventoryItemPayload> items,
+        Callback<Void> cb
     ) {
 
         class WipeRequest { List<InventoryItemPayload> inventory;
@@ -172,12 +173,12 @@ public class InventoryService {
                     cb.onSuccess(null);
                 } else {
                     cb.onFailure(new RuntimeException("Wipe HTTP "
-                            + response.getStatus().getStatusCode()));
+                        + response.getStatus().getStatusCode()));
                 }
             }
             @Override public void failed(Throwable t) { cb.onFailure(t); }
             @Override public void cancelled()   { cb.onFailure(
-                    new RuntimeException("Wipe cancelled")); }
+                new RuntimeException("Wipe cancelled")); }
         });
 
     }

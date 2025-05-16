@@ -1,7 +1,6 @@
 package io.github.apocRogue.shop;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -12,7 +11,10 @@ import io.github.apocRogue.stages.stageBuilder;
 
 import java.util.List;
 
-
+/**
+ * Front‑end shop screen that talks to the back‑end Cloud Functions.
+ * Uses front‑end {@link ShopKeeper} instances only for visuals (portrait & dialog).
+ */
 public class ShopUI {
     private final Stage stage;
     private final Skin skin;
@@ -46,7 +48,7 @@ public class ShopUI {
 
         Table main = new Table(skin); root.add(main).expand().fill().colspan(3); main.row();
 
-       //Traders column
+        /* Traders column */
         Table left = new Table(skin);
         for (ShopKeeper t : traders) {
             TextButton b = new TextButton(t.getDisplayName(), skin);
@@ -60,24 +62,18 @@ public class ShopUI {
         ScrollPane scroll = new ScrollPane(itemsTable, skin);
         main.add(scroll).expand().fill().pad(5);
 
-        //Detail column
+        //Details Column
         Table right = new Table(skin);
         portraitImage = new Image();
         Label nameLbl = new Label("", skin);
         dialogLabel = new Label("", skin); dialogLabel.setWrap(true);
-
-
         buyBtn = new TextButton("Buy", skin); buyBtn.setDisabled(true);
         buyBtn.addListener(new ClickListener(){@Override public void clicked(InputEvent e, float x, float y){buySelected();}});
-
-
-        right.add(portraitImage).size(200,200) .row();
+        right.add(portraitImage).size(200,200).row();
         right.add(nameLbl).pad(5).row();
         right.add(dialogLabel).width(200).height(100).pad(5).row();
-        right.add(buyBtn).size(160, 50).pad(5);
+        right.add(buyBtn).pad(5);
         main.add(right).width(220).fillY().pad(5);
-
-
 
         //Load first
         if(!traders.isEmpty()) selectTrader(traders.get(0));
@@ -114,9 +110,6 @@ public class ShopUI {
         for (ShopEntry e : currentInfo.items) {
             final ShopEntry local = e;
             Table cell = new Table(skin);
-            cell.setBackground(skin.newDrawable("white",
-                Color.GRAY));
-
 
             Texture tex = new Texture(Gdx.files.internal(e.texturePath));
             Image   img = new Image(tex);
@@ -131,7 +124,7 @@ public class ShopUI {
 
             cell.addListener(new ClickListener() {
                 @Override public void clicked(InputEvent ev,float x,float y) {
-                    selectEntry(local);
+                    selectEntry(local);                // each tile keeps its own entry
                 }
             });
             itemsTable.add(cell).pad(4);
@@ -168,7 +161,7 @@ public class ShopUI {
                         String noGoldLine = currentTrader.getNoMoney()[0];
                         dialogLabel.setText(noGoldLine);
 
-                } else {
+                    } else {
                         dialogLabel.setText("Purchase failed: " + t.getMessage());
                     }
                 }

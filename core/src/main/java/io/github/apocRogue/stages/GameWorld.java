@@ -203,9 +203,7 @@ public class GameWorld {
             float spawnX, spawnY;
             float[] pos;
             int attempts = 0;
-
-            // Pick only floor/platform tiles, retry if it ends up in dirt
-                   do {
+            do {
                 pos = getRandomSpawnPosition();
                 if (pos != null) {
                     spawnX = pos[0];
@@ -240,7 +238,7 @@ public class GameWorld {
                 stage.addActor(bat);
 
             } else  {
-                // — Samurai (20% chance) —
+                //  Samurai 20%
                 MiniSamuraiActor samurai = new MiniSamuraiActor(
                     samuraiTexture,
                     samuraiAttackTexture,
@@ -339,8 +337,8 @@ public class GameWorld {
 
     private float[] getRandomSpawnPosition() {
         Array<Actor> spawnTiles = new Array<>();
-       for (Actor a : stage.getActors()) {
-                if (a instanceof FloorTile || a instanceof PlatformTile) {
+        for (Actor a : stage.getActors()) {
+            if (a instanceof FloorTile) {
                 spawnTiles.add(a);
             }
         }
@@ -363,31 +361,31 @@ public class GameWorld {
         }
         return false;
     }
-    public void extractItems() {
-        // build payloads from your live Inventory
-        List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
-        for (InventorySlot slot : inventory.getAllSlots()) {
-            if (!slot.isEmpty()) {
-                Weapon w = slot.getWeapon();
-                InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
-                p.itemCode = w.getID();
-                p.typeID   = p.itemCode.substring(2,4);
-                p.stats    = new HashMap<>(w.getStats());
-                p.count    = 1; // or slot.getCount() if you track stacks
-                payloads.add(p);
-            }
-        }
+      public void extractItems() {
+               // build payloads from your live Inventory
+                  List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+               for (InventorySlot slot : inventory.getAllSlots()) {
+                      if (!slot.isEmpty()) {
+                               Weapon w = slot.getWeapon();
+                               InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                               p.itemCode = w.getID();
+                              p.typeID   = p.itemCode.substring(2,4);
+                               p.stats    = new HashMap<>(w.getStats());
+                               p.count    = 1;
+                               payloads.add(p);
+                           }
+                   }
 
-        checkItems();
-        InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
-            @Override public void onSuccess(Void result) {
-                Gdx.app.log("GameWorld", "Inventory successfully pushed");
-            }
-            @Override public void onFailure(Throwable t) {
-                Gdx.app.error("GameWorld", "Failed to push inventory", t);
-            }
-        });
-    }
+          checkItems();
+          InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
+           @Override public void onSuccess(Void result) {
+                                       Gdx.app.log("GameWorld", "Inventory successfully pushed");
+                                   }
+           @Override public void onFailure(Throwable t) {
+                                       Gdx.app.error("GameWorld", "Failed to push inventory", t);
+                                   }
+       });
+           }
 
     public void checkItems() {
         // 1) load the hotbar codes to skip

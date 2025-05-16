@@ -23,11 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Renders a two-column view:
- *  • Left: online Market listings with Refresh & Buy
- *  • Right: your Inventory with List Item
- */
+
 public class MarketUI {
     private final Stage stage;
     private final Skin skin;
@@ -71,7 +67,6 @@ public class MarketUI {
         TextButton buy = new TextButton("Buy", skin);
         buy.addListener(new ChangeListener() {
             @Override public void changed(ChangeListener.ChangeEvent event, Actor actor) {
-                // no-op; buying via Ctrl-click on slots
             }
         });
         left.add(buy).row();
