@@ -260,7 +260,7 @@ public class GameScreen extends ScreenAdapter {
 
         gameWorld = new GameWorld(stage, runMgr.isFinalWorld(), inventory);
         gameWorld.initialize();
-        gameWorld.extractItems();
+
 
         Actor[] actors = stage.getActors().toArray(Actor.class);
         for (Actor a : actors) {
