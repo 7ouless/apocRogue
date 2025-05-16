@@ -69,6 +69,7 @@ public class GameWorld {
         flyingCreatureTexture, flyingRadCreatureTexture, coreTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld,  Inventory existingInventory) {
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         this.stage = stage;
         this.isFinalWorld = isFinalWorld;
         inventory = existingInventory;

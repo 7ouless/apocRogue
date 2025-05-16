@@ -74,6 +74,7 @@ public class GameScreen extends ScreenAdapter {
     private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
+        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
         this.inventory = new Inventory(skin);
 
         this.game = game;
@@ -146,8 +147,6 @@ public class GameScreen extends ScreenAdapter {
 
 
         batch = new SpriteBatch();
-
-        skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // 1) Init our run HUD
         loadCurrentWorld();
