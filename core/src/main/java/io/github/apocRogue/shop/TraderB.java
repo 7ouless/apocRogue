@@ -9,7 +9,7 @@ public class TraderB extends ShopKeeper {
                 "B",
                 "Destaros",
                 "traderB",
-                new String[]{ "\"What's up man! Take a look, anything you see you can buy. Not me though, I won't fall for that again,\";\n" },
+                new String[]{ "\"What's up man! Take a look, anything you see you can buy. Not me though, I won't fall for that again\"" },
 
                 new String[]{ "Thank you! I'll be sure to spend this... responsibly. Want one more?"},
 
