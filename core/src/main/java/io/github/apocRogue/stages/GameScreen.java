@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import io.github.apocRogue.actors.playerEntity.PlayerActor;
 import io.github.apocRogue.globals.difficulty.CurrentDificulty;
+import io.github.apocRogue.inventory.gameinventory.Inventory;
 import io.github.apocRogue.inventory.menuinventory.InventoryService;
 import io.github.apocRogue.map.*;
 import io.github.apocRogue.weapons.Weapon;
@@ -65,6 +66,7 @@ public class GameScreen extends ScreenAdapter {
     private Texture grainTex;
 
     private boolean paused = false; // Tracks if the game is paused
+    private Inventory inventory;
 
     // Pause overlay members
     private Table pauseOverlay;
@@ -72,6 +74,8 @@ public class GameScreen extends ScreenAdapter {
     private ShapeRenderer shapeRenderer;
 
     public GameScreen(stageBuilder game) {
+        this.inventory = new Inventory(skin);
+
         this.game = game;
     }
 
@@ -249,22 +253,19 @@ public class GameScreen extends ScreenAdapter {
 
     private void loadCurrentWorld() {
         if (gameWorld != null) {
-            gameWorld.dispose();        // clears main stage
-            overlayStage.clear();       // also wipe the old decor/grass
+            gameWorld.dispose();
         }
 
         int diff = runMgr.getSkullLevel() * 5 + runMgr.getWorldLevel();
         CurrentDificulty.setDifficulty(diff);
 
-        gameWorld = new GameWorld(stage, runMgr.isFinalWorld());
+        gameWorld = new GameWorld(stage, runMgr.isFinalWorld(), inventory);
         gameWorld.initialize();
 
         Actor[] actors = stage.getActors().toArray(Actor.class);
         for (Actor a : actors) {
             if (a instanceof DecorTile || a instanceof GrassOverlayTile) {
-                // detach from the main stage
                 a.remove();
-                // add into the overlay stage
                 overlayStage.addActor(a);
             }
         }
@@ -727,6 +728,8 @@ public class GameScreen extends ScreenAdapter {
                 currentMusic.stop();
             }
             gameWorld.extractItems();
+            inventory = new Inventory(skin);
+
             game.setScreen(new MainScreen(game));
         } else {
             // CONTINUE door --> first record the player's choice
@@ -737,7 +740,7 @@ public class GameScreen extends ScreenAdapter {
 
             } else {
                 runMgr.advanceWorld();
-
+                gameWorld.giveMoney();
             }
 
             //Updates global difficulty
