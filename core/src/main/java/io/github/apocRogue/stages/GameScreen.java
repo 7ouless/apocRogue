@@ -218,8 +218,10 @@ public class GameScreen extends ScreenAdapter {
                     PlayerActor p = gameWorld.getPlayer();
                     Weapon w       = gameWorld.getInventory().getSelectedWeapon();
                     p.startAttack();             // flip to attack sprite
-                    if (w != null) w.use(p, stage);
-                    return true;
+                    if (p.tryAttack()) {
+                        if (w != null) w.use(p, stage);
+                        return true;
+                    }
                 }
                 return false;
             }

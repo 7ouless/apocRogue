@@ -11,10 +11,7 @@ import io.github.apocRogue.stages.stageBuilder;
 
 import java.util.List;
 
-/**
- * Front‑end shop screen that talks to the back‑end Cloud Functions.
- * Uses front‑end {@link ShopKeeper} instances only for visuals (portrait & dialog).
- */
+
 public class ShopUI {
     private final Stage stage;
     private final Skin skin;

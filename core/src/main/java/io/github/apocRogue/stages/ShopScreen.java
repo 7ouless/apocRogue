@@ -30,10 +30,6 @@ public class ShopScreen extends ScreenAdapter {
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
 
-        // Initialise & draw the player inventory UI
-        Inventory inv = new Inventory(skin);
-        inv.draw(stage);
-
         // Build the ShopUI
         shopUI = new ShopUI(
             stage,

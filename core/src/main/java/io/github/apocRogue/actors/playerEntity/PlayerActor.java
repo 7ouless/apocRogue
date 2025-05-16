@@ -47,6 +47,9 @@ public class PlayerActor extends PhysicalActor {
     private float katanaCooldownTimer = 0f;
     private boolean isWeaponDashing    = false;
 
+    private static final float ATTACK_COOLDOWN = 1.0f;
+    private float attackCooldownTimer = 0f;
+
     private StatsComponent stats;
 
     public PlayerActor(Texture idle, Texture attack) {
@@ -76,11 +79,18 @@ public class PlayerActor extends PhysicalActor {
         flashTimer = FLASH_DURATION;
     }
 
+    public boolean tryAttack() {
+        if (attackCooldownTimer > 0f) return false;
+        attackCooldownTimer = ATTACK_COOLDOWN;
+        startAttack();
+        return true;
+    }
+
     @Override
     public void act(float delta) {
         stats.regenStamina(delta);
         super.act(delta);
-
+        if (attackCooldownTimer > 0f) attackCooldownTimer -= delta;
         if (isAttacking) {
             attackTimer -= delta;
             if (attackTimer <= 0f) {
