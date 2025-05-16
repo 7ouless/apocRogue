@@ -37,7 +37,7 @@ public class MiniSamuraiActor extends EnemyActor {
                             Texture attackTexture,
                             float x, float y) {
         super(normalTexture, x, y,
-            new StatsComponent(250, 250, 100, 0, 400, 0, 1, 1000, 8)
+            new StatsComponent(250, 250, 10, 0, 400, 0, 1, 1000, 8)
         );
         this.normalTexture = normalTexture;
         this.attackTexture = attackTexture;

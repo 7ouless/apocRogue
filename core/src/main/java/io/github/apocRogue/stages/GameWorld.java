@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.apocRogue.actors.mapEntities.ChestActor;
+import io.github.apocRogue.actors.mobs.CoreActor;
 import io.github.apocRogue.actors.mobs.WolfActor;
 import io.github.apocRogue.actors.mobs.FlyingEnemyActor;
 import io.github.apocRogue.actors.mobs.MiniSamuraiActor;
@@ -34,6 +35,7 @@ import io.github.apocRogue.weapons.WeaponTypeRegistry;
 import io.github.apocRogue.globals.difficulty.DifficultyLevelGen;
 import io.github.apocRogue.actors.mapEntities.Door;
 import io.github.apocRogue.map.MapManager;
+import io.github.apocRogue.globals.difficulty.CurrentDificulty;
 
 
 public class GameWorld {
@@ -59,7 +61,7 @@ public class GameWorld {
     private float spawnOffsetY = 22f;
 
     private Texture playerTexture, playerAttackTexture, wolfNormalTexture, wolfAttackTexture, chestTexture,
-        flyingCreatureTexture, flyingRadCreatureTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
+        flyingCreatureTexture, flyingRadCreatureTexture, coreTexture, samuraiTexture, samuraiAttackTexture, wolfRadNormalTexture, wolfRadAttackTexture;
 
     public GameWorld(Stage stage, boolean isFinalWorld) {
         this.stage = stage;
@@ -104,6 +106,7 @@ public class GameWorld {
         samuraiAttackTexture = new Texture("ui/samurai-attack.png");
         flyingCreatureTexture = new Texture("ui/bat.png");
         flyingRadCreatureTexture = new Texture("ui/radiated-bat.png");
+        coreTexture = new Texture("ui/core.png");
 
         // Player & Inventory
         inventory = new Inventory(skin);
@@ -214,6 +217,23 @@ public class GameWorld {
                 stage.addActor(samurai);
 
             }
+
+        }
+        if (CurrentDificulty.getWorldLevel() == 1) {
+            float midX = mapManager.settings.roomWidth * 0.5f;
+            float groundY;
+            float spawnY;
+            int attempts = 0;
+            float spawnOffset = spawnOffsetY;
+            do {
+                groundY = getGroundHeightAtX(midX);
+                spawnY  = groundY + spawnOffset;
+                spawnOffset += 10f;
+                attempts++;
+            } while (isOverlappingWithDirt(midX, spawnY) && attempts < 10);
+
+            CoreActor core = new CoreActor(coreTexture, coreTexture, midX, spawnY);
+            stage.addActor(core);
         }
 
         // Spawn chests

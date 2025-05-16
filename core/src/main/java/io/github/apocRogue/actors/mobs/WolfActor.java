@@ -1,4 +1,3 @@
-// WolfActor.java
 package io.github.apocRogue.actors.mobs;
 
 import com.badlogic.gdx.graphics.Texture;
