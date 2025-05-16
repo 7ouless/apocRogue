@@ -117,7 +117,6 @@ public class GameWorld {
         coreTexture = new Texture("ui/core.png");
 
         // Player & Inventory
-        inventory = new Inventory(skin);
         spawnPlayer();
 
         typeRegistry = new WeaponTypeRegistry();
