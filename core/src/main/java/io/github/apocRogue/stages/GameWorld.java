@@ -147,11 +147,38 @@ public class GameWorld {
                                 );
                                 inventory.addItem(w);
 
-                                break;
+                                break;  // move on to the next savedCode
                             }
                         }
                     }
+                    if (!wipedOnStart) {
+                        wipedOnStart = true;
+                        List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+                        for (InventorySlot slot : inventory.getAllSlots()) {
+                            if (!slot.isEmpty()) {
+                                Weapon w = slot.getWeapon();
+                                InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                                p.itemCode = w.getID();
+                                p.typeID = p.itemCode.substring(2, 4);
+                                p.stats = new HashMap<>(w.getStats());
+                                p.count = 1;
+                                payloads.add(p);
+                                System.out.println("Removed " + p.typeID);
 
+                            }
+                        }
+                        InventoryService.wipeInventory(payloads, new InventoryService.Callback<Void>() {
+                            @Override
+                            public void onSuccess(Void nothing) {
+                                Gdx.app.log("GameWorld", "Server inventory wiped at run start");
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+                                Gdx.app.error("GameWorld", "Failed to wipe at start", t);
+                            }
+                        });
+                    }
                 });
             }
 
@@ -170,7 +197,9 @@ public class GameWorld {
             float spawnX, spawnY;
             float[] pos;
             int attempts = 0;
-            do {
+
+            // Pick only floor/platform tiles, retry if it ends up in dirt
+                   do {
                 pos = getRandomSpawnPosition();
                 if (pos != null) {
                     spawnX = pos[0];
@@ -298,8 +327,8 @@ public class GameWorld {
 
     private float[] getRandomSpawnPosition() {
         Array<Actor> spawnTiles = new Array<>();
-        for (Actor a : stage.getActors()) {
-            if (a instanceof FloorTile) {
+       for (Actor a : stage.getActors()) {
+                if (a instanceof FloorTile || a instanceof PlatformTile) {
                 spawnTiles.add(a);
             }
         }
@@ -322,31 +351,31 @@ public class GameWorld {
         }
         return false;
     }
-      public void extractItems() {
-               // build payloads from your live Inventory
-                  List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
-               for (InventorySlot slot : inventory.getAllSlots()) {
-                      if (!slot.isEmpty()) {
-                               Weapon w = slot.getWeapon();
-                               InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
-                               p.itemCode = w.getID();
-                              p.typeID   = p.itemCode.substring(2,4);
-                               p.stats    = new HashMap<>(w.getStats());
-                               p.count    = 1;
-                               payloads.add(p);
-                           }
-                   }
+    public void extractItems() {
+        // build payloads from your live Inventory
+        List<InventoryService.InventoryItemPayload> payloads = new ArrayList<>();
+        for (InventorySlot slot : inventory.getAllSlots()) {
+            if (!slot.isEmpty()) {
+                Weapon w = slot.getWeapon();
+                InventoryService.InventoryItemPayload p = new InventoryService.InventoryItemPayload();
+                p.itemCode = w.getID();
+                p.typeID   = p.itemCode.substring(2,4);
+                p.stats    = new HashMap<>(w.getStats());
+                p.count    = 1; // or slot.getCount() if you track stacks
+                payloads.add(p);
+            }
+        }
 
-          checkItems();
-          InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
-           @Override public void onSuccess(Void result) {
-                                       Gdx.app.log("GameWorld", "Inventory successfully pushed");
-                                   }
-           @Override public void onFailure(Throwable t) {
-                                       Gdx.app.error("GameWorld", "Failed to push inventory", t);
-                                   }
-       });
-           }
+        checkItems();
+        InventoryService.pushInventory(payloads, new InventoryService.Callback<Void>() {
+            @Override public void onSuccess(Void result) {
+                Gdx.app.log("GameWorld", "Inventory successfully pushed");
+            }
+            @Override public void onFailure(Throwable t) {
+                Gdx.app.error("GameWorld", "Failed to push inventory", t);
+            }
+        });
+    }
 
     public void checkItems() {
         // 1) load the hotbar codes to skip
@@ -495,15 +524,15 @@ public class GameWorld {
 
         if (!isFinalWorld) {
             // Worlds 1–4: three different continue doors
-                for (int r = 1; r <= 3; r++) {
+            for (int r = 1; r <= 3; r++) {
                 float x = baseX + (r - 2) * sep;
                 doors.add(new Door(Door.Type.CONTINUE,
-                 new Vector2(x, baseY),
-                 r));
-                            }
-            } else {
+                    new Vector2(x, baseY),
+                    r));
+            }
+        } else {
             // World 5: exactly one continue + one extract
-                // Continue door – center‐left
+            // Continue door – center‐left
             Vector2 contPos = new Vector2(baseX - sep * 0.5f, baseY);
             doors.add(new Door(Door.Type.CONTINUE,
                 contPos,
@@ -513,7 +542,7 @@ public class GameWorld {
             Vector2 exitPos = new Vector2(baseX + sep * 0.5f, baseY);
             doors.add(new Door(Door.Type.EXTRACT,
                 exitPos));
-            }
+        }
 
         doors.forEach(stage::addActor);
     }
@@ -542,5 +571,5 @@ public class GameWorld {
         samuraiAttackTexture.dispose();
         flyingCreatureTexture.dispose();
     }
-    }
+}
 

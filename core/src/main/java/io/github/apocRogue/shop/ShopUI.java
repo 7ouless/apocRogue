@@ -162,7 +162,16 @@ public class ShopUI {
                     dialogLabel.setText(selectedEntry.remaining<=0?currentTrader.getSoldOutLine():currentTrader.getThankYouLines()[0]);
                     spentLabel.setText("Reputation: "+(currentInfo.spentGauge+1));
                 }
-                @Override public void onFailure(Throwable t){ dialogLabel.setText("Purchase failed: "+t.getMessage()); }
+                @Override public void onFailure(Throwable t){ dialogLabel.setText("Purchase failed: "+t.getMessage());
+                    String raw = t.getMessage();
+                    if (raw != null && raw.contains("\"error\":\"not enough coin\"")) {
+                        String noGoldLine = currentTrader.getNoMoney()[0];
+                        dialogLabel.setText(noGoldLine);
+
+                } else {
+                        dialogLabel.setText("Purchase failed: " + t.getMessage());
+                    }
+                }
             });
 
     }

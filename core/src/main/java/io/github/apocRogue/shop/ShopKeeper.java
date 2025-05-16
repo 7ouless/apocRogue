@@ -46,4 +46,5 @@ public class ShopKeeper {    private final String sellerID;
     public String[] getSoldOutLines()  { return soldOutLines; }
     public String[] getNoMoney() { return noMoney; }
     public String[] getLowLevel() { return lowLevel; }
+
 }
